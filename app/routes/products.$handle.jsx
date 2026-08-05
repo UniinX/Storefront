@@ -1,4 +1,9 @@
-import {useLoaderData} from 'react-router';
+/**
+ * @file Product detail page — composes ProductImage, ProductInfo, MobileBuyBar
+ * around real Shopify product/variant data.
+ */
+import {useState} from 'react';
+import {useLoaderData, useNavigate} from 'react-router';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -7,9 +12,11 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
+import {Reveal} from '~/components/motion/Reveal.jsx';
+import {LANGUAGES} from '~/components/ds/index.js';
+import {ProductImage} from '~/components/product/ProductImage.jsx';
+import {ProductInfo} from '~/components/product/ProductInfo.jsx';
+import {MobileBuyBar} from '~/components/product/MobileBuyBar.jsx';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 /**
@@ -17,11 +24,8 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
  */
 export const meta = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
-    {
-      rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
-    },
+    {title: `UniinX | ${data?.product.title ?? ''}`},
+    {rel: 'canonical', href: `/products/${data?.product.handle}`},
   ];
 };
 
@@ -29,18 +33,12 @@ export const meta = ({data}) => {
  * @param {Route.LoaderArgs} args
  */
 export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
 /**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context, params, request}) {
@@ -55,79 +53,62 @@ async function loadCriticalData({context, params, request}) {
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
-  return {
-    product,
-  };
+  return {product};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context, params}) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
-
+function loadDeferredData() {
   return {};
 }
 
 export default function Product() {
   /** @type {LoaderReturnData} */
   const {product} = useLoaderData();
+  const navigate = useNavigate();
+  const [languageId, setLanguageId] = useState(LANGUAGES[0].id);
+  const language = LANGUAGES.find((l) => l.id === languageId);
 
-  // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
   useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
 
-  // Get the product options array
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
-
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+    <section style={{padding: '48px var(--space-xl) 140px'}}>
+      <button onClick={() => navigate(-1)}
+        style={{background: 'none', border: 'none', cursor: 'pointer', padding: '13px 0', minHeight: 44, display: 'flex', alignItems: 'center', marginBottom: 20, fontFamily: 'var(--font-work-sans)', fontSize: 'var(--uniinx-cta-size)', letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)'}}>
+        ← Back
+      </button>
+      <div className="uniinx-pdp-layout">
+        <Reveal>
+          <ProductImage image={selectedVariant?.image} language={language} />
+        </Reveal>
+        <Reveal delay={90}>
+          <ProductInfo
+            product={product}
+            selectedVariant={selectedVariant}
+            productOptions={productOptions}
+            languageId={languageId}
+            setLanguageId={setLanguageId}
+            activeLanguage={language}
+          />
+        </Reveal>
       </div>
+      <MobileBuyBar selectedVariant={selectedVariant} language={language} />
       <Analytics.ProductView
         data={{
           products: [
@@ -143,7 +124,7 @@ export default function Product() {
           ],
         }}
       />
-    </div>
+    </section>
   );
 }
 

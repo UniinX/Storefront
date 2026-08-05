@@ -12,6 +12,7 @@ export default defineConfig({
       // Vite's native tsconfig path resolver does not cover JavaScript
       // projects that use jsconfig.json, so define Hydrogen's app alias here.
       '~': fileURLToPath(new URL('./app', import.meta.url)),
+      '@ds': fileURLToPath(new URL('./Uniinx Design System', import.meta.url)),
     },
     tsconfigPaths: true,
   },

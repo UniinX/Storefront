@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Work+Sans:wght@400;500&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Serif+Tamil:wght@400;600&family=Noto+Serif+Telugu:wght@400;600&family=Noto+Serif+Kannada:wght@400;600&family=Noto+Serif+Bengali:wght@400;600&family=Noto+Serif+Gujarati:wght@400;600&family=Noto+Serif+Gurmukhi:wght@400;600&family=Noto+Serif+Oriya:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap');
+
+@import '../../Uniinx Design System/styles.css';
+
+body { margin: 0; background: var(--paper); }
+::selection { background: var(--ink); color: var(--paper); }
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-width: 0;
+}
+
+/* Responsive show/hide */
+@media (max-width: 720px) { .uniinx-hide-mobile { display: none !important; } }
+@media (min-width: 721px) { .uniinx-hide-desktop { display: none !important; } }
+
+/* Product grid */
+.uniinx-product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 24px; }
+.uniinx-product-grid > * { min-width: 0; }
+@media (min-width: 640px) { .uniinx-product-grid { gap: 24px 28px; } }
+@media (min-width: 900px) { .uniinx-product-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .uniinx-product-grid { grid-template-columns: repeat(4, 1fr); gap: 28px 32px; } }
+
+/* PLP layout (sidebar + grid) */
+.uniinx-plp-layout { display: grid; grid-template-columns: 224px 1fr; gap: 48px; align-items: start; }
+.uniinx-plp-layout > * { min-width: 0; }
+@media (max-width: 720px) { .uniinx-plp-layout { grid-template-columns: 1fr; } }
+
+/* PLP sticky filter sidebar */
+.uniinx-plp-sidebar { position: sticky; top: 120px; }
+
+/* PLP load more/previous pagination links */
+.uniinx-plp-pagination-link {
+  display: flex; justify-content: center; margin: 32px auto 0; width: fit-content;
+  min-height: 44px; padding: 10px 28px; border: 1px solid var(--mist); border-radius: var(--radius-full);
+  background: var(--paper); font-family: var(--font-work-sans); font-size: 13px; color: var(--ink);
+  transition: background 0.15s ease;
+}
+.uniinx-plp-pagination-link:hover { background: var(--paper-warm); }
+
+/* PDP configurator: sticky split-screen (preview | steps) */
+.uniinx-pdp-layout { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 72px; align-items: start; }
+.uniinx-pdp-layout > * { min-width: 0; }
+@media (max-width: 1023px) { .uniinx-pdp-layout { grid-template-columns: 1fr; gap: 40px; } }
+
+/* Department bento grid: Men/Women left stacked, Accessories right spanning */
+.uniinx-dept-bento { display: grid; grid-template-columns: 1fr 0.5fr; grid-template-rows: 1fr 1fr; gap: 16px; min-height: 560px; }
+.uniinx-dept-bento > * { min-width: 0; }
+.uniinx-dept-bento-acc { grid-column: 2; grid-row: 1 / span 2; }
+@media (max-width: 720px) { .uniinx-dept-bento { grid-template-columns: 1fr; grid-template-rows: auto; min-height: unset; } .uniinx-dept-bento-acc { grid-column: 1; grid-row: auto; } }
+
+/* Editorial split (mission / story sections) */
+.uniinx-editorial-split { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.uniinx-editorial-split > * { min-width: 0; }
+@media (max-width: 720px) { .uniinx-editorial-split { grid-template-columns: 1fr; } }
+
+/* Cart layout */
+.uniinx-cart-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; }
+.uniinx-cart-layout > * { min-width: 0; }
+@media (max-width: 720px) { .uniinx-cart-layout { grid-template-columns: 1fr; } }
+
+/* Sticky buy bar */
+.uniinx-sticky-buy {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--paper); border-top: 1px solid var(--mist);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 50;
+  animation: uniinx-buy-bar-in 0.35s cubic-bezier(.16,.84,.32,1) both;
+}
+
+/* Scroll-reveal */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s cubic-bezier(.16,.84,.32,1), transform 0.65s cubic-bezier(.16,.84,.32,1); }
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* Chip base */
+.uniinx-chip { transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease; }
+
+/* Keyframes */
+@keyframes uniinx-buy-bar-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes uniinx-menu-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes uniinx-sheet-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes uniinx-sheet-panel-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.uniinx-sheet-scrim { animation: uniinx-sheet-scrim-in 0.22s ease both; }
+.uniinx-sheet-panel { animation: uniinx-sheet-panel-in 0.32s cubic-bezier(.16,.84,.32,1) both; }
+.uniinx-lang-menu { animation: uniinx-menu-in 0.18s cubic-bezier(.16,.84,.32,1) both; transform-origin: top left; }
+
+/* Hero background glyph drift (ambient watermark motion) */
+@keyframes uniinx-hero-glyph-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(var(--dx, 16px), var(--dy, -16px)) scale(var(--ds, 1.04)); }
+}
+.uniinx-hero-glyph { animation: uniinx-hero-glyph-drift 24s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .uniinx-hero-glyph { animation: none; } }

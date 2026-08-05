@@ -1,6 +1,27 @@
 /**
- * Configure Tailwind v4 in this file using CSS variables and directives:
+ * Tailwind v4 CSS-first config. Extends the default theme with the Uniinx
+ * brand palette/type scale (ported from the old UI/tailwind.config.js) and
+ * switches dark: utilities to respond to a `.dark` class instead of OS
+ * preference, matching the manual theme toggle in PageLayout.
  * https://tailwindcss.com/docs/v4-beta#css-first-configuration
  */
 
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-bg-light: #f5f2ed;
+  --color-brand-bg-dark: #121212;
+  --color-brand-surface-light: #e7e2da;
+  --color-brand-surface-dark: #1e1e1e;
+  --color-brand-accent: #1b2a4a;
+  --color-brand-accent-light: #8fa3d2;
+
+  --font-marcellus: 'Marcellus', Georgia, serif;
+  --font-work: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --tracking-tight: var(--uniinx-tracking-tight);
+  --tracking-wide: var(--uniinx-tracking-wide);
+}

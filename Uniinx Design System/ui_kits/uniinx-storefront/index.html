@@ -1,0 +1,272 @@
+<!-- @dsCard group="Uniinx Storefront" viewport="1280x900" name="Storefront Home" subtitle="Header, hero, product grid, department band, mission, footer — v2 heritage palette" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Uniinx — Clothes in your Language</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--paper); }
+  ::selection { background: var(--ink); color: var(--paper); }
+
+  /* ---- Motion vocabulary (v2) ---- */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.65s cubic-bezier(.16,.84,.32,1), transform 0.65s cubic-bezier(.16,.84,.32,1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  @keyframes uniinx-toast-in {
+    from { opacity: 0; transform: translate(-50%, 12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .uniinx-toast { animation: uniinx-toast-in 0.32s cubic-bezier(.16,.84,.32,1); }
+
+  @keyframes uniinx-sheet-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes uniinx-sheet-panel-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .uniinx-sheet-scrim { animation: uniinx-sheet-scrim-in 0.22s ease both; }
+  .uniinx-sheet-panel { animation: uniinx-sheet-panel-in 0.32s cubic-bezier(.16,.84,.32,1) both; }
+
+  @keyframes uniinx-menu-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .uniinx-lang-menu { animation: uniinx-menu-in 0.18s cubic-bezier(.16,.84,.32,1) both; transform-origin: top left; }
+
+  @keyframes uniinx-mobile-menu-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .uniinx-mobile-menu { animation: uniinx-mobile-menu-in 0.22s cubic-bezier(.16,.84,.32,1) both; }
+
+  @keyframes uniinx-buy-bar-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .uniinx-sticky-buy { animation: uniinx-buy-bar-in 0.35s cubic-bezier(.16,.84,.32,1) both; }
+
+  @keyframes uniinx-cart-item-in {
+    from { opacity: 0; transform: translateX(-12px) scale(0.98); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .uniinx-cart-item { animation: uniinx-cart-item-in 0.38s cubic-bezier(.16,.84,.32,1) both; transition: opacity 0.22s ease, transform 0.22s ease, max-height 0.28s ease, margin 0.28s ease, padding 0.28s ease; }
+  .uniinx-cart-item.is-leaving { opacity: 0; transform: translateX(-16px) scale(0.96); }
+
+  /* ---- Fabric-photo placeholders: gradient + grain standing in for real
+     product photography until real shoots are dropped in via `image` ---- */
+  .uniinx-fabric {
+    position: relative;
+    background-color: var(--paper-warm);
+    background-image:
+      radial-gradient(140% 100% at 15% 0%, var(--fabric-a, var(--kalamkari-red-600)) 0%, transparent 55%),
+      radial-gradient(120% 90% at 100% 100%, var(--fabric-b, var(--kalamkari-ochre-500)) 0%, transparent 60%),
+      linear-gradient(165deg, var(--paper-sand) 0%, var(--paper-warm) 100%);
+    background-blend-mode: multiply, multiply, normal;
+    overflow: hidden;
+  }
+  .uniinx-fabric::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    opacity: 0.35;
+    animation: uniinx-fabric-drift 9s ease-in-out infinite alternate;
+  }
+  .uniinx-fabric::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 1px rgba(20,16,14,0.06);
+  }
+  @keyframes uniinx-fabric-drift {
+    from { transform: translate3d(0,0,0) scale(1.02); }
+    to { transform: translate3d(-1.5%, 1.5%, 0) scale(1.06); }
+  }
+  .uniinx-fabric[data-tone="teal"]   { --fabric-a: var(--kalamkari-teal-600);  --fabric-b: var(--kalamkari-green-700); }
+  .uniinx-fabric[data-tone="ochre"]  { --fabric-a: var(--kalamkari-ochre-500); --fabric-b: var(--kalamkari-red-600); }
+  .uniinx-fabric[data-tone="green"]  { --fabric-a: var(--kalamkari-green-700); --fabric-b: var(--kalamkari-teal-600); }
+  .uniinx-fabric[data-tone="maroon"] { --fabric-a: var(--kalamkari-maroon-900); --fabric-b: var(--kalamkari-ochre-500); }
+  @media (prefers-reduced-motion: reduce) { .uniinx-fabric::before { animation: none; } }
+
+  .uniinx-card {
+    transition: transform 0.32s cubic-bezier(.16,.84,.32,1), box-shadow 0.32s cubic-bezier(.16,.84,.32,1);
+  }
+  .uniinx-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -18px rgba(20,16,14,0.28); }
+  .uniinx-card:hover .uniinx-card-photo { transform: scale(1.045); }
+  .uniinx-card-photo { transition: transform 0.5s cubic-bezier(.16,.84,.32,1); }
+  .uniinx-card:active { transform: translateY(-2px) scale(0.99); }
+
+  .uniinx-dept-card { transition: transform 0.4s cubic-bezier(.16,.84,.32,1); }
+  .uniinx-dept-card:hover { transform: scale(1.015); }
+
+  .uniinx-chip { transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease; }
+  .uniinx-chip:active { transform: scale(0.94); }
+
+  @keyframes uniinx-badge-pop {
+    0% { transform: scale(0.4); }
+    60% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  .uniinx-badge-pop { animation: uniinx-badge-pop 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .uniinx-toast, .uniinx-sheet-scrim, .uniinx-sheet-panel, .uniinx-lang-menu, .uniinx-mobile-menu,
+    .uniinx-sticky-buy, .uniinx-cart-item, .uniinx-badge-pop { animation: none !important; }
+    .uniinx-card, .uniinx-card-photo, .uniinx-dept-card, .uniinx-chip { transition: none !important; }
+  }
+
+  /* Responsive layout utilities — mobile breakpoint matches --bp-mobile (720px) */
+  .uniinx-hide-desktop { display: none; }
+  @media (max-width: 720px) {
+    .uniinx-hide-mobile { display: none !important; }
+    .uniinx-hide-desktop { display: flex !important; }
+    .uniinx-header { padding: 16px 20px !important; }
+    body { padding-bottom: var(--mobile-nav-height); }
+  }
+  @media (min-width: 721px) {
+    .uniinx-hide-desktop { display: none !important; }
+  }
+
+  .uniinx-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 1080px) { .uniinx-product-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px) { .uniinx-product-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
+  .uniinx-dept-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .uniinx-dept-grid { grid-template-columns: 1fr; }
+    .uniinx-dept-grid > div { grid-column: span 1 !important; }
+  }
+
+  .uniinx-plp-layout, .uniinx-pdp-layout, .uniinx-cart-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .uniinx-pdp-layout { grid-template-columns: 420px 1fr; }
+  .uniinx-cart-layout { grid-template-columns: 1fr 320px; }
+  @media (max-width: 900px) {
+    .uniinx-plp-layout, .uniinx-pdp-layout, .uniinx-cart-layout { grid-template-columns: 1fr; }
+  }
+
+  .uniinx-sticky-buy {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: var(--mobile-nav-height);
+    background: var(--paper);
+    box-shadow: 0 -1px 0 var(--mist);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 55;
+  }
+
+  @media (max-width: 720px) {
+    section { padding-left: var(--mobile-gutter) !important; padding-right: var(--mobile-gutter) !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="Motion.jsx"></script>
+<script type="text/babel" src="Header.jsx"></script>
+<script type="text/babel" src="Hero.jsx"></script>
+<script type="text/babel" src="ProductGrid.jsx"></script>
+<script type="text/babel" src="DepartmentBand.jsx"></script>
+<script type="text/babel" src="MissionSection.jsx"></script>
+<script type="text/babel" src="Footer.jsx"></script>
+<script type="text/babel" src="PLP.jsx"></script>
+<script type="text/babel" src="ProductPage.jsx"></script>
+<script type="text/babel" src="CartPage.jsx"></script>
+<script type="text/babel">
+  function App() {
+    const { MobileTabBar } = window.UniinxDesignSystem_f52a6f;
+    const [toast, setToast] = React.useState("");
+    const [view, setView] = React.useState("home");
+    const [language, setLanguage] = React.useState("english");
+    const [cart, setCart] = React.useState([]);
+
+    const flash = (msg) => {
+      setToast(msg);
+      setTimeout(() => setToast(""), 1400);
+    };
+
+    const addToCart = (item) => {
+      setCart((c) => [...c, { ...item, cartId: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}` }]);
+      flash("Added to cart →");
+    };
+
+    const tabId = view === "cart" ? "cart" : view.startsWith("plp") ? "plp" : view === "home" ? "home" : "home";
+
+    return (
+      <div>
+        <window.Header view={view} onNavigate={setView} language={language} onLanguageChange={setLanguage} />
+
+        {view === "home" && (
+          <React.Fragment>
+            <window.Hero onShopNew={() => setView("plp:men")} />
+            <window.ProductGrid onSelectProduct={() => setView("product")} />
+            <window.DepartmentBand onNavigate={setView} />
+            <window.MissionSection />
+            <window.Footer />
+          </React.Fragment>
+        )}
+
+        {view.startsWith("plp") && (
+          <window.PLP view={view} onSelectProduct={() => setView("product")} />
+        )}
+
+        {view === "product" && (
+          <window.ProductPage onBack={() => setView("home")} onAddToCart={addToCart} />
+        )}
+
+        {view === "cart" && (
+          <window.CartPage items={cart} onRemove={(i) => setCart((c) => c.filter((_, idx) => idx !== i))} onContinue={() => setView("home")} />
+        )}
+
+        <MobileTabBar active={tabId} onNavigate={(id) => setView(id === "plp" ? "plp:men" : id)} cartCount={cart.length} />
+
+        {toast && (
+          <div
+            className="uniinx-toast"
+            style={{
+              position: "fixed",
+              bottom: 96,
+              left: "50%",
+              background: "var(--ink)",
+              color: "var(--paper)",
+              padding: "12px 24px",
+              borderRadius: "var(--radius-md)",
+              fontFamily: "var(--font-marcellus)",
+              fontSize: 13,
+              letterSpacing: "var(--uniinx-tracking-wide)",
+              zIndex: 100,
+              boxShadow: "0 12px 32px -8px rgba(0,0,0,0.35)",
+            }}
+          >
+            {toast}
+          </div>
+        )}
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

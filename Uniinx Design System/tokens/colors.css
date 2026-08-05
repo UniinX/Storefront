@@ -1,0 +1,91 @@
+/* ============================================================
+   COLOR TOKENS
+   Base scale extracted from the Figma Variables collection
+   ("Ungrouped" — 20 color variables) plus raw fills used
+   directly across the Uniinx storefront frames that never got
+   promoted to variables. Values are verbatim — do not round to
+   a 4/8px-style "nice" palette.
+   ============================================================ */
+
+:root {
+  /* ---- Brand neutrals (from Figma Variables) ---- */
+  --brand-100: rgb(245, 245, 245);
+  --brand-200: rgb(230, 230, 230);
+  --brand-300: rgb(217, 217, 217);
+  --brand-400: rgb(179, 179, 179);
+  --brand-600: rgb(68, 68, 68);
+  --brand-700: rgb(56, 56, 56);
+  --brand-800: rgb(44, 44, 44);
+
+  --slate-100: rgb(243, 243, 243);
+  --slate-900: rgb(48, 48, 48);
+
+  --gray-500: rgb(117, 117, 117);
+  --gray-900: rgb(30, 30, 30);
+
+  --white-1000: rgb(255, 255, 255);
+  --white-500: rgba(255, 255, 255, 0.7);
+
+  /* ---- Semantic aliases (from Figma Variables, light mode) ---- */
+  --background-brand-default: var(--brand-800);
+  --background-brand-secondary: var(--brand-200);
+  --background-disabled-default: var(--brand-300);
+  --border-disabled-default: var(--brand-400);
+  --border-neutral-default: var(--slate-900);
+  --text-default-default: var(--gray-900);
+  --text-default-secondary: var(--gray-500);
+
+  /* ---- Raw fills used directly in the storefront + app frames ----
+     These never got promoted to Figma Variables, but they recur
+     often enough (see METADATA "Colors" list) to deserve names. */
+  --ink: #121212;                      /* primary text / strokes */
+  --paper: #F5F2ED;                    /* page background: off-white bone */
+  --paper-soft: #E7E2DA;               /* secondary surface: warm grey stone */
+  --mist: #D5D0C7;                     /* borders / dividers */
+  --stone: #7F7970;                    /* mid-gray vector fill */
+  --slate-mid: #D5D0C7;
+  --graphite: #1B2A4A;                 /* Primary button / pill accent */
+
+  /* ---- Warm ivory base compatibility ---- */
+  --paper-warm: #E7E2DA;
+  --paper-sand: #D5D0C7;
+
+  /* ---- Accent palette (V4 redesign: Deep Indigo) ---- */
+  --accent-indigo: #1B2A4A;
+  --accent-indigo-light: #8FA3D2;
+
+  /* ---- Semantic accent aliases mapped to Deep Indigo ---- */
+  --accent-cta: var(--accent-indigo);
+  --accent-primary: var(--accent-indigo);
+  --accent-festive: var(--accent-indigo);
+  --accent-deep: var(--accent-indigo);
+  --accent-leaf: var(--accent-indigo);
+}
+
+:root[data-theme="dark"],
+.dark {
+  --ink: #F5F2ED;                      /* white/off-white text on dark */
+  --paper: #121212;                    /* charcoal black background */
+  --paper-soft: #1E1E1E;               /* warm charcoal surface */
+  --paper-warm: #1E1E1E;
+  --paper-sand: #2C2C2C;
+  --mist: #2C2C2C;
+  --stone: #888888;
+  --slate-mid: #2C2C2C;
+  --graphite: #8FA3D2;
+
+  --accent-cta: var(--accent-indigo-light);
+  --accent-primary: var(--accent-indigo-light);
+  --accent-festive: var(--accent-indigo-light);
+  --accent-deep: var(--accent-indigo-light);
+  --accent-leaf: var(--accent-indigo-light);
+
+  --background-brand-default: var(--brand-100);
+  --background-brand-secondary: var(--brand-600);
+  --background-disabled-default: var(--brand-700);
+  --border-disabled-default: var(--brand-600);
+  --border-neutral-default: var(--slate-100);
+  --text-default-default: var(--white-1000);
+  --text-default-secondary: var(--white-500);
+}
+

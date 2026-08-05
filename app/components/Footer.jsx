@@ -1,130 +1,70 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {Reveal} from '~/components/motion/Reveal.jsx';
+import {LANGUAGES, FontVar} from '@ds/components/commerce/LanguageChipSelector.jsx';
 
-/**
- * @param {FooterProps}
- */
-export function Footer({footer: footerPromise, header, publicStoreDomain}) {
+export function Footer({language, onLanguageChange}) {
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+    <Reveal as="footer" className="px-6 md:px-14 py-16 bg-brand-bg-light dark:bg-brand-bg-dark border-t border-black/10 dark:border-white/10 transition-colors duration-200">
+
+      {/* Brand logo closer */}
+      <div className="flex flex-col items-center justify-center text-center mb-12">
+        <p className="font-marcellus text-2xl md:text-3xl tracking-[0.15em] text-black dark:text-white uppercase mb-2">
+          UNIINX
+        </p>
+        <p className="font-work text-xs tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">
+          Clothes in your Language
+        </p>
+      </div>
+
+      {/* Interactive Script Carousel Language Switcher */}
+      <div className="w-full max-w-4xl mx-auto mb-16">
+        <span className="font-work text-[9px] tracking-widest text-black/40 dark:text-white/40 uppercase block text-center mb-6">
+          Select Design Language / भारतीय भाषाएं
+        </span>
+
+        {/* Horizontal Script Row */}
+        <div className="flex items-center justify-start md:justify-center gap-6 overflow-x-auto pb-4 scrollbar-none mask-image-horizontal">
+          {LANGUAGES.map((lang) => {
+            const isActive = lang.id === language;
+            return (
+              <button
+                key={lang.id}
+                onClick={() => onLanguageChange?.(lang.id)}
+                className={`flex flex-col items-center justify-center min-w-[90px] p-2 focus:outline-none transition-all duration-300 rounded-md border ${
+                  isActive
+                    ? 'border-brand-accent dark:border-brand-accent-light bg-brand-surface-light dark:bg-brand-surface-dark'
+                    : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+                id={`footer-lang-${lang.id}`}
+              >
+                <span
+                  style={{fontFamily: FontVar(lang.font)}}
+                  dir={lang.rtl ? 'rtl' : 'ltr'}
+                  className={`text-lg md:text-xl font-light transition-colors duration-300 ${
+                    isActive ? 'text-brand-accent dark:text-brand-accent-light' : 'text-black/50 dark:text-white/50'
+                  }`}
+                >
+                  {lang.wordmark}
+                </span>
+                <span className="font-work text-[9px] tracking-wide text-black/40 dark:text-white/30 mt-1 uppercase">
+                  {lang.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer bottom metadata */}
+      <div className="w-full border-t border-black/5 dark:border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p className="font-work text-[10px] tracking-wide text-black/45 dark:text-white/40 text-center md:text-left">
+          © {new Date().getFullYear()} UniinX. Styled with Scandinavian minimalism. Made for India &amp; the world.
+        </p>
+        <p className="font-marcellus text-xs tracking-[0.1em] text-black dark:text-white">
+          To this country &amp; its people
+        </p>
+      </div>
+    </Reveal>
   );
 }
 
-/**
- * @param {{
- *   menu: FooterQuery['menu'];
- *   primaryDomainUrl: FooterProps['header']['shop']['primaryDomain']['url'];
- *   publicStoreDomain: string;
- * }}
- */
-function FooterMenu({menu, primaryDomainUrl, publicStoreDomain}) {
-  return (
-    <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith('/');
-        return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
-          </a>
-        ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
-
-const FALLBACK_FOOTER_MENU = {
-  id: 'gid://shopify/Menu/199655620664',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461633060920',
-      resourceId: 'gid://shopify/ShopPolicy/23358046264',
-      tags: [],
-      title: 'Privacy Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/privacy-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633093688',
-      resourceId: 'gid://shopify/ShopPolicy/23358013496',
-      tags: [],
-      title: 'Refund Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/refund-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633126456',
-      resourceId: 'gid://shopify/ShopPolicy/23358111800',
-      tags: [],
-      title: 'Shipping Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/shipping-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633159224',
-      resourceId: 'gid://shopify/ShopPolicy/23358079032',
-      tags: [],
-      title: 'Terms of Service',
-      type: 'SHOP_POLICY',
-      url: '/policies/terms-of-service',
-      items: [],
-    },
-  ],
-};
-
-/**
- * @param {{
- *   isActive: boolean;
- *   isPending: boolean;
- * }}
- */
-function activeLinkStyle({isActive, isPending}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
-}
-
-/**
- * @typedef {Object} FooterProps
- * @property {Promise<FooterQuery|null>} footer
- * @property {HeaderQuery} header
- * @property {string} publicStoreDomain
- */
-
-/** @typedef {import('storefrontapi.generated').FooterQuery} FooterQuery */
-/** @typedef {import('storefrontapi.generated').HeaderQuery} HeaderQuery */
+export default Footer;

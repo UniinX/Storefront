@@ -1,0 +1,301 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/commerce/**",
+              "components/core/**",
+              "components/navigation/**",
+              "ui_kits/uniinx-storefront/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Marcellus|Work Sans|Noto Serif Devanagari|Noto Serif Tamil|Noto Serif Telugu|Noto Serif Kannada|Noto Serif Bengali|Noto Serif Gujarati|Noto Serif Gurmukhi|Noto Serif Oriya|Noto Nastaliq Urdu))/i]",
+        "message": "Font not provided by the design system. Available: Marcellus, Work Sans, Noto Serif Devanagari, Noto Serif Tamil, Noto Serif Telugu, Noto Serif Kannada, Noto Serif Bengali, Noto Serif Gujarati, Noto Serif Gurmukhi, Noto Serif Oriya, Noto Nastaliq Urdu."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='BottomSheet'] > JSXAttribute > JSXIdentifier[name!=/^(?:open|onClose|title|children|key|ref|className|style|children)$/]",
+        "message": "<BottomSheet> doesn't accept that prop. Declared props: open, onClose, title, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|tone|shape|font|style|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: children, tone, shape, font, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:dark|light|accent)$/]",
+        "message": "<Button> tone must be one of 'dark' | 'light' | 'accent'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='shape'] > Literal[value!=/^(?:pill|capsule)$/]",
+        "message": "<Button> shape must be one of 'pill' | 'capsule'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='font'] > Literal[value!=/^(?:marcellus)$/]",
+        "message": "<Button> font must be one of 'marcellus'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ClothTypeSelector'] > JSXAttribute > JSXIdentifier[name!=/^(?:garmentId|onGarmentChange|fabricId|onFabricChange|key|ref|className|style|children)$/]",
+        "message": "<ClothTypeSelector> doesn't accept that prop. Declared props: garmentId, onGarmentChange, fabricId, onFabricChange."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LanguageChipSelector'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|onChange|languages|size|key|ref|className|style|children)$/]",
+        "message": "<LanguageChipSelector> doesn't accept that prop. Declared props: value, onChange, languages, size."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LanguageChipSelector'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md)$/]",
+        "message": "<LanguageChipSelector> size must be one of 'sm' | 'md'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileTabBar'] > JSXAttribute > JSXIdentifier[name!=/^(?:active|onNavigate|cartCount|key|ref|className|style|children)$/]",
+        "message": "<MobileTabBar> doesn't accept that prop. Declared props: active, onNavigate, cartCount."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MobileTabBar'] > JSXAttribute[name.name='active'] > Literal[value!=/^(?:home|plp|cart)$/]",
+        "message": "<MobileTabBar> active must be one of 'home' | 'plp' | 'cart'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='NavLanguageSwitcher'] > JSXAttribute > JSXIdentifier[name!=/^(?:activeId|onSelect|wordmark|key|ref|className|style|children)$/]",
+        "message": "<NavLanguageSwitcher> doesn't accept that prop. Declared props: activeId, onSelect, wordmark."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ProductCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:image|label|price|width|height|onBuy|key|ref|className|style|children)$/]",
+        "message": "<ProductCard> doesn't accept that prop. Declared props: image, label, price, width, height, onBuy."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "BottomSheet": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "ClothTypeSelector": {
+        "replaces": []
+      },
+      "LanguageChipSelector": {
+        "replaces": []
+      },
+      "MobileTabBar": {
+        "replaces": []
+      },
+      "NavLanguageSwitcher": {
+        "replaces": []
+      },
+      "ProductCard": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent-cta",
+      "--accent-deep",
+      "--accent-festive",
+      "--accent-leaf",
+      "--accent-primary",
+      "--background-brand-default",
+      "--background-brand-secondary",
+      "--background-disabled-default",
+      "--border-disabled-default",
+      "--border-neutral-default",
+      "--bp-mobile",
+      "--brand-100",
+      "--brand-200",
+      "--brand-300",
+      "--brand-400",
+      "--brand-600",
+      "--brand-700",
+      "--brand-800",
+      "--font-bengali",
+      "--font-devanagari",
+      "--font-gujarati",
+      "--font-gurmukhi",
+      "--font-inter",
+      "--font-kannada",
+      "--font-marcellus",
+      "--font-oriya",
+      "--font-tamil",
+      "--font-telugu",
+      "--font-urdu",
+      "--font-work-sans",
+      "--graphite",
+      "--gray-500",
+      "--gray-900",
+      "--ink",
+      "--kalamkari-green-700",
+      "--kalamkari-maroon-900",
+      "--kalamkari-ochre-500",
+      "--kalamkari-red-600",
+      "--kalamkari-teal-600",
+      "--mist",
+      "--mobile-gutter",
+      "--mobile-nav-height",
+      "--motif-band-height",
+      "--paper",
+      "--paper-sand",
+      "--paper-soft",
+      "--paper-warm",
+      "--radius-full",
+      "--radius-lg",
+      "--radius-md",
+      "--radius-sm",
+      "--radius-xl",
+      "--shadow-hairline",
+      "--slate-100",
+      "--slate-900",
+      "--slate-mid",
+      "--space-2xl",
+      "--space-2xs",
+      "--space-lg",
+      "--space-md",
+      "--space-sm",
+      "--space-xl",
+      "--space-xs",
+      "--stone",
+      "--stroke-border",
+      "--text-default-default",
+      "--text-default-secondary",
+      "--uniinx-body-size",
+      "--uniinx-cta-size",
+      "--uniinx-display-size",
+      "--uniinx-eyebrow-size",
+      "--uniinx-h1-size",
+      "--uniinx-h2-size",
+      "--uniinx-price-size",
+      "--uniinx-tracking-tight",
+      "--uniinx-tracking-wide",
+      "--white-1000",
+      "--white-500"
+    ],
+    "tokenKinds": {
+      "--brand-100": "color",
+      "--brand-200": "color",
+      "--brand-300": "color",
+      "--brand-400": "color",
+      "--brand-600": "color",
+      "--brand-700": "color",
+      "--brand-800": "color",
+      "--slate-100": "color",
+      "--slate-900": "color",
+      "--gray-500": "color",
+      "--gray-900": "color",
+      "--white-1000": "color",
+      "--white-500": "color",
+      "--background-brand-default": "color",
+      "--background-brand-secondary": "color",
+      "--background-disabled-default": "color",
+      "--border-disabled-default": "color",
+      "--border-neutral-default": "color",
+      "--text-default-default": "font",
+      "--text-default-secondary": "font",
+      "--ink": "color",
+      "--paper": "color",
+      "--paper-soft": "color",
+      "--mist": "color",
+      "--stone": "color",
+      "--slate-mid": "color",
+      "--graphite": "color",
+      "--paper-warm": "color",
+      "--paper-sand": "color",
+      "--kalamkari-red-600": "color",
+      "--kalamkari-ochre-500": "color",
+      "--kalamkari-teal-600": "color",
+      "--kalamkari-green-700": "color",
+      "--kalamkari-maroon-900": "color",
+      "--accent-cta": "color",
+      "--accent-primary": "color",
+      "--accent-festive": "color",
+      "--accent-deep": "color",
+      "--accent-leaf": "color",
+      "--font-marcellus": "font",
+      "--font-work-sans": "font",
+      "--font-inter": "font",
+      "--font-devanagari": "font",
+      "--font-tamil": "font",
+      "--font-telugu": "font",
+      "--font-kannada": "font",
+      "--font-bengali": "font",
+      "--font-gujarati": "font",
+      "--font-gurmukhi": "font",
+      "--font-oriya": "font",
+      "--font-urdu": "font",
+      "--uniinx-display-size": "spacing",
+      "--uniinx-h1-size": "spacing",
+      "--uniinx-h2-size": "spacing",
+      "--uniinx-eyebrow-size": "spacing",
+      "--uniinx-body-size": "spacing",
+      "--uniinx-price-size": "spacing",
+      "--uniinx-cta-size": "spacing",
+      "--uniinx-tracking-tight": "font",
+      "--uniinx-tracking-wide": "font",
+      "--space-2xs": "spacing",
+      "--space-xs": "spacing",
+      "--space-sm": "spacing",
+      "--space-md": "spacing",
+      "--space-lg": "spacing",
+      "--space-xl": "spacing",
+      "--space-2xl": "spacing",
+      "--radius-sm": "radius",
+      "--radius-md": "radius",
+      "--radius-lg": "radius",
+      "--radius-xl": "radius",
+      "--radius-full": "radius",
+      "--stroke-border": "color",
+      "--bp-mobile": "spacing",
+      "--mobile-nav-height": "spacing",
+      "--mobile-gutter": "spacing",
+      "--shadow-hairline": "shadow",
+      "--motif-band-height": "spacing"
+    },
+    "fontFamilies": [
+      "Marcellus",
+      "Noto Nastaliq Urdu",
+      "Noto Serif Bengali",
+      "Noto Serif Devanagari",
+      "Noto Serif Gujarati",
+      "Noto Serif Gurmukhi",
+      "Noto Serif Kannada",
+      "Noto Serif Oriya",
+      "Noto Serif Tamil",
+      "Noto Serif Telugu",
+      "Work Sans"
+    ]
+  }
+}

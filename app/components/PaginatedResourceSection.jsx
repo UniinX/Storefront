@@ -10,6 +10,8 @@ export function PaginatedResourceSection({
   children,
   ariaLabel,
   resourcesClassName,
+  previousClassName,
+  nextClassName,
 }) {
   return (
     <Pagination connection={connection}>
@@ -20,7 +22,7 @@ export function PaginatedResourceSection({
 
         return (
           <div>
-            <PreviousLink>
+            <PreviousLink className={previousClassName}>
               {isLoading ? (
                 'Loading...'
               ) : (
@@ -40,7 +42,7 @@ export function PaginatedResourceSection({
             ) : (
               resourcesMarkup
             )}
-            <NextLink>
+            <NextLink className={nextClassName}>
               {isLoading ? (
                 'Loading...'
               ) : (

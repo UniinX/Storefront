@@ -11,8 +11,7 @@ import {
 } from 'react-router';
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
-import resetStyles from '~/styles/reset.css?url';
-import appStyles from '~/styles/app.css?url';
+import uniinxStyles from '~/styles/uniinx.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 
@@ -152,12 +151,11 @@ export function Layout({children}) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="stylesheet" href={tailwindCss}></link>
-        <link rel="stylesheet" href={resetStyles}></link>
-        <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={uniinxStyles}></link>
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="bg-brand-bg-light dark:bg-brand-bg-dark text-black dark:text-white transition-colors duration-200">
         {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />

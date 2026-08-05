@@ -22,6 +22,12 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    // Uniinx's brand typography (Marcellus, Work Sans, and the Indic display
+    // faces) loads from Google Fonts — without these, the stylesheet and
+    // font files are silently CSP-blocked and every page falls back to
+    // system fonts.
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
   });
 
   const body = await renderToReadableStream(
