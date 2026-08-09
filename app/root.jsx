@@ -14,6 +14,8 @@ import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import uniinxStyles from '~/styles/uniinx.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
+import {useLanguage} from '~/hooks/useLanguage.js';
+import {getLanguagePreference} from '~/hooks/useLanguage.js';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -81,11 +83,12 @@ export async function loader(args) {
     consent: {
       checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-      withPrivacyBanner: false,
+      withPrivacyBanner: true,
       // localize the privacy banner
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
+    languagePreference: getLanguagePreference(args.request),
   };
 }
 
@@ -144,9 +147,10 @@ function loadDeferredData({context}) {
  */
 export function Layout({children}) {
   const nonce = useNonce();
+  const data = useRouteLoaderData('root');
 
   return (
-    <html lang="en">
+    <html lang={HTML_LANGUAGE_CODES[data?.languagePreference] ?? 'en'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -155,7 +159,7 @@ export function Layout({children}) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-brand-bg-light dark:bg-brand-bg-dark text-black dark:text-white transition-colors duration-200">
+      <body className="bg-brand-bg-light text-black">
         {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
@@ -167,9 +171,10 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
+  const {language, changeLanguage} = useLanguage(data?.languagePreference ?? 'english');
 
   if (!data) {
-    return <Outlet />;
+    return <Outlet context={{language, changeLanguage}} />;
   }
 
   return (
@@ -178,12 +183,22 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
-      <PageLayout {...data}>
-        <Outlet />
+      <PageLayout
+        cart={data.cart}
+        language={language}
+        onLanguageChange={changeLanguage}
+        isLoggedIn={data.isLoggedIn}
+      >
+        <Outlet context={{language, changeLanguage}} />
       </PageLayout>
     </Analytics.Provider>
   );
 }
+
+const HTML_LANGUAGE_CODES = {
+  english: 'en', hindi: 'hi', tamil: 'ta', telugu: 'te', kannada: 'kn',
+  bengali: 'bn', marathi: 'mr', gujarati: 'gu', punjabi: 'pa', odia: 'or', urdu: 'ur',
+};
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -191,10 +206,12 @@ export function ErrorBoundary() {
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
     errorStatus = error.status;
+    errorMessage = errorStatus >= 500 && !import.meta.env.DEV
+      ? 'An unexpected error occurred.'
+      : error?.data?.message ?? error.data;
   } else if (error instanceof Error) {
-    errorMessage = error.message;
+    errorMessage = import.meta.env.DEV ? error.message : 'An unexpected error occurred.';
   }
 
   return (

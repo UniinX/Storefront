@@ -34,7 +34,7 @@ const STEPS = [
   { text: "ਯੂਨਿੰਕਸ", font: '"Noto Serif Gurmukhi", serif' },
   { text: "ଉନିଙ୍କ୍ସ", font: '"Noto Serif Oriya", serif' },
   { text: "یونینکس", font: '"Noto Nastaliq Urdu", serif', rtl: true },
-  { text: "UNIINX", font: '"Marcellus", serif', final: true },
+  { text: "UNIINX", font: '"Anton", sans-serif', final: true },
 ];
 
 const STEP_DUR = 0.62;
@@ -122,7 +122,7 @@ function LogoAnimationScene() {
           left: 0,
           right: 0,
           textAlign: "center",
-          fontFamily: '"Work Sans", sans-serif',
+          fontFamily: '"Stack Sans Text", sans-serif',
           fontSize: 15,
           letterSpacing: "0.18em",
           textTransform: "uppercase",

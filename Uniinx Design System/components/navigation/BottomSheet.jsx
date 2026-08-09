@@ -28,13 +28,13 @@ export function BottomSheet({ open, onClose, title, children }) {
           width: "100%",
           maxHeight: "78vh",
           overflowY: "auto",
-          borderRadius: "20px 20px 0 0",
+          borderRadius: "0px",
           padding: "12px 24px 32px",
           boxShadow: "0 -8px 32px rgba(0,0,0,0.18)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: "var(--mist)" }} />
+          <div style={{ width: 36, height: 4, borderRadius: 0, background: "var(--mist)" }} />
         </div>
         {title && (
           <div

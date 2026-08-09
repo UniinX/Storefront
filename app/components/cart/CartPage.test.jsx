@@ -23,4 +23,13 @@ describe('CartPage', () => {
     expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
     expect(screen.getByText('Shop New Arrivals →')).toBeInTheDocument();
   });
+
+  it('shows mutation errors even when the cart is empty', () => {
+    render(
+      <MemoryRouter>
+        <CartPage cart={null} mutationMessages={[{code: 'SOLD_OUT', message: 'This item sold out.'}]} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('This item sold out.');
+  });
 });

@@ -20,6 +20,7 @@ export async function loader({params, context}) {
   );
 
   const data = await context.storefront.query(POLICY_CONTENT_QUERY, {
+    cache: context.storefront.CacheLong(),
     variables: {
       privacyPolicy: false,
       shippingPolicy: false,

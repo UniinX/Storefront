@@ -7,15 +7,34 @@ export const ORDER_ITEM_FRAGMENT = `#graphql
     }
     financialStatus
     fulfillmentStatus
-    fulfillments(first: 1) {
+    fulfillments(first: 10) {
       nodes {
         status
+        trackingInformation {
+          number
+          url
+          company
+        }
       }
     }
     id
     number
     confirmationNumber
     processedAt
+    lineItems(first: 10) {
+      nodes {
+        id
+        title
+        quantity
+        variantTitle
+        image {
+          url
+          altText
+          width
+          height
+        }
+      }
+    }
   }
 `;
 

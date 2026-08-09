@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence, useReducedMotion} from 'framer-motion';
 
 const REGIONS = [
   {
@@ -42,20 +42,20 @@ const REGIONS = [
   },
 ];
 
-export function BrandStory() {
+export function BrandStory({language = 'english'}) {
   const [activeRegion, setActiveRegion] = useState(REGIONS[0]);
   const [scriptIndex, setScriptIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
 
+  // Restart the script cycle from the top whenever the region changes.
   useEffect(() => {
     setScriptIndex(0);
-  }, [activeRegion]);
-
-  useEffect(() => {
+    if (reduceMotion) return undefined;
     const timer = setInterval(() => {
       setScriptIndex((prev) => (prev + 1) % activeRegion.scripts.length);
     }, 1800);
     return () => clearInterval(timer);
-  }, [activeRegion]);
+  }, [activeRegion, reduceMotion]);
 
   const activeScript = activeRegion.scripts[scriptIndex % activeRegion.scripts.length];
 
@@ -72,12 +72,12 @@ export function BrandStory() {
 
             {/* Connecting lines from center to active region */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <svg className="w-full h-full transform -rotate-90">
+              <svg className="w-full h-full">
                 <line
                   x1="50%"
                   y1="50%"
-                  x2={`${50 + 40 * Math.cos((activeRegion.angle * Math.PI) / 180)}%`}
-                  y2={`${50 + 40 * Math.sin((activeRegion.angle * Math.PI) / 180)}%`}
+                  x2={`${Math.round(50 + 40 * Math.cos((activeRegion.angle * Math.PI) / 180))}%`}
+                  y2={`${Math.round(50 + 40 * Math.sin((activeRegion.angle * Math.PI) / 180))}%`}
                   className="stroke-brand-accent dark:stroke-brand-accent-light stroke-[1.5]"
                   style={{transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'}}
                 />
@@ -96,7 +96,7 @@ export function BrandStory() {
                     initial={{opacity: 0, y: 10}}
                     animate={{opacity: 1, y: 0}}
                     exit={{opacity: 0, y: -10}}
-                    transition={{duration: 0.3}}
+                    transition={{duration: reduceMotion ? 0 : 0.3}}
                     style={{fontFamily: activeScript.font}}
                     dir={activeScript.rtl ? 'rtl' : 'ltr'}
                     className="text-black dark:text-white text-sm font-light"
@@ -167,8 +167,16 @@ export function BrandStory() {
 
           {/* Clean minimal quotes */}
           <div className="border-l-[2px] border-brand-accent dark:border-brand-accent-light pl-6 py-1">
-            <span className="font-marcellus text-lg text-black dark:text-white italic block mb-1">
-              "For Every Language, For Every State, For India."
+            <span
+              style={{
+                fontFamily: language === 'tamil' ? 'var(--font-tamil)' : 'var(--font-marcellus)',
+                fontSize: language === 'tamil' ? '18px' : 'inherit',
+              }}
+              className="text-black dark:text-white italic block mb-1"
+            >
+              {language === 'tamil'
+                ? '"ஒவ்வொரு மொழிக்கும், ஒவ்வொரு மாநிலத்திற்கும், இந்தியாவுக்கு."'
+                : '"For Every Language, For Every State, For India."'}
             </span>
             <span className="font-work text-[10px] text-black/40 dark:text-white/40 tracking-wider uppercase">
               The UniinX Philosophy

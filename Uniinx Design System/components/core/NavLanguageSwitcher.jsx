@@ -10,7 +10,7 @@ import { LANGUAGES, FontVar } from "../commerce/LanguageChipSelector.jsx";
  * sets the active site language, echoed by the small wordmark caption
  * under the mark.
  */
-export function NavLanguageSwitcher({ activeId, onSelect, wordmark = "UNIINX" }) {
+export function NavLanguageSwitcher({ activeId, onSelect, wordmark = "UNIINX", children }) {
   const [open, setOpen] = React.useState(false);
   const active = LANGUAGES.find((l) => l.id === activeId) || LANGUAGES[LANGUAGES.length - 1];
   return (
@@ -19,36 +19,40 @@ export function NavLanguageSwitcher({ activeId, onSelect, wordmark = "UNIINX" })
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-label="Choose language"
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: "13px 0",
-          minHeight: 44,
-          display: "flex",
-          alignItems: "center",
-          textAlign: "left",
-          fontFamily: "var(--font-work-sans)",
-          color: "var(--ink)",
-        }}
-      >
-        <div
-          key={active.id}
+      {children ? (
+        children
+      ) : (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label="Choose language"
           style={{
-            fontSize: 17,
-            fontFamily: FontVar(active.font),
-            letterSpacing: "var(--uniinx-tracking-tight)",
-            animation: "uniinx-menu-in 0.25s cubic-bezier(.16,.84,.32,1) both",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "13px 0",
+            minHeight: 44,
+            display: "flex",
+            alignItems: "center",
+            textAlign: "left",
+            fontFamily: "var(--font-work-sans)",
+            color: "var(--ink)",
           }}
-          dir={active.rtl ? "rtl" : "ltr"}
         >
-          {active.wordmark}
-        </div>
-      </button>
+          <div
+            key={active.id}
+            style={{
+              fontSize: 17,
+              fontFamily: FontVar(active.font),
+              letterSpacing: "var(--uniinx-tracking-tight)",
+              animation: "uniinx-menu-in 0.25s cubic-bezier(.16,.84,.32,1) both",
+            }}
+            dir={active.rtl ? "rtl" : "ltr"}
+          >
+            {active.wordmark}
+          </div>
+        </button>
+      )}
       {open && (
         <div
           role="menu"

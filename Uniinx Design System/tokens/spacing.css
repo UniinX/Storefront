@@ -13,11 +13,11 @@
   --space-xl: 55px;       /* storefront left margin */
   --space-2xl: 75px;      /* mission-band side inset */
 
-  --radius-sm: 9px;        /* product photo corner (Rectangle 12) */
-  --radius-md: 17px;       /* pill buttons */
-  --radius-lg: 23px;       /* mission band */
-  --radius-xl: 41px;       /* footer band */
-  --radius-full: 9999px;   /* pill buttons */
+  --radius-sm: 0px;        /* product photo corner (Rectangle 12) */
+  --radius-md: 0px;       /* pill buttons */
+  --radius-lg: 0px;       /* mission band */
+  --radius-xl: 0px;       /* footer band */
+  --radius-full: 0px;   /* pill buttons */
 
   --stroke-border: 1px;
 

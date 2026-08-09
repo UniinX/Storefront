@@ -18,6 +18,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './vitest.setup.js',
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.react-router/**', '**/.next/**', '**/.git/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

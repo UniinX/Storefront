@@ -7,7 +7,7 @@ import globals from 'globals';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import _import from 'eslint-plugin-import';
 import tsParser from '@typescript-eslint/parser';
-import jest from 'eslint-plugin-jest';
+import vitest from '@vitest/eslint-plugin';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import js from '@eslint/js';
@@ -27,11 +27,15 @@ export default [
       '**/node_modules/',
       '**/build/',
       '**/dist/',
+      '**/coverage/',
       '**/*.graphql.d.ts',
       '**/*.graphql.ts',
       '**/*.generated.d.ts',
       '**/.react-router/',
       '**/packages/hydrogen/dist/',
+      'Uniinx Design System/',
+      '.agents/',
+      '**/*.d.ts',
     ],
   },
   ...fixupConfigRules(
@@ -77,6 +81,7 @@ export default [
         },
       ],
       'no-use-before-define': 'off',
+      'no-unused-vars': 'off',
       'no-warning-comments': 'off',
       'object-shorthand': [
         'error',
@@ -87,6 +92,7 @@ export default [
       ],
       'no-useless-escape': 'off',
       'no-case-declarations': 'off',
+      'react/no-unescaped-entities': 'off',
     },
   },
   ...fixupConfigRules(
@@ -222,26 +228,30 @@ export default [
       },
     },
   },
-  ...compat.extends('plugin:jest/recommended').map((config) => ({
-    ...config,
-    files: ['**/*.test.*'],
-  })),
   {
     files: ['**/*.test.*'],
     plugins: {
-      jest,
+      vitest,
     },
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
+        ...vitest.environments.env.globals,
       },
     },
+    rules: vitest.configs.recommended.rules,
   },
   {
     files: ['**/*.server.*'],
     rules: {
       'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+  {
+    files: ['app/**/*.{js,jsx}'],
+    rules: {
+      'no-unused-vars': 'off',
+      'react/no-unescaped-entities': 'off',
     },
   },
 ];

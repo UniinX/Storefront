@@ -8,6 +8,7 @@ import {Await} from 'react-router';
 import {useOptimisticCart} from '@shopify/hydrogen';
 import {NavLanguageSwitcher} from '~/components/ds/index.js';
 import {MobileMenu} from './MobileMenu.jsx';
+import {LocalizedLogo} from './LocalizedLogo.jsx';
 
 const NAV = [
   {to: '/', label: 'Home'},
@@ -28,7 +29,7 @@ const pillStyle = {
   maxWidth: 900, width: 'calc(100% - 48px)',
 };
 
-export function Header({cart, language, onLanguageChange, theme, onToggleTheme}) {
+export function Header({cart, language, onLanguageChange, isLoggedIn, onSignIn}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const {pathname} = useLocation();
@@ -70,7 +71,17 @@ export function Header({cart, language, onLanguageChange, theme, onToggleTheme})
       <header style={pillStyle}>
         {/* Left — wordmark / language switcher */}
         <div style={{flex: '0 0 auto'}}>
-          <NavLanguageSwitcher activeId={language} onSelect={onLanguageChange} />
+          <NavLanguageSwitcher activeId={language} onSelect={onLanguageChange}>
+            <Link to="/" style={{display: 'flex', alignItems: 'center'}}>
+              <LocalizedLogo
+                language={language}
+                style={{
+                  height: 22,
+                  width: 'auto',
+                }}
+              />
+            </Link>
+          </NavLanguageSwitcher>
         </div>
         {/* Centre — page links */}
         <nav className="uniinx-hide-mobile" style={{flex: 1, display: 'flex', gap: 28, justifyContent: 'center'}}>
@@ -81,35 +92,19 @@ export function Header({cart, language, onLanguageChange, theme, onToggleTheme})
             </Link>
           ))}
         </nav>
-        {/* Right — theme + cart */}
+        {/* Right — account + cart */}
         <div style={{flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 14}}>
-          <button
-            id="theme-toggle"
-            onClick={onToggleTheme}
-            aria-label="Toggle theme"
-            style={{background: 'none', border: 'none', cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          >
-            {theme === 'dark' ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          <Suspense fallback={<SignedOutAccount pathname={pathname} onSignIn={onSignIn} />}>
+            <Await resolve={isLoggedIn}>
+              {(loggedIn) => loggedIn ? (
+            <Link to="/account" aria-label="Account dashboard" style={{display: 'flex', alignItems: 'center', minHeight: 44}}>
+              <svg className="uniinx-hide-mobile" style={{cursor: 'pointer', display: 'block'}} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round">
+                <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
               </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            )}
-          </button>
-          <svg className="uniinx-hide-mobile" style={{cursor: 'pointer', display: 'block'}} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round">
-            <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-          </svg>
+            </Link>
+              ) : <SignedOutAccount pathname={pathname} onSignIn={onSignIn} />}
+            </Await>
+          </Suspense>
           <Link className="uniinx-hide-mobile" to="/cart" style={{cursor: 'pointer', fontSize: 13, color: 'var(--ink)', display: 'inline-flex', alignItems: 'center', minHeight: 44}}>
             Cart{' '}
             <Suspense fallback="→">
@@ -126,6 +121,25 @@ export function Header({cart, language, onLanguageChange, theme, onToggleTheme})
         {menuOpen && <MobileMenu items={NAV} pathname={pathname} onClose={() => setMenuOpen(false)} />}
       </header>
     </div>
+  );
+}
+
+function SignedOutAccount({pathname, onSignIn}) {
+  return (
+    <Link
+      to={`/account/login?return_to=${encodeURIComponent(pathname)}`}
+      onClick={(event) => {
+        if (!onSignIn) return;
+        event.preventDefault();
+        onSignIn(pathname);
+      }}
+      aria-label="Sign in"
+      style={{background: 'none', border: 'none', cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+    >
+      <svg className="uniinx-hide-mobile" style={{cursor: 'pointer', display: 'block'}} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round">
+        <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+      </svg>
+    </Link>
   );
 }
 

@@ -1,10 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Work+Sans:wght@400;500&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Serif+Tamil:wght@400;600&family=Noto+Serif+Telugu:wght@400;600&family=Noto+Serif+Kannada:wght@400;600&family=Noto+Serif+Bengali:wght@400;600&family=Noto+Serif+Gujarati:wght@400;600&family=Noto+Serif+Gurmukhi:wght@400;600&family=Noto+Serif+Oriya:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Stack+Sans+Text:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Serif+Tamil:wght@400;600&family=Noto+Serif+Telugu:wght@400;600&family=Noto+Serif+Kannada:wght@400;600&family=Noto+Serif+Bengali:wght@400;600&family=Noto+Serif+Gujarati:wght@400;600&family=Noto+Serif+Gurmukhi:wght@400;600&family=Noto+Serif+Oriya:wght@400;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap');
+
 
 @import '../../Uniinx Design System/styles.css';
 
 body { margin: 0; background: var(--paper); }
 ::selection { background: var(--ink); color: var(--paper); }
-* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; border-radius: 0px !important; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -16,8 +17,9 @@ body { margin: 0; background: var(--paper); }
 @media (min-width: 721px) { .uniinx-hide-desktop { display: none !important; } }
 
 /* Product grid */
-.uniinx-product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 24px; }
-.uniinx-product-grid > * { min-width: 0; }
+.uniinx-product-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.uniinx-product-grid > * { min-width: 0; max-width: 100%; overflow: hidden; }
+@media (min-width: 520px) { .uniinx-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 640px) { .uniinx-product-grid { gap: 24px 28px; } }
 @media (min-width: 900px) { .uniinx-product-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1200px) { .uniinx-product-grid { grid-template-columns: repeat(4, 1fr); gap: 28px 32px; } }
@@ -91,4 +93,12 @@ body { margin: 0; background: var(--paper); }
   50% { transform: translate(var(--dx, 16px), var(--dy, -16px)) scale(var(--ds, 1.04)); }
 }
 .uniinx-hero-glyph { animation: uniinx-hero-glyph-drift 24s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .uniinx-hero-glyph { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .uniinx-hero-glyph,
+  .uniinx-sticky-buy,
+  .uniinx-sheet-scrim,
+  .uniinx-sheet-panel,
+  .uniinx-lang-menu { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .uniinx-chip { transition: none; }
+}

@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion, AnimatePresence, useReducedMotion} from 'framer-motion';
 import {useNavigate} from 'react-router';
 import {Button} from '~/components/ds/index.js';
 
@@ -27,16 +27,18 @@ const BACKGROUND_GLYPHS = [
   {char: 'ا', font: 'var(--font-urdu)', bottom: '15%', right: '32%', size: 'clamp(200px, 30vw, 380px)', dx: '12px', dy: '16px', ds: 1.06, duration: '23s', delay: '-6s'},
 ];
 
-export function Hero() {
+export function Hero({language = 'english'}) {
   const [index, setIndex] = useState(0);
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reduceMotion) return undefined;
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % CYCLES.length);
     }, 1800);
     return () => clearInterval(timer);
-  }, []);
+  }, [reduceMotion]);
 
   const activeCycle = CYCLES[index];
 
@@ -45,9 +47,9 @@ export function Hero() {
 
       {/* Background script glyph textures (editorial watermarks) */}
       <div className="absolute inset-0 select-none pointer-events-none overflow-hidden z-0">
-        {BACKGROUND_GLYPHS.map((glyph, idx) => (
+        {BACKGROUND_GLYPHS.map((glyph) => (
           <span
-            key={idx}
+            key={`${glyph.char}-${glyph.top ?? glyph.bottom}-${glyph.left ?? glyph.right}`}
             style={{
               position: 'absolute',
               top: glyph.top,
@@ -76,9 +78,15 @@ export function Hero() {
           initial={{opacity: 0, y: 15}}
           animate={{opacity: 0.7, y: 0}}
           transition={{duration: 0.6, ease: [0.16, 1, 0.3, 1]}}
-          className="font-work text-xs tracking-[0.2em] text-black dark:text-white uppercase mb-8"
+          style={{
+            fontFamily: language === 'tamil' ? 'var(--font-tamil)' : 'var(--font-work-sans)',
+            fontSize: language === 'tamil' ? '14px' : '12px',
+          }}
+          className="font-work tracking-[0.2em] text-black dark:text-white uppercase mb-8"
         >
-          For every language · For every state · For every one
+          {language === 'tamil'
+            ? 'ஒவ்வொரு மொழிக்கும் · ஒவ்வொரு மாநிலத்திற்கும் · ஒவ்வொருவருக்கும்'
+            : 'For every language · For every state · For every one'}
         </motion.p>
 
         <h1 className="font-marcellus text-[clamp(44px,8vw,96px)] leading-[1.05] tracking-tight text-black dark:text-white m-0 min-h-[2.5em] flex flex-col items-center justify-center">
@@ -90,7 +98,7 @@ export function Hero() {
                 initial={{y: 30, opacity: 0}}
                 animate={{y: 0, opacity: 1}}
                 exit={{y: -30, opacity: 0}}
-                transition={{duration: 0.35, ease: [0.16, 1, 0.3, 1]}}
+                transition={{duration: reduceMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1]}}
                 style={{fontFamily: activeCycle.font}}
                 dir={activeCycle.rtl ? 'rtl' : 'ltr'}
                 className="absolute text-brand-accent dark:text-brand-accent-light block font-medium"
@@ -110,7 +118,7 @@ export function Hero() {
           <Button
             tone="accent"
             shape="pill"
-            onClick={() => navigate('/collections/men')}
+            onClick={() => navigate('/collections/all')}
             id="hero-shop-cta"
             className="hover:opacity-95 transition-opacity"
             style={{
@@ -132,7 +140,7 @@ export function Hero() {
         </span>
         <div className="w-[1px] h-12 bg-black/25 dark:bg-white/20 mx-auto mt-2 relative overflow-hidden">
           <motion.div
-            animate={{y: ['-100%', '100%']}}
+            animate={reduceMotion ? undefined : {y: ['-100%', '100%']}}
             transition={{duration: 2, repeat: Infinity, ease: 'easeInOut'}}
             className="absolute top-0 left-0 w-full h-1/2 bg-brand-accent dark:bg-brand-accent-light"
           />

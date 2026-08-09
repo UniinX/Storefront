@@ -1,4 +1,4 @@
-import {useLoaderData, data} from 'react-router';
+import {useFetchers, useLoaderData, data} from 'react-router';
 import {CartForm} from '@shopify/hydrogen';
 import {CartPage} from '~/components/cart/CartPage.jsx';
 
@@ -12,7 +12,11 @@ export const meta = () => {
 /**
  * @type {HeadersFunction}
  */
-export const headers = ({actionHeaders}) => actionHeaders;
+export const headers = ({actionHeaders, loaderHeaders}) => {
+  const headers = new Headers(loaderHeaders);
+  actionHeaders.forEach((value, key) => headers.set(key, value));
+  return headers;
+};
 
 /**
  * @param {Route.ActionArgs}
@@ -48,7 +52,7 @@ export async function action({request, context}) {
       const discountCodes = formDiscountCode ? [formDiscountCode] : [];
 
       // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
+      discountCodes.push(...(inputs.discountCodes ?? []));
 
       result = await cart.updateDiscountCodes(discountCodes);
       break;
@@ -81,7 +85,11 @@ export async function action({request, context}) {
   const {cart: cartResult, errors, warnings} = result;
 
   const redirectTo = formData.get('redirectTo') ?? null;
-  if (typeof redirectTo === 'string') {
+  if (
+    typeof redirectTo === 'string' &&
+    redirectTo.startsWith('/') &&
+    !redirectTo.startsWith('//')
+  ) {
     status = 303;
     headers.set('Location', redirectTo);
   }
@@ -103,15 +111,24 @@ export async function action({request, context}) {
  * @param {Route.LoaderArgs}
  */
 export async function loader({context}) {
-  const {cart} = context;
-  return await cart.get();
+  const {cart, env} = context;
+  return data({
+    cart: await cart.get(),
+    testMode: env.SHOPIFY_TEST_MODE === 'true',
+  }, {
+    headers: {'Cache-Control': 'private, no-store'},
+  });
 }
 
 export default function Cart() {
   /** @type {LoaderReturnData} */
-  const cart = useLoaderData();
+  const {cart, testMode} = useLoaderData();
+  const mutationMessages = useFetchers().flatMap((fetcher) => [
+    ...(fetcher.data?.errors ?? []),
+    ...(fetcher.data?.warnings ?? []),
+  ]);
 
-  return <CartPage cart={cart} />;
+  return <CartPage cart={cart} mutationMessages={mutationMessages} testMode={testMode} />;
 }
 
 /** @typedef {import('react-router').HeadersFunction} HeadersFunction */

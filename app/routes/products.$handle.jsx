@@ -1,40 +1,61 @@
-/**
- * @file Product detail page — composes ProductImage, ProductInfo, MobileBuyBar
- * around real Shopify product/variant data.
- */
-import {useState} from 'react';
-import {useLoaderData, useNavigate} from 'react-router';
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, useLoaderData, useNavigate} from 'react-router';
 import {
+  CacheShort,
   getSelectedProductOptions,
   Analytics,
   useOptimisticVariant,
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
+  Image,
+  getSeoMeta,
 } from '@shopify/hydrogen';
 import {Reveal} from '~/components/motion/Reveal.jsx';
 import {LANGUAGES} from '~/components/ds/index.js';
-import {ProductImage} from '~/components/product/ProductImage.jsx';
-import {ProductInfo} from '~/components/product/ProductInfo.jsx';
-import {MobileBuyBar} from '~/components/product/MobileBuyBar.jsx';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {Configurator} from '~/components/product/Configurator';
+import {MobileBuyBar} from '~/components/product/MobileBuyBar';
+import {ProductGrid} from '~/components/home/ProductGrid.jsx';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [
-    {title: `UniinX | ${data?.product.title ?? ''}`},
-    {rel: 'canonical', href: `/products/${data?.product.handle}`},
-  ];
+  const product = data?.product;
+  const variant = product?.selectedOrFirstAvailableVariant;
+  return getSeoMeta({
+    title: product?.seo?.title || product?.title,
+    description: product?.seo?.description || product?.description,
+    url: product ? `/products/${product.handle}` : undefined,
+    jsonLd:
+      product && variant
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: product.description,
+            image: product.media?.nodes
+              ?.map((media) => media.image?.url)
+              .filter(Boolean),
+            offers: {
+              '@type': 'Offer',
+              price: variant.price.amount,
+              priceCurrency: variant.price.currencyCode,
+              availability: variant.availableForSale
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            },
+          }
+        : undefined,
+  });
 };
 
 /**
  * @param {Route.LoaderArgs} args
  */
 export async function loader(args) {
-  const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+  const deferredData = loadDeferredData(args, criticalData.product.id);
   return {...deferredData, ...criticalData};
 }
 
@@ -51,6 +72,7 @@ async function loadCriticalData({context, params, request}) {
 
   const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
+      cache: CacheShort(),
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
   ]);
@@ -59,56 +81,258 @@ async function loadCriticalData({context, params, request}) {
     throw new Response(null, {status: 404});
   }
 
-  redirectIfHandleIsLocalized(request, {handle, data: product});
-
   return {product};
 }
 
-function loadDeferredData() {
-  return {};
+function loadDeferredData({context}, productId) {
+  const recommendedProducts = context.storefront
+    .query(PRODUCT_RECOMMENDATIONS_QUERY, {
+      cache: CacheShort(),
+      variables: {productId},
+    })
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  return {recommendedProducts};
 }
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product} = useLoaderData();
+  const {product, recommendedProducts} = useLoaderData();
   const navigate = useNavigate();
-  const [languageId, setLanguageId] = useState(LANGUAGES[0].id);
-  const language = LANGUAGES.find((l) => l.id === languageId);
 
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
     getAdjacentAndFirstAvailableVariants(product),
   );
 
-  useSelectedOptionInUrlParam(selectedVariant.selectedOptions);
+  useSelectedOptionInUrlParam(selectedVariant?.selectedOptions ?? []);
 
   const productOptions = getProductOptions({
     ...product,
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
+  // Extract language configurations
+  const currentMetafields = {};
+  for (const mf of product.metafields ?? []) {
+    if (mf) currentMetafields[mf.key] = mf.value;
+  }
+  const currentLangName = currentMetafields['language'] || 'English';
+  const matchedLangDs =
+    LANGUAGES.find(
+      (l) => l.label.toLowerCase() === currentLangName.toLowerCase(),
+    ) || LANGUAGES[0];
+
+  const activeLanguage = matchedLangDs;
+
+  // Media preview gallery states
+  const mediaNodes = product.media?.nodes ?? [];
+  const imagesList = mediaNodes
+    .filter((m) => m.__typename === 'MediaImage')
+    .map((m) => m.image)
+    .filter(Boolean);
+
+  // If no product images exist, fallback to variant image
+  if (imagesList.length === 0 && selectedVariant?.image) {
+    imagesList.push(selectedVariant.image);
+  }
+
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const fullscreenCloseRef = useRef(null);
+  const fullscreenTriggerRef = useRef(null);
+
+  useEffect(() => {
+    setActiveImageIdx(0);
+  }, [selectedVariant?.id]);
+
+  useEffect(() => {
+    if (!fullscreen) return undefined;
+
+    const fullscreenTrigger = fullscreenTriggerRef.current;
+    fullscreenCloseRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      fullscreenTrigger?.focus();
+    };
+  }, [fullscreen]);
+
+  const activeImage = imagesList[activeImageIdx];
+
+  const familyProducts =
+    product.productFamily?.reference?.products?.references?.nodes?.filter(
+      (candidate) => candidate.id !== product.id,
+    ) ?? [];
+
   return (
-    <section style={{padding: '48px var(--space-xl) 140px'}}>
-      <button onClick={() => navigate(-1)}
-        style={{background: 'none', border: 'none', cursor: 'pointer', padding: '13px 0', minHeight: 44, display: 'flex', alignItems: 'center', marginBottom: 20, fontFamily: 'var(--font-work-sans)', fontSize: 'var(--uniinx-cta-size)', letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)'}}>
-        ← Back
+    <>
+    <section className="px-5 sm:px-8 md:px-14 pt-24 pb-12 md:pt-28 md:pb-16 max-w-7xl mx-auto text-black">
+      {/* Back CTA */}
+      <button
+        onClick={() => navigate('/collections/all')}
+        className="font-work text-[10px] tracking-wider uppercase text-black/50 hover:text-black dark:text-white/40 dark:hover:text-white mb-6 flex items-center gap-1 transition-all cursor-pointer"
+      >
+        ← Back to catalog
       </button>
-      <div className="uniinx-pdp-layout">
-        <Reveal>
-          <ProductImage image={selectedVariant?.image} language={language} />
-        </Reveal>
-        <Reveal delay={90}>
-          <ProductInfo
-            product={product}
-            selectedVariant={selectedVariant}
-            productOptions={productOptions}
-            languageId={languageId}
-            setLanguageId={setLanguageId}
-            activeLanguage={language}
-          />
-        </Reveal>
+
+      {/* 2D Split Layout Configurator */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] gap-8 xl:gap-14 items-start">
+        {/* Left 2D Preview Pane (70% width) */}
+        <div className="flex flex-col gap-4 w-full min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)] rounded-[32px] overflow-hidden bg-[#f3eee5] border border-black/[0.06] flex items-center justify-center shadow-[0_30px_90px_-58px_rgba(46,28,18,0.5)]">
+            {activeImage ? (
+              <Image
+                data={activeImage}
+                alt={activeImage.altText || product.title}
+                aspectRatio="4/5"
+                sizes="(min-width: 45em) 720px, 100vw"
+                className={`w-full h-full object-cover lg:object-contain transition-transform duration-500 ease-out ${
+                  zoomed
+                    ? 'scale-[1.18] cursor-zoom-out'
+                    : 'scale-100 cursor-zoom-in'
+                }`}
+                onClick={() => setZoomed(!zoomed)}
+              />
+            ) : (
+              <div className="uniinx-fabric w-full h-full flex items-center justify-center">
+                <span className="font-work text-xs opacity-40">
+                  Garment Preview Template
+                </span>
+              </div>
+            )}
+
+            {/* Floating Zoom & View Controls */}
+            <div className="absolute bottom-6 right-6 flex items-center gap-2 z-30">
+              <button
+                type="button"
+                onClick={() => setZoomed(!zoomed)}
+                className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                title={zoomed ? 'Zoom Out' : 'Zoom In'}
+              >
+                🔍
+              </button>
+              <button
+                ref={fullscreenTriggerRef}
+                type="button"
+                onClick={() => setFullscreen(true)}
+                className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                title="Fullscreen Preview"
+              >
+                ⛶
+              </button>
+            </div>
+
+            {/* Front / Back selection buttons */}
+            {imagesList.length > 1 && (
+              <div className="absolute bottom-6 left-6 flex items-center gap-1.5 z-30 bg-white/90 dark:bg-black/90 p-1.5 rounded-full border border-black/5 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setActiveImageIdx(0)}
+                  className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                    activeImageIdx === 0
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                      : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  Front
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveImageIdx(1)}
+                  className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                    activeImageIdx === 1
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                      : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  Back
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Swipeable Thumbnails Row */}
+          {imagesList.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto py-1 scrollbar-none">
+              {imagesList.map((img, idx) => (
+                <button
+                  key={img.id || idx}
+                  type="button"
+                  onClick={() => setActiveImageIdx(idx)}
+                  className={`w-16 h-16 rounded-xl overflow-hidden border flex-shrink-0 relative transition-all cursor-pointer ${
+                    activeImageIdx === idx
+                      ? 'border-brand-accent dark:border-brand-accent-light scale-[1.02] shadow-sm'
+                      : 'border-black/10 dark:border-white/10 hover:border-black/25'
+                  }`}
+                >
+                  <Image
+                    data={img}
+                    alt={`Preview thumb ${idx}`}
+                    className="w-full h-full object-cover"
+                    sizes="64px"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Configuration Panel (30% width) */}
+        <div className="w-full min-w-0">
+          <Reveal delay={120}>
+            <Configurator
+              product={product}
+              selectedVariant={selectedVariant}
+              productOptions={productOptions}
+            />
+          </Reveal>
+        </div>
       </div>
-      <MobileBuyBar selectedVariant={selectedVariant} language={language} />
+
+      {/* Fullscreen Modal Overlay */}
+      {fullscreen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.title} fullscreen preview`}
+          className="fixed inset-0 bg-black/95 dark:bg-black/98 z-50 flex items-center justify-center p-6 animate-fade-in text-white"
+        >
+          <button
+            ref={fullscreenCloseRef}
+            type="button"
+            onClick={() => setFullscreen(false)}
+            aria-label="Close fullscreen preview"
+            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/15 cursor-pointer transition-all text-lg font-mono font-light"
+          >
+            ✕
+          </button>
+
+          <div className="relative max-w-2xl max-h-[85vh] aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-900 flex items-center justify-center">
+            {activeImage && (
+              <Image
+                data={activeImage}
+                alt={activeImage.altText || product.title}
+                className="w-full h-full object-cover"
+                sizes="(min-width: 45em) 1024px, 100vw"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Analytics integration */}
       <Analytics.ProductView
         data={{
           products: [
@@ -124,7 +348,40 @@ export default function Product() {
           ],
         }}
       />
+      <MobileBuyBar
+        selectedVariant={selectedVariant}
+        language={activeLanguage}
+        productOptions={productOptions}
+        hasProductFamily={Boolean(product.productFamily?.reference)}
+      />
     </section>
+
+      <Suspense fallback={null}>
+        <Await resolve={recommendedProducts}>
+          {(response) => {
+            const recommendations =
+              response?.productRecommendations?.filter(
+                (candidate) => candidate.id !== product.id,
+              ) ?? [];
+            const products = recommendations.length
+              ? recommendations
+              : familyProducts;
+
+            return (
+              <ProductGrid
+                title="MORE LIKE THIS"
+                eyebrow="Continue exploring"
+                products={products}
+                maxProducts={8}
+                ariaLabel="More like this"
+                ctaHref="/collections/all"
+                ctaLabel="Explore all"
+              />
+            );
+          }}
+        </Await>
+      </Suspense>
+    </>
   );
 }
 
@@ -171,10 +428,18 @@ const PRODUCT_FRAGMENT = `#graphql
     title
     vendor
     handle
+    productType
     descriptionHtml
     description
     encodedVariantExistence
     encodedVariantAvailability
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
     options {
       name
       optionValues {
@@ -187,6 +452,100 @@ const PRODUCT_FRAGMENT = `#graphql
           image {
             previewImage {
               url
+            }
+          }
+        }
+      }
+    }
+    media(first: 10) {
+      nodes {
+        __typename
+        ... on MediaImage {
+          image {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+    metafields(identifiers: [
+      {namespace: "custom", key: "design_reference"},
+      {namespace: "custom", key: "design_group"},
+      {namespace: "custom", key: "language"},
+      {namespace: "custom", key: "fit"},
+      {namespace: "custom", key: "material"},
+      {namespace: "custom", key: "size_guide"},
+      {namespace: "custom", key: "garment_type"},
+      {namespace: "custom", key: "design_story"}
+    ]) {
+      key
+      value
+    }
+    familyColor: metafield(namespace: "custom", key: "color") {
+      value
+    }
+    familyValue: metafield(namespace: "custom", key: "family_value") {
+      value
+    }
+    productFamily: metafield(namespace: "custom", key: "product_family") {
+      reference {
+        __typename
+        ... on Metaobject {
+          id
+          handle
+          type
+          name: field(key: "name") {
+            value
+          }
+          slug: field(key: "slug") {
+            value
+          }
+          products: field(key: "products") {
+            references(first: 50) {
+              nodes {
+                ... on Product {
+                  id
+                  title
+                  handle
+                  availableForSale
+                  featuredImage {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                  priceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  familyColor: metafield(namespace: "custom", key: "color") {
+                    value
+                  }
+                  familyValue: metafield(namespace: "custom", key: "family_value") {
+                    value
+                  }
+                  options {
+                    name
+                    optionValues {
+                      name
+                      swatch {
+                        color
+                        image {
+                          previewImage {
+                            url
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -218,6 +577,54 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
+  fragment RelatedProductCard on Product {
+    id
+    title
+    handle
+    availableForSale
+    productType
+    collections(first: 1) {
+      nodes {
+        title
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    compareAtPriceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+
+  query ProductRecommendations(
+    $country: CountryCode
+    $language: LanguageCode
+    $productId: ID!
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId, intent: RELATED) {
+      ...RelatedProductCard
+    }
+  }
 `;
 
 /** @typedef {import('./+types/products.$handle').Route} Route */

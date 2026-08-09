@@ -1,4 +1,4 @@
-import {Await, useLoaderData} from 'react-router';
+import {Await, useLoaderData, useOutletContext} from 'react-router';
 import {Suspense} from 'react';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import {Hero} from '~/components/home/Hero.jsx';
@@ -36,21 +36,29 @@ async function loadCriticalData({context}) {
  */
 function loadDeferredData({context}) {
   const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .query(RECOMMENDED_PRODUCTS_QUERY, {cache: context.storefront.CacheShort()})
     .catch((error) => {
       console.error(error);
       return null;
     });
 
-  return {recommendedProducts};
+  const featuredCollections = context.storefront
+    .query(HOME_COLLECTIONS_QUERY, {cache: context.storefront.CacheLong()})
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  return {recommendedProducts, featuredCollections};
 }
 
 export default function Homepage() {
   /** @type {LoaderReturnData} */
   const data = useLoaderData();
+  const {language} = useOutletContext() || {language: 'english'};
   return (
     <>
-      <Hero />
+      <Hero language={language} />
       {data.isShopLinked ? null : (
         <div className="px-6 md:px-14">
           <MockShopNotice />
@@ -59,12 +67,18 @@ export default function Homepage() {
       <Suspense fallback={null}>
         <Await resolve={data.recommendedProducts}>
           {(response) => (
-            <ProductGrid products={response?.products?.nodes ?? []} />
+            <ProductGrid language={language} products={response?.products?.nodes ?? []} />
           )}
         </Await>
       </Suspense>
-      <DepartmentBand />
-      <BrandStory />
+      <Suspense fallback={null}>
+        <Await resolve={data.featuredCollections}>
+          {(response) => (
+            <DepartmentBand collections={response?.collections?.nodes ?? []} />
+          )}
+        </Await>
+      </Suspense>
+      <BrandStory language={language} />
     </>
   );
 }
@@ -74,6 +88,51 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     id
     title
     handle
+    availableForSale
+    familyValue: metafield(namespace: "custom", key: "family_value") {
+      value
+    }
+    color: metafield(namespace: "custom", key: "color") {
+      value
+    }
+    productFamily: metafield(namespace: "custom", key: "product_family") {
+      reference {
+        __typename
+        ... on Metaobject {
+          id
+          handle
+          type
+          name: field(key: "name") { value }
+          slug: field(key: "slug") { value }
+          products: field(key: "products") {
+            references(first: 20) {
+              nodes {
+                ... on Product {
+                  id
+                  handle
+                  title
+                  availableForSale
+                  familyValue: metafield(namespace: "custom", key: "family_value") { value }
+                  color: metafield(namespace: "custom", key: "color") { value }
+                  featuredImage {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    collections(first: 1) {
+      nodes {
+        title
+      }
+    }
     priceRange {
       minVariantPrice {
         amount
@@ -96,9 +155,41 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 8, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 6, sortKey: CREATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+`;
+
+const HOME_COLLECTIONS_QUERY = `#graphql
+  query HomeCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 5, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        id
+        title
+        handle
+        description
+        image {
+          id
+          url
+          altText
+          width
+          height
+        }
+        products(first: 1) {
+          nodes {
+            featuredImage {
+              id
+              url
+              altText
+              width
+              height
+            }
+          }
+        }
       }
     }
   }

@@ -28,6 +28,10 @@ export async function loader({request, context, params}) {
     const variantId = lineDetails[0];
     const quantity = parseInt(lineDetails[1], 10);
 
+    if (!/^\d+$/.test(variantId) || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+      throw new Response('Invalid cart permalink.', {status: 400});
+    }
+
     return {
       merchandiseId: `gid://shopify/ProductVariant/${variantId}`,
       quantity,

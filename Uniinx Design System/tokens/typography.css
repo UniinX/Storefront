@@ -1,17 +1,17 @@
 /* ============================================================
    TYPE TOKENS
-   Two families appear in the Uniinx storefront. Both have
-   exact-name matches on Google Fonts, so no substitution was
-   needed:
-     - Marcellus  -> Uniinx editorial display + price/CTA labels
-     - Work Sans  -> Uniinx nav + body UI text
+   Anton is used for titles and editorial display, while Stack Sans
+   Text is used for body, price/CTA labels, nav, and UI text.
+   Token names below (--font-marcellus, --font-work-sans) are kept
+   for backward compatibility with existing component references;
+   they now point to Anton and Stack Sans Text, respectively.
    ============================================================ */
 
 
 :root {
-  --font-marcellus: "Marcellus", Georgia, serif;
-  --font-work-sans: "Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-inter: "Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-marcellus: "Anton", Georgia, sans-serif;
+  --font-work-sans: "Stack Sans Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-inter: "Stack Sans Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   /* ---- Indic display faces (v2) ----
      One elegant serif per script family, matched to Marcellus's editorial

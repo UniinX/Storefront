@@ -2,6 +2,7 @@ node_modules
 /.cache
 /build
 /dist
+/coverage
 /public/build
 /.mf
 .env

@@ -21,8 +21,8 @@ export function Button({
     accent: { background: "var(--accent-cta)", color: "var(--paper)" },
   };
   const shapes = {
-    pill: { borderRadius: "var(--radius-md)" },
-    capsule: { borderRadius: "var(--radius-full)" },
+    pill: { borderRadius: "0px" },
+    capsule: { borderRadius: "0px" },
   };
   const fonts = {
     marcellus: {
