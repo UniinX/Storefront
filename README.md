@@ -1,45 +1,72 @@
-# Hydrogen template: Skeleton
+# UniinX Storefront
 
-Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [React Router](https://reactrouter.com/), the modern multi-strategy router for React. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
+The production Shopify Hydrogen storefront for UniinX, deployed to Shopify Oxygen.
 
-[Check out Hydrogen docs](https://shopify.dev/custom-storefronts/hydrogen)
-[Get familiar with React Router](https://reactrouter.com/start/framework/routing)
+## Runtime
 
-## What's included
-
-- React Router
-- Hydrogen
-- Oxygen
+- Node.js 24
+- Shopify Hydrogen and Oxygen
+- React Router 7
 - Vite
-- Shopify CLI
-- ESLint
-- Prettier
-- GraphQL generator
-- TypeScript and JavaScript flavors
-- Minimal setup of components and routes
-
-## Getting started
-
-**Requirements:**
-
-- Node.js version 22.x or 24.x
-
-```bash
-npm create @shopify/hydrogen@latest
-```
-
-## Building for production
-
-```bash
-npm run build
-```
+- npm lockfile installs
 
 ## Local development
 
+Install dependencies and link the checkout to the UniinX Hydrogen storefront:
+
 ```bash
+npm ci
+npx shopify hydrogen link
 npm run dev
 ```
 
-## Setup for using Customer Account API (`/account` section)
+Local secrets belong in `.env`, which is ignored by Git. Do not commit storefront tokens or deployment credentials.
 
-Follow step 1 and 2 of <https://shopify.dev/docs/custom-storefronts/building-with-the-customer-account-api/hydrogen#step-1-set-up-a-public-domain-for-local-development>
+## Release validation
+
+Run the complete release gate locally:
+
+```bash
+npm run ci
+```
+
+This runs the test suite, ESLint, GraphQL code generation, and the production Oxygen build.
+
+## Oxygen deployment
+
+The project is linked to the Shopify Hydrogen storefront `uniinx`.
+
+Deploy the current commit to production:
+
+```bash
+npm run deploy
+```
+
+Deploy to the Oxygen preview environment:
+
+```bash
+npm run deploy:preview
+```
+
+## GitHub CI/CD
+
+`.github/workflows/oxygen-deployment-1000166069.yml` validates pull requests and pushes. Push events deploy only after tests, lint, and the production build succeed.
+
+Add this encrypted repository Actions secret before enabling automated deployment:
+
+```text
+OXYGEN_DEPLOYMENT_TOKEN_1000166069
+```
+
+The workflow exposes it to Shopify CLI as `SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN`. Generate the token from the Hydrogen storefront's Oxygen deployment settings or connect the repository through Shopify's GitHub integration.
+
+## Oxygen environment variables
+
+Shopify provisions the standard Storefront API and Customer Account variables when the Hydrogen storefront is created. Configure these application-specific values for the production and preview environments as needed:
+
+```text
+ADMIN_PASSCODE
+SHOPIFY_TEST_MODE
+```
+
+`SESSION_SECRET` must also be present; Shopify normally provisions it for Oxygen environments.

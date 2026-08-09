@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "shopify hydrogen build --codegen",
+    "ci": "npm test && npm run lint && npm run build",
+    "deploy": "shopify hydrogen deploy",
+    "deploy:preview": "shopify hydrogen deploy --preview",
     "dev": "shopify hydrogen dev --codegen",
     "preview": "shopify hydrogen preview --build",
     "start": "npm run build && npm run preview",
