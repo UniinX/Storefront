@@ -5,6 +5,8 @@ name: UniinX Storefront CI/CD
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -22,10 +24,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -53,10 +55,10 @@ jobs:
       deployments: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -64,7 +66,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify Oxygen deployment token
+        run: |
+          if [ -z "$SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN" ]; then
+            echo "::error::Add OXYGEN_DEPLOYMENT_TOKEN_1000166069 as a repository Actions secret."
+            exit 1
+          fi
+        env:
+          SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000166069 }}
+
       - name: Build and publish to Oxygen
-        run: npx shopify hydrogen deploy
+        run: npx shopify hydrogen deploy --env production --no-json-output
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000166069 }}
