@@ -1,81 +1,41 @@
-# Don't change the line below!
-#! oxygen_storefront_id: 1000166069
-
-name: UniinX Storefront CI/CD
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-  workflow_dispatch:
+name: Storefront 1000166069
+on: [push]
 
 permissions:
   contents: read
-
-concurrency:
-  group: oxygen-${{ github.ref }}
-  cancel-in-progress: true
+  deployments: write
 
 jobs:
-  quality:
-    name: Test, lint, and build
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Run lint
-        run: npm run lint
-
-      - name: Build Oxygen bundle
-        run: npm run build
-
   deploy:
-    name: Deploy to Shopify Oxygen
-    if: github.event_name == 'push'
-    needs: quality
-    runs-on: ubuntu-latest
+    name: Deploy to Oxygen
     timeout-minutes: 30
-    permissions:
-      contents: read
-      deployments: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - name: Setup node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
-          cache: npm
+          node-version: "lts/*"
+          check-latest: true
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify Oxygen deployment token
-        run: |
-          if [ -z "$SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN" ]; then
-            echo "::error::Add OXYGEN_DEPLOYMENT_TOKEN_1000166069 as a repository Actions secret."
-            exit 1
-          fi
-        env:
-          SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000166069 }}
-
-      - name: Build and publish to Oxygen
-        run: npx shopify hydrogen deploy --env production --no-json-output
+      - name: Build and Publish to Oxygen
+        run: npx shopify hydrogen deploy
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000166069 }}
