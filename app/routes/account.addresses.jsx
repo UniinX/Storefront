@@ -11,6 +11,7 @@ import {
   DELETE_ADDRESS_MUTATION,
   CREATE_ADDRESS_MUTATION,
 } from '~/graphql/customer-account/CustomerAddressMutations';
+import {AccountPageHeader} from '~/components/account/AccountUI.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -236,33 +237,25 @@ export default function Addresses() {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-marcellus text-2xl text-black dark:text-white uppercase mb-2">
-            Saved Addresses
-          </h3>
-          <p className="font-work text-xs text-black/50 dark:text-white/40">
-            Configure saved shipping routes and select your default studio dispatch address.
-          </p>
-        </div>
-        <button
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Delivery details"
+        title="Saved addresses"
+        description="Keep your preferred delivery destinations ready for a smoother checkout."
+        action={<button
           onClick={() => {
             setShowCreate(!showCreate);
             setEditingAddressId(null);
           }}
-          className="w-fit px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-work text-[10px] tracking-wider uppercase font-semibold hover:opacity-90 cursor-pointer shadow-md transition-all whitespace-nowrap"
+          className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-xs font-semibold uppercase tracking-[0.12em] text-white transition-transform hover:-translate-y-0.5"
         >
-          {showCreate ? 'Close Editor' : 'Add New Address'}
-        </button>
-      </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+          {showCreate ? 'Close editor' : 'Add address'}
+        </button>}
+      />
 
       {/* New Address Card Form */}
       {showCreate && (
-        <div className="border border-black/5 dark:border-white/5 rounded-2xl p-6 bg-black/[0.005] dark:bg-white/[0.005] animate-fade-in">
+        <div className="animate-fade-in rounded-[22px] border border-black/10 bg-[#faf9f6] p-6">
           <h4 className="font-marcellus text-xs uppercase tracking-wider text-black dark:text-white mb-6">
             Add Shipping Address
           </h4>
@@ -434,7 +427,7 @@ export function AddressForm({addressId, address, defaultAddress, children, onSuc
   }
 
   return (
-    <Form id={addressId} className="flex flex-col gap-4">
+    <Form id={addressId} className="uniinx-account-form flex flex-col gap-4">
       <input type="hidden" name="addressId" defaultValue={addressId} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

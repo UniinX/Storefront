@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {data, Form, useActionData, useNavigation, useOutletContext, useSearchParams} from 'react-router';
 import {SUPPORT_CUSTOMER_QUERY} from '~/graphql/customer-account/SupportCustomerQuery';
+import {AccountPageHeader} from '~/components/account/AccountUI.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -105,18 +106,12 @@ export default function AccountSupport() {
   const email = customer?.emailAddress?.emailAddress ?? '';
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h3 className="font-marcellus text-2xl text-black dark:text-white uppercase mb-2">
-          Contact Studio Support
-        </h3>
-        <p className="font-work text-xs text-black/50 dark:text-white/40">
-          Have an issue with custom sizing, dynamic script translations, or shipment arrivals? Message our studio specialists.
-        </p>
-      </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Studio support"
+        title="How can we help?"
+        description="Tell us what happened and include the related order when possible. Your message is sent securely with your verified customer details."
+      />
 
       {/* Integration Warnings & Status Alert */}
       {actionData?.error && (
@@ -131,7 +126,7 @@ export default function AccountSupport() {
       )}
 
       {/* Support Form */}
-      <Form method="POST" className="flex flex-col gap-5 max-w-xl">
+      <Form method="POST" className="uniinx-account-form flex max-w-2xl flex-col gap-5 rounded-[22px] border border-black/10 bg-[#faf9f6] p-5 sm:p-7">
         
         {/* Customer Email (Read-only) */}
         <div className="flex flex-col gap-1 w-full">

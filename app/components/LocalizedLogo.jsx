@@ -9,21 +9,22 @@ import malayalamLogo from '~/assets/language-logos/Logo_Malayalam.svg';
 export const LANGUAGE_LOGOS = {
   english: englishLogo,
   hindi: hindiLogo,
-  tamil: tamilLogo,
   telugu: teluguLogo,
+  tamil: tamilLogo,
+  malayalam: malayalamLogo,
   kannada: kannadaLogo,
   odia: odiaLogo,
-  malayalam: malayalamLogo,
 };
 
 export const LANGUAGE_NAMES = {
   english: 'English',
   hindi: 'Hindi',
-  tamil: 'Tamil',
   telugu: 'Telugu',
-  kannada: 'Kannada',
-  odia: 'Odia',
+  tamil: 'Tamil',
   malayalam: 'Malayalam',
+  kannada: 'Kannada',
+  bengali: 'Bengali',
+  odia: 'Odia',
 };
 
 export function getLogoForLanguage(language) {
@@ -48,5 +49,7 @@ export function hasLocalizedLogo(language) {
 }
 
 function normalizeLanguage(language) {
-  return typeof language === 'string' ? language.trim().toLowerCase() : 'english';
+  return typeof language === 'string'
+    ? language.trim().toLowerCase()
+    : 'english';
 }

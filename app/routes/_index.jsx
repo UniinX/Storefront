@@ -5,6 +5,8 @@ import {Hero} from '~/components/home/Hero.jsx';
 import {ProductGrid} from '~/components/home/ProductGrid.jsx';
 import {DepartmentBand} from '~/components/home/DepartmentBand.jsx';
 import {BrandStory} from '~/components/home/BrandStory.jsx';
+import {LanguageShowcase} from '~/components/home/LanguageShowcase.jsx';
+import {CategoryBento} from '~/components/home/CategoryBento.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -55,22 +57,18 @@ function loadDeferredData({context}) {
 export default function Homepage() {
   /** @type {LoaderReturnData} */
   const data = useLoaderData();
-  const {language} = useOutletContext() || {language: 'english'};
+  const {language, changeLanguage} = useOutletContext() || {
+    language: 'english',
+  };
   return (
     <>
-      <Hero language={language} />
+      <Hero />
+      <LanguageShowcase language={language} onLanguageChange={changeLanguage} />
       {data.isShopLinked ? null : (
         <div className="px-6 md:px-14">
           <MockShopNotice />
         </div>
       )}
-      <Suspense fallback={null}>
-        <Await resolve={data.recommendedProducts}>
-          {(response) => (
-            <ProductGrid language={language} products={response?.products?.nodes ?? []} />
-          )}
-        </Await>
-      </Suspense>
       <Suspense fallback={null}>
         <Await resolve={data.featuredCollections}>
           {(response) => (
@@ -78,7 +76,25 @@ export default function Homepage() {
           )}
         </Await>
       </Suspense>
-      <BrandStory language={language} />
+      <Suspense fallback={null}>
+        <Await resolve={data.recommendedProducts}>
+          {(response) => (
+            <ProductGrid
+              homeLayout
+              language={language}
+              products={response?.products?.nodes ?? []}
+            />
+          )}
+        </Await>
+      </Suspense>
+      <Suspense fallback={null}>
+        <Await resolve={data.featuredCollections}>
+          {(response) => (
+            <CategoryBento collections={response?.collections?.nodes ?? []} />
+          )}
+        </Await>
+      </Suspense>
+      <BrandStory language={language} onLanguageChange={changeLanguage} />
     </>
   );
 }
@@ -128,6 +144,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         }
       }
     }
+    collectionName: metafield(namespace: "custom", key: "collection_name") { value }
     collections(first: 1) {
       nodes {
         title
@@ -155,7 +172,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 6, sortKey: CREATED_AT, reverse: true) {
+    products(first: 8, sortKey: CREATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }
@@ -166,7 +183,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
 const HOME_COLLECTIONS_QUERY = `#graphql
   query HomeCollections($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 5, sortKey: UPDATED_AT, reverse: true) {
+    collections(first: 12, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         id
         title

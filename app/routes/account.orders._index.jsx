@@ -18,6 +18,12 @@ import {
 } from '~/lib/orderFilters';
 import {CUSTOMER_ORDERS_QUERY} from '~/graphql/customer-account/CustomerOrdersQuery';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {
+  AccountEmptyState,
+  AccountPageHeader,
+  accountPrimaryButton,
+  accountSecondaryButton,
+} from '~/components/account/AccountUI.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -60,17 +66,12 @@ export default function Orders() {
   const {orders} = customer;
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      <div>
-        <h3 className="font-marcellus text-2xl text-black dark:text-white uppercase mb-2">
-          Orders & History
-        </h3>
-        <p className="font-work text-xs text-black/50 dark:text-white/40">
-          Track shipment statuses, transaction receipts, and custom transliterated garments.
-        </p>
-      </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Order history"
+        title="Your orders"
+        description="Track delivery progress, review order totals, and revisit every UniinX piece connected to your account."
+      />
 
       <OrderSearchForm currentFilters={filters} />
       <OrdersTable orders={orders} filters={filters} />
@@ -105,26 +106,29 @@ function OrdersTable({orders, filters}) {
  */
 function EmptyOrders({hasFilters = false}) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 border border-dashed border-black/10 dark:border-white/10 rounded-2xl text-center">
-      <span className="font-work text-xs text-black/55 dark:text-white/50 mb-4 block">
-        {hasFilters ? 'No orders match your search parameters.' : "You haven't placed any orders yet."}
-      </span>
-      {hasFilters ? (
+    <AccountEmptyState
+      title={hasFilters ? 'No matching orders' : 'No orders yet'}
+      description={
+        hasFilters
+          ? 'Try another order or confirmation number.'
+          : 'Your order history will appear here after your first UniinX purchase.'
+      }
+      action={hasFilters ? (
         <Link
           to="/account/orders"
-          className="px-6 py-2.5 rounded-full border border-black/10 dark:border-white/10 font-work text-[9px] tracking-wider text-black dark:text-white uppercase hover:bg-black/5 dark:hover:bg-white/5"
+          className={accountSecondaryButton}
         >
-          Clear Filters
+          Clear filters
         </Link>
       ) : (
         <Link
-          to="/collections"
-          className="px-6 py-2.5 rounded-full bg-brand-accent dark:bg-brand-accent-light text-brand-bg-light dark:text-brand-bg-dark font-work text-[9px] tracking-wider uppercase font-semibold hover:opacity-95"
+          to="/collections/all"
+          className={accountPrimaryButton}
         >
-          Start Shopping
+          Start shopping
         </Link>
       )}
-    </div>
+    />
   );
 }
 
@@ -165,7 +169,7 @@ function OrderSearchForm({currentFilters}) {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 p-5 rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.005] dark:bg-white/[0.005]"
+      className="uniinx-account-form flex flex-col gap-4 rounded-[22px] border border-black/10 bg-[#faf9f6] p-5"
       aria-label="Search orders"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

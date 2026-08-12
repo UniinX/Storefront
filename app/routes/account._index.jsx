@@ -1,16 +1,16 @@
+import {Image, Money} from '@shopify/hydrogen';
 import {Link, useOutletContext} from 'react-router';
-import {Money, Image} from '@shopify/hydrogen';
+import {
+  AccountPageHeader,
+  AccountPanel,
+  AccountPanelLabel,
+  accountPrimaryButton,
+  accountSecondaryButton,
+} from '~/components/account/AccountUI.jsx';
+import {Reveal} from '~/components/motion/Reveal.jsx';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: 'Account Overview'}];
-};
+export const meta = () => [{title: 'Your UniinX'}];
 
-/**
- * @param {Route.LoaderArgs}
- */
 export async function loader({context}) {
   await context.customerAccount.handleAuthStatus();
   return {};
@@ -18,187 +18,192 @@ export async function loader({context}) {
 
 export default function AccountOverview() {
   const {customer} = useOutletContext();
-
-  const firstName = customer?.firstName ?? '';
-  const fullName = firstName ? `${firstName}` : 'Studio Member';
-
+  const firstName = customer?.firstName?.trim() || 'there';
   const orders = customer?.orders?.nodes ?? [];
-  const orderCountLabel = customer?.orders?.pageInfo?.hasNextPage ? `${orders.length}+` : String(orders.length);
-  const latestOrder = orders[0];
-
   const addresses = customer?.addresses?.nodes ?? [];
+  const latestOrder = orders[0];
   const defaultAddress = customer?.defaultAddress;
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-in">
-      {/* Greeting Banner */}
-      <div>
-        <span className="font-work text-xs tracking-[0.2em] text-brand-accent dark:text-brand-accent-light uppercase mb-2 block">
-          Studio Dashboard
-        </span>
-        <h2 className="font-marcellus text-3xl md:text-4xl text-black dark:text-white uppercase font-light">
-          Welcome, <span className="italic font-normal">{fullName}</span>
-        </h2>
-        <p className="font-work text-xs text-black/50 dark:text-white/40 mt-1">
-          Review your linguistic collections, addresses, and order histories.
-        </p>
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Account overview"
+        title={`Hello, ${firstName}.`}
+        description="Everything connected to your UniinX membership—orders, delivery details, and profile—in one quiet place."
+        action={
+          <Link to="/collections/all" className={accountPrimaryButton}>
+            Continue shopping
+          </Link>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Metric label="Orders" value={customer?.orders?.pageInfo?.hasNextPage ? `${orders.length}+` : orders.length} />
+        <Metric label="Saved addresses" value={addresses.length} />
+        <Metric label="Member status" value="Verified" compact />
       </div>
 
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+      <div className="grid gap-5 xl:grid-cols-[1.12fr_0.88fr]">
+        <Reveal variant="card">
+          <AccountPanel className="h-full">
+            <div className="flex items-center justify-between gap-4">
+              <AccountPanelLabel>Latest order</AccountPanelLabel>
+              {latestOrder ? (
+                <Link to="/account/orders" className="text-xs font-semibold underline decoration-black/20 underline-offset-4">
+                  View all
+                </Link>
+              ) : null}
+            </div>
 
-      {/* Grid panels */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        {/* Latest Order Summary Card */}
-        <div className="border border-black/5 dark:border-white/5 rounded-2xl p-6 bg-black/[0.005] dark:bg-white/[0.005] flex flex-col justify-between shadow-sm">
-          <div>
-            <h3 className="font-marcellus text-xs uppercase tracking-wider text-black/40 dark:text-white/40 mb-4">
-              Latest Shipment Status
-            </h3>
             {latestOrder ? (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-marcellus text-base text-black dark:text-white font-medium">
-                    Order #{latestOrder.number}
-                  </span>
-                  <span className="font-work text-[10px] text-black/40 dark:text-white/40">
-                    {new Date(latestOrder.processedAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </span>
+              <div className="mt-7">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-2xl font-medium tracking-[-0.035em]">Order #{latestOrder.number}</p>
+                    <p className="mt-2 text-xs text-black/45">
+                      {formatDate(latestOrder.processedAt)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <StatusPill>{formatStatus(latestOrder.financialStatus)}</StatusPill>
+                    <StatusPill tone="dark">{formatStatus(latestOrder.fulfillmentStatus)}</StatusPill>
+                  </div>
                 </div>
 
-                {/* Thumbnails Row */}
-                <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
-                  {latestOrder.lineItems?.nodes.map((item) => (
-                    <div key={item.id} className="relative w-12 h-12 rounded-lg border border-black/5 dark:border-white/5 bg-white dark:bg-black overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <div className="mt-7 flex gap-3 overflow-x-auto pb-1">
+                  {(latestOrder.lineItems?.nodes ?? []).slice(0, 4).map((item) => (
+                    <div key={item.id} className="relative size-20 shrink-0 overflow-hidden rounded-[14px] border border-black/8 bg-white">
                       {item.image ? (
-                        <Image data={item.image} width={48} height={48} className="object-cover" />
+                        <Image data={item.image} sizes="80px" className="size-full object-cover" />
                       ) : (
-                        <span className="font-work text-[8px] text-black/20 dark:text-white/20">Fit</span>
+                        <span className="grid size-full place-items-center text-[10px] uppercase tracking-widest text-black/25">UniinX</span>
                       )}
-                      <span className="absolute bottom-0.5 right-0.5 bg-black/60 dark:bg-white/60 text-white dark:text-black font-work text-[8px] px-1 rounded-sm leading-tight">
-                        x{item.quantity}
+                      <span className="absolute bottom-1 right-1 rounded-full bg-black px-1.5 py-0.5 text-[9px] text-white">
+                        ×{item.quantity}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3 mt-1">
-                  <span className={`font-work text-[8px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded ${
-                    latestOrder.financialStatus === 'PAID'
-                      ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                      : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
-                  }`}>
-                    {latestOrder.financialStatus}
-                  </span>
-                  <span className={`font-work text-[8px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded ${
-                    latestOrder.fulfillmentStatus === 'FULFILLED'
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                      : 'bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40'
-                  }`}>
-                    {latestOrder.fulfillmentStatus}
-                  </span>
+                <div className="mt-7 flex items-center justify-between border-t border-black/10 pt-5">
+                  <span className="text-xs text-black/45">Order total</span>
+                  <strong className="text-base">
+                    <Money data={latestOrder.totalPrice} />
+                  </strong>
                 </div>
               </div>
             ) : (
-              <div className="py-6 flex flex-col items-center justify-center text-center">
-                <span className="font-work text-xs text-black/40 dark:text-white/40 mb-4 block">
-                  You have not placed any orders yet.
-                </span>
-                <Link
-                  to="/collections"
-                  className="px-5 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-work text-[9px] tracking-wider uppercase font-semibold hover:opacity-90 transition-all shadow-sm"
-                >
-                  Start Shopping
+              <div className="flex min-h-64 flex-col items-start justify-center">
+                <p className="text-2xl font-medium tracking-[-0.035em]">Your first piece starts here.</p>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-black/50">
+                  Explore clothing shaped by the languages and scripts that feel like home.
+                </p>
+                <Link to="/collections/all" className={`${accountPrimaryButton} mt-6`}>
+                  Explore collections
                 </Link>
               </div>
             )}
-          </div>
-          {latestOrder && (
-            <Link
-              to="/account/orders"
-              className="font-work text-[10px] tracking-wider uppercase text-brand-accent dark:text-brand-accent-light border-b border-brand-accent/20 dark:border-brand-accent-light/20 pb-0.5 hover:border-brand-accent dark:hover:border-brand-accent-light w-fit mt-6 transition-all"
-            >
-              View all orders ({orderCountLabel})
-            </Link>
-          )}
-        </div>
+          </AccountPanel>
+        </Reveal>
 
-        {/* Saved Address Summary Card */}
-        <div className="border border-black/5 dark:border-white/5 rounded-2xl p-6 bg-black/[0.005] dark:bg-white/[0.005] flex flex-col justify-between shadow-sm">
-          <div>
-            <h3 className="font-marcellus text-xs uppercase tracking-wider text-black/40 dark:text-white/40 mb-4">
-              Primary Address
-            </h3>
+        <Reveal variant="card" delay={80}>
+          <AccountPanel className="h-full">
+            <div className="flex items-center justify-between gap-4">
+              <AccountPanelLabel>Default delivery address</AccountPanelLabel>
+              <Link to="/account/addresses" className="text-xs font-semibold underline decoration-black/20 underline-offset-4">
+                Manage
+              </Link>
+            </div>
+
             {defaultAddress ? (
-              <div className="flex flex-col gap-2 font-work text-xs leading-relaxed text-black/70 dark:text-white/70 font-light">
-                <span className="font-medium text-black dark:text-white block">
+              <address className="mt-8 not-italic text-sm leading-7 text-black/62">
+                <strong className="block text-lg font-medium text-black">
                   {defaultAddress.firstName} {defaultAddress.lastName}
+                </strong>
+                {defaultAddress.company ? <span className="block">{defaultAddress.company}</span> : null}
+                <span className="mt-3 block">{defaultAddress.address1}</span>
+                {defaultAddress.address2 ? <span className="block">{defaultAddress.address2}</span> : null}
+                <span className="block">
+                  {[defaultAddress.city, defaultAddress.zoneCode, defaultAddress.zip]
+                    .filter(Boolean)
+                    .join(', ')}
                 </span>
-                {defaultAddress.company && <span>{defaultAddress.company}</span>}
-                <span>{defaultAddress.address1}</span>
-                {defaultAddress.address2 && <span>{defaultAddress.address2}</span>}
-                <span>
-                  {defaultAddress.city}, {defaultAddress.zoneCode} {defaultAddress.zip}
-                </span>
-                <span>{defaultAddress.territoryCode}</span>
-                {defaultAddress.phoneNumber && <span className="block mt-2">{defaultAddress.phoneNumber}</span>}
-              </div>
+                <span className="block">{defaultAddress.territoryCode}</span>
+                {defaultAddress.phoneNumber ? <span className="mt-3 block">{defaultAddress.phoneNumber}</span> : null}
+              </address>
             ) : (
-              <div className="py-6 flex flex-col items-center justify-center text-center">
-                <span className="font-work text-xs text-black/40 dark:text-white/40 mb-4 block">
-                  No default shipping addresses saved.
-                </span>
-                <Link
-                  to="/account/addresses"
-                  className="px-5 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-work text-[9px] tracking-wider uppercase font-semibold hover:opacity-90 transition-all shadow-sm"
-                >
-                  Create Address
+              <div className="flex min-h-64 flex-col items-start justify-center">
+                <p className="text-xl font-medium tracking-[-0.025em]">No address saved yet.</p>
+                <p className="mt-3 text-sm leading-6 text-black/50">
+                  Save an address now for a faster checkout later.
+                </p>
+                <Link to="/account/addresses" className={`${accountSecondaryButton} mt-6`}>
+                  Add an address
                 </Link>
               </div>
             )}
+          </AccountPanel>
+        </Reveal>
+      </div>
+
+      <Reveal>
+        <section>
+          <AccountPanelLabel>Quick access</AccountPanelLabel>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <QuickLink to="/account/orders" number="01" label="Order history" />
+            <QuickLink to="/account/profile" number="02" label="Profile details" />
+            <QuickLink to="/account/addresses" number="03" label="Saved addresses" />
+            <QuickLink to="/account/support" number="04" label="Studio support" />
           </div>
-          {defaultAddress && (
-            <Link
-              to="/account/addresses"
-              className="font-work text-[10px] tracking-wider uppercase text-brand-accent dark:text-brand-accent-light border-b border-brand-accent/20 dark:border-brand-accent-light/20 pb-0.5 hover:border-brand-accent dark:hover:border-brand-accent-light w-fit mt-6 transition-all"
-            >
-              Manage Saved Addresses ({addresses.length})
-            </Link>
-          )}
-        </div>
-
-      </div>
-
-      {/* Quick Actions Footer Section */}
-      <div className="flex flex-col gap-4 mt-4">
-        <h4 className="font-work text-xs tracking-wider uppercase text-black/50 dark:text-white/40">
-          Quick Studio Actions
-        </h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <QuickActionLink to="/account/orders" label="View orders" />
-          <QuickActionLink to="/account/profile" label="Edit profile" />
-          <QuickActionLink to="/account/addresses" label="Manage addresses" />
-          <QuickActionLink to="/account/support" label="Contact support" />
-        </div>
-      </div>
+        </section>
+      </Reveal>
     </div>
   );
 }
 
-function QuickActionLink({to, label}) {
+function Metric({label, value, compact = false}) {
+  return (
+    <Reveal variant="card">
+      <div className="rounded-[18px] border border-black/10 bg-white px-5 py-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-black/38">{label}</p>
+        <p className={`mt-3 font-medium tracking-[-0.04em] ${compact ? 'text-2xl' : 'text-4xl'}`}>{value}</p>
+      </div>
+    </Reveal>
+  );
+}
+
+function QuickLink({to, number, label}) {
   return (
     <Link
       to={to}
-      className="p-4 border border-black/5 dark:border-white/5 rounded-xl bg-black/[0.01] dark:bg-white/[0.01] hover:bg-black/[0.02] dark:hover:bg-white/[0.02] hover:border-black/10 dark:hover:border-white/10 text-center font-work text-[10px] tracking-wider uppercase text-black dark:text-white font-medium transition-all"
+      className="group flex min-h-24 flex-col justify-between rounded-[18px] border border-black/10 bg-[#faf9f6] p-5 transition-[transform,background-color,color] hover:-translate-y-1 hover:bg-black hover:text-white"
     >
-      {label}
+      <span className="text-[9px] tracking-[0.18em] text-current opacity-40">{number}</span>
+      <span className="flex items-end justify-between gap-4 text-sm font-semibold">
+        {label} <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+      </span>
     </Link>
   );
 }
 
+function StatusPill({children, tone = 'light'}) {
+  return (
+    <span className={`rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] ${tone === 'dark' ? 'bg-black text-white' : 'border border-black/12 bg-white text-black/55'}`}>
+      {children}
+    </span>
+  );
+}
+
+function formatStatus(value) {
+  return value ? value.toLowerCase().replaceAll('_', ' ') : 'Pending';
+}
+
+function formatDate(value) {
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
 /** @typedef {import('./+types/account._index').Route} Route */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

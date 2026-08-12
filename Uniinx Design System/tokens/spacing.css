@@ -9,20 +9,20 @@
   --space-xs: 12px;
   --space-sm: 16px;
   --space-md: 24px;
-  --space-lg: 39px;       /* product-card title↔buy-pill gap */
-  --space-xl: 55px;       /* storefront left margin */
-  --space-2xl: 75px;      /* mission-band side inset */
+  --space-lg: 39px; /* product-card title↔buy-pill gap */
+  --space-xl: 60px;
+  --space-2xl: 80px;
 
-  --radius-sm: 0px;        /* product photo corner (Rectangle 12) */
-  --radius-md: 0px;       /* pill buttons */
-  --radius-lg: 0px;       /* mission band */
-  --radius-xl: 0px;       /* footer band */
-  --radius-full: 0px;   /* pill buttons */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
 
   --stroke-border: 1px;
 
   /* ---- Mobile chrome (v2) ---- */
-  --bp-mobile: 720px;         /* below this, kit switches to mobile layout */
-  --mobile-nav-height: 64px;  /* bottom tab bar */
+  --bp-mobile: 720px;
+  --mobile-nav-height: 64px; /* bottom tab bar */
   --mobile-gutter: 20px;
 }

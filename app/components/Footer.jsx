@@ -1,10 +1,7 @@
-import {Reveal} from '~/components/motion/Reveal.jsx';
-import {Link} from 'react-router';
-import {Await} from 'react-router';
+import {Await, Link} from 'react-router';
 import {Suspense} from 'react';
-import {LANGUAGE_NAMES, LocalizedLogo} from './LocalizedLogo.jsx';
-
-const LOGO_LANGUAGES = Object.entries(LANGUAGE_NAMES).map(([id, label]) => ({id, label}));
+import {LocalizedLogo} from './LocalizedLogo.jsx';
+import {Reveal} from '~/components/motion/Reveal.jsx';
 
 const FOOTER_LINKS = [
   {
@@ -20,7 +17,10 @@ const FOOTER_LINKS = [
     title: 'Help',
     links: [
       {label: 'Support', to: '/account/support'},
-      {label: 'Returns & refunds', to: '/account/support?category=Refund%20or%20Cancellation'},
+      {
+        label: 'Returns & refunds',
+        to: '/account/support?category=Refund%20or%20Cancellation',
+      },
       {label: 'Orders', to: '/account/orders'},
       {label: 'Cart', to: '/cart'},
     ],
@@ -37,116 +37,107 @@ const FOOTER_LINKS = [
   },
 ];
 
-export function Footer({language, onLanguageChange, isLoggedIn = false, onSignIn}) {
+export function Footer({language, isLoggedIn = false}) {
   return (
-    <Reveal as="footer" className="px-6 md:px-14 py-16 bg-brand-bg-light border-t border-black/10 transition-colors duration-200">
-
-      {/* Brand logo closer */}
-      <div className="flex flex-col items-center justify-center text-center mb-12">
-        <LocalizedLogo
-          language={language}
-          className="h-10 w-auto mb-4 transition-all duration-200"
-        />
-        <p className="font-work text-xs tracking-[0.2em] text-black/50 uppercase">
-          Clothes in your Language
-        </p>
-      </div>
-
-      {/* Interactive Script Carousel Language Switcher */}
-      <div className="w-full max-w-4xl mx-auto mb-16">
-        <span className="font-work text-[9px] tracking-widest text-black/40 uppercase block text-center mb-6">
-          Select Design Language / भारतीय भाषाएं
-        </span>
-
-        {/* Horizontal Script Row */}
-        <div className="flex items-center justify-start md:justify-center gap-6 overflow-x-auto pb-4 scrollbar-none mask-image-horizontal">
-          {LOGO_LANGUAGES.map((lang) => {
-            const isActive = lang.id === language;
-            return (
-              <button
-                key={lang.id}
-                onClick={() => onLanguageChange?.(lang.id)}
-                className={`flex flex-col items-center justify-center min-w-[124px] min-h-[72px] px-3 py-2 focus:outline-none transition-all duration-300 rounded-md border ${
-                  isActive
-                    ? 'border-brand-accent bg-brand-surface-light'
-                    : 'border-transparent hover:bg-black/5'
-                }`}
-                id={`footer-lang-${lang.id}`}
-              >
-                <span className="h-9 w-[108px] flex items-center justify-center overflow-visible" aria-hidden="true">
-                  <LocalizedLogo
-                    language={lang.id}
-                    alt=""
-                    className={`block max-h-8 max-w-[108px] w-auto h-auto object-contain transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-55'}`}
-                  />
-                </span>
-                <span className="font-work text-[9px] tracking-wide text-black/40 mt-1 uppercase">
-                  {lang.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <nav
-        aria-label="Footer"
-        className="w-full max-w-5xl mx-auto mb-14 grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-10 border-y border-black/10 py-10"
-      >
-        {FOOTER_LINKS.map((group) => (
-          <section key={group.title} aria-labelledby={`footer-${group.title.toLowerCase()}`}>
-            <h2
-              id={`footer-${group.title.toLowerCase()}`}
-              className="font-work text-[10px] tracking-[0.18em] uppercase text-black mb-5"
+    <footer className="bg-[#121212] px-5 py-12 text-white sm:px-8 lg:px-[60px] lg:py-16">
+      <div className="mx-auto max-w-[1320px]">
+        <div className="grid gap-12 border-b border-white/15 pb-12 lg:grid-cols-[1.2fr_1fr]">
+          <Reveal>
+            <LocalizedLogo
+              language={language}
+              className="h-10 w-auto brightness-0 invert"
+            />
+            <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.16em] text-white/55">
+              Clothes in your Language
+            </p>
+            <form
+              className="mt-8 flex max-w-sm border-b border-white/45"
+              action="#"
+              onSubmit={(event) => event.preventDefault()}
             >
-              {group.title}
-            </h2>
-            <ul className="flex flex-col gap-3">
-              {group.links.map((link) => (
-                <li key={link.to}>
-                  <AccountAwareFooterLink link={link} isLoggedIn={isLoggedIn} onSignIn={onSignIn} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </nav>
+              <label htmlFor="footer-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="footer-email"
+                type="email"
+                placeholder="Enter your email"
+                className="h-12 min-w-0 flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+              />
+              <button
+                type="submit"
+                aria-label="Subscribe"
+                className="grid size-12 place-items-center rounded-full text-lg"
+              >
+                →
+              </button>
+            </form>
+          </Reveal>
 
-      {/* Footer bottom metadata */}
-      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="font-work text-[10px] tracking-wide text-black/45 text-center md:text-left">
-          © {new Date().getFullYear()} UniinX. Rooted in Indian language, craft &amp; culture. Made for India &amp; the world.
-        </p>
-        <p className="font-marcellus text-xs tracking-[0.1em] text-black">
-          To this country &amp; its people
-        </p>
-        <Suspense fallback={<FooterAccountLink loggedIn={false} onSignIn={onSignIn} />}>
-          <Await resolve={isLoggedIn}>
-            {(loggedIn) => <FooterAccountLink loggedIn={loggedIn} onSignIn={onSignIn} />}
-          </Await>
-        </Suspense>
+          <nav
+            aria-label="Footer"
+            className="grid grid-cols-2 gap-8 sm:grid-cols-3"
+          >
+            {FOOTER_LINKS.map((group, index) => (
+              <Reveal
+                as="section"
+                delay={index * 70}
+                key={group.title}
+                aria-labelledby={`footer-${group.title.toLowerCase()}`}
+              >
+                <h2
+                  id={`footer-${group.title.toLowerCase()}`}
+                  className="mb-4 text-xs font-semibold"
+                >
+                  {group.title}
+                </h2>
+                <ul className="space-y-2.5">
+                  {group.links.map((link) => (
+                    <li key={link.to}>
+                      <AccountAwareFooterLink
+                        link={link}
+                        isLoggedIn={isLoggedIn}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </nav>
+        </div>
+
+        <Reveal className="flex flex-col gap-3 border-t border-white/15 pt-6 text-[10px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} UniinX. Rooted in Indian language,
+            craft &amp; culture. Made for India &amp; the world.
+          </p>
+          <Suspense fallback={<FooterAccountLink loggedIn={false} />}>
+            <Await resolve={isLoggedIn}>
+              {(loggedIn) => <FooterAccountLink loggedIn={loggedIn} />}
+            </Await>
+          </Suspense>
+        </Reveal>
       </div>
-    </Reveal>
+    </footer>
   );
 }
 
-export default Footer;
-
-function AccountAwareFooterLink({link, isLoggedIn, onSignIn}) {
-  const content = (loggedIn) => (
-    <Link
-      to={link.to}
-      prefetch="intent"
-      onClick={(event) => {
-        if (loggedIn || !link.to.startsWith('/account/') || !onSignIn) return;
-        event.preventDefault();
-        onSignIn(link.to);
-      }}
-      className="inline-flex min-h-6 items-center font-work text-xs text-black/55 hover:text-brand-accent transition-colors"
-    >
-      {link.label}
-    </Link>
-  );
+function AccountAwareFooterLink({link, isLoggedIn}) {
+  const content = (loggedIn) => {
+    const destination =
+      loggedIn || !link.to.startsWith('/account/')
+        ? link.to
+        : `/account/login?return_to=${encodeURIComponent(link.to)}`;
+    return (
+      <Link
+        to={destination}
+        prefetch="intent"
+        className="inline-flex min-h-6 items-center text-xs text-white/60 hover:text-white"
+      >
+        {link.label}
+      </Link>
+    );
+  };
   if (!link.to.startsWith('/account/')) return content(true);
   return (
     <Suspense fallback={content(false)}>
@@ -155,21 +146,24 @@ function AccountAwareFooterLink({link, isLoggedIn, onSignIn}) {
   );
 }
 
-function FooterAccountLink({loggedIn, onSignIn}) {
-  if (loggedIn) {
-    return <Link to="/account" className="font-work text-[10px] tracking-wide uppercase text-brand-accent">My account</Link>;
-  }
+function FooterAccountLink({loggedIn}) {
+  if (loggedIn)
+    return (
+      <Link
+        to="/account"
+        className="font-medium uppercase tracking-[0.1em] text-white"
+      >
+        My account
+      </Link>
+    );
   return (
     <Link
       to="/account/login?return_to=%2Faccount"
-      onClick={(event) => {
-        if (!onSignIn) return;
-        event.preventDefault();
-        onSignIn('/account');
-      }}
-      className="font-work text-[10px] tracking-wide uppercase text-brand-accent"
+      className="font-medium uppercase tracking-[0.1em] text-white"
     >
       Sign in / Sign up
     </Link>
   );
 }
+
+export default Footer;

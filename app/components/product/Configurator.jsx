@@ -91,30 +91,28 @@ export function Configurator({product, selectedVariant, productOptions}) {
       Number(selectedVariant.price.amount);
 
   return (
-    <div className="flex flex-col gap-7 font-work text-black w-full rounded-[28px] border border-black/[0.07] bg-white/90 p-6 sm:p-8 shadow-[0_24px_70px_-46px_rgba(46,28,18,0.45)] backdrop-blur-sm">
+    <div className="flex w-full flex-col gap-7 bg-white py-2 text-black sm:py-4 lg:p-0">
       {/* Product Title and Price */}
       <div>
-        <span className="font-work text-[10px] tracking-[0.25em] text-black/55 uppercase block mb-2">
+        <span className="mb-3 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#233c6b]">
           {currentFit} · {currentType}
         </span>
-        <h1 className="font-marcellus text-3xl sm:text-4xl uppercase tracking-[0.06em] font-light leading-[1.05]">
+        <h1 className="text-[clamp(36px,4vw,58px)] font-normal leading-[0.98] tracking-[-0.05em]">
           {product.title}
         </h1>
         {product.description ? (
-          <p className="font-work text-xs leading-relaxed text-black/50 mt-4 line-clamp-3">
+          <p className="mt-4 line-clamp-3 text-sm leading-6 text-black/55">
             {product.description}
           </p>
         ) : null}
         <div className="flex items-end justify-between gap-4 mt-5">
-          <div className="flex items-baseline gap-3 font-marcellus text-xl tracking-wider">
+          <div className="flex items-baseline gap-3 text-lg font-medium">
             {onSale && (
               <span className="text-xs text-black/40 line-through">
                 <Money data={selectedVariant.compareAtPrice} />
               </span>
             )}
-            <span
-              className={onSale ? 'text-red-500' : 'text-brand-accent'}
-            >
+            <span className={onSale ? 'text-[#b52d2d]' : 'text-black'}>
               {selectedVariant?.price ? (
                 <Money data={selectedVariant.price} />
               ) : null}
@@ -122,7 +120,9 @@ export function Configurator({product, selectedVariant, productOptions}) {
           </div>
           <span
             className={`font-work text-[9px] tracking-[0.14em] uppercase ${
-              selectedVariant?.availableForSale ? 'text-emerald-700' : 'text-red-600'
+              selectedVariant?.availableForSale
+                ? 'text-emerald-700'
+                : 'text-red-600'
             }`}
             aria-live="polite"
           >
@@ -161,7 +161,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         preventScrollReset: true,
                       });
                     }}
-                    className={`w-8 h-8 rounded-full border relative flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 ${
+                    className={`relative flex size-10 cursor-pointer items-center justify-center rounded-[10px] border transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
                       active
                         ? 'ring-2 ring-black dark:ring-white border-transparent'
                         : 'border-black/10 dark:border-white/10'
@@ -203,10 +203,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
               </button>
             </div>
             {sizeGuideOpen && (
-              <SizeGuide
-                id="product-size-guide"
-                content={orderedSizeGuide}
-              />
+              <SizeGuide id="product-size-guide" content={orderedSizeGuide} />
             )}
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {orderedSizeValues.map((val) => {
@@ -222,7 +219,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         preventScrollReset: true,
                       });
                     }}
-                    className={`min-h-12 rounded-xl border text-xs flex items-center justify-center transition-all cursor-pointer font-medium disabled:cursor-not-allowed disabled:opacity-30 ${
+                    className={`flex min-h-12 cursor-pointer items-center justify-center rounded-[8px] border text-xs font-medium transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
                       active
                         ? 'bg-black text-white border-black shadow-sm'
                         : 'border-black/10 bg-white hover:border-black/35 hover:bg-black/[0.02]'
@@ -258,7 +255,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                 ]
               : []
           }
-          className="w-full py-4 bg-brand-accent text-brand-bg-light rounded-full font-work text-[10px] tracking-[0.16em] uppercase font-semibold hover:opacity-95 transition-all cursor-pointer flex items-center justify-center shadow-[0_12px_30px_-16px_rgba(100,38,32,0.8)]"
+          className="flex min-h-14 w-full cursor-pointer items-center justify-center rounded-full bg-black px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-85"
         >
           {selectedVariant?.availableForSale ? 'Add to Cart →' : 'Out of Stock'}
         </AddToCartButton>
@@ -268,7 +265,11 @@ export function Configurator({product, selectedVariant, productOptions}) {
       <div className="flex flex-col border-t border-black/5 dark:border-white/5 pt-4 mt-6">
         <Accordion title="Design Story" content={designStory} />
         <Accordion title="Product Details" content={material} />
-        <Accordion title="Size & Fit" content={orderedSizeGuide} preserveLines />
+        <Accordion
+          title="Size & Fit"
+          content={orderedSizeGuide}
+          preserveLines
+        />
         <Accordion
           title="Delivery & Returns"
           content="Delivery estimates and return eligibility are shown at checkout and in the store policies."
@@ -344,7 +345,9 @@ function Accordion({title, content, preserveLines = false}) {
         <span className="font-mono text-[10px]">{open ? '−' : '+'}</span>
       </button>
       {open && (
-        <div className={`mt-2 text-xs text-black/50 dark:text-white/40 font-work font-light leading-relaxed animate-fade-in ${preserveLines ? 'whitespace-pre-line' : ''}`}>
+        <div
+          className={`mt-2 text-xs text-black/50 dark:text-white/40 font-work font-light leading-relaxed animate-fade-in ${preserveLines ? 'whitespace-pre-line' : ''}`}
+        >
           {content}
         </div>
       )}

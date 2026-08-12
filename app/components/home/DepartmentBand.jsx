@@ -1,97 +1,155 @@
-import {Link} from 'react-router';
 import {Image} from '@shopify/hydrogen';
-import {Reveal} from '~/components/motion/Reveal.jsx';
+import {Link} from 'react-router';
+import {motion} from 'framer-motion';
+import {MOTION_EASE, Reveal} from '~/components/motion/Reveal.jsx';
+import solidsTeeDetail from '~/assets/home/solids-tee-detail.webp';
+import antarikshamFront from '~/assets/home/antariksham-front.webp';
+import antarikshamBack from '~/assets/home/antariksham-back.webp';
+
+const MotionLink = motion.create(Link);
+
+const COLLECTION_PLACEHOLDERS = [
+  {
+    id: 'collection-placeholder-1',
+    title: 'Shop Solids',
+    handle: 'all',
+    description: 'Quiet essentials designed as a canvas for everyday expression.',
+    fallbackImages: [solidsTeeDetail],
+    fallbackAlt: 'Close-up of a solid white T-shirt',
+    matches: (title) => /solids?/i.test(title),
+  },
+  {
+    id: 'collection-placeholder-2',
+    title: 'Shop Antariksham',
+    handle: 'all',
+    description: 'Washed black layers inspired by language, space, and movement.',
+    fallbackImages: [antarikshamFront, antarikshamBack],
+    fallbackAlt: 'Front and back views of the Antariksham hoodie',
+    matches: (title) => /antariksham/i.test(title),
+  },
+];
 
 export function DepartmentBand({collections = []}) {
-  if (!collections.length) return null;
-
-  const tiles = [
-    ...collections.slice(0, 5).map((collection) => ({...collection, isAll: false})),
-    {
-      id: 'all-collections',
-      title: 'All',
-      handle: 'all',
-      description: 'Explore every language, silhouette, and story in the UniinX catalogue.',
-      isAll: true,
-    },
-  ];
+  const featured = COLLECTION_PLACEHOLDERS.map((editorialCollection) => {
+    const linkedCollection = collections.find((collection) =>
+      editorialCollection.matches(collection.title),
+    );
+    return {
+      ...editorialCollection,
+      id: linkedCollection?.id ?? editorialCollection.id,
+      handle: linkedCollection?.handle ?? editorialCollection.handle,
+    };
+  });
 
   return (
-    <section className="px-6 md:px-14 py-16 bg-brand-bg-light border-b border-black/5">
-      <div className="flex items-end justify-between gap-6 mb-8">
-        <Reveal>
-          <span className="font-work text-[10px] tracking-[0.2em] text-brand-accent uppercase font-semibold">
-            Curated by UniinX
-          </span>
-          <h2 className="font-marcellus text-3xl md:text-4xl uppercase font-light text-black mt-1">
-            Shop Collections
-          </h2>
-        </Reveal>
-        <Link
-          to="/collections"
-          prefetch="intent"
-          className="hidden sm:inline-flex font-work text-[10px] tracking-[0.16em] uppercase text-black/55 hover:text-brand-accent transition-colors"
-        >
-          View all →
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 lg:auto-rows-[210px] gap-4 md:gap-5">
-        {tiles.map((collection, index) => {
-          const image = collection.image ?? collection.products?.nodes?.[0]?.featuredImage;
-          const layout = index === 0
-            ? 'lg:col-span-7 lg:row-span-2 min-h-[420px]'
-            : index === 1 || index === 2
-              ? 'lg:col-span-5 min-h-[260px] lg:min-h-0'
-              : 'lg:col-span-4 min-h-[280px] lg:min-h-0';
-          return (
-          <Reveal
-            key={collection.id}
-            delay={index * 60}
-            as={Link}
-            to={`/collections/${collection.handle}`}
-            prefetch="intent"
-            className={`relative flex flex-col justify-end p-7 cursor-pointer overflow-hidden group border border-black/5 rounded-2xl ${layout} ${collection.isAll ? 'bg-brand-accent' : 'bg-brand-surface-light'}`}
-          >
-            {image && !collection.isAll ? (
-              <Image
-                data={image}
-                alt={image.altText || collection.title}
-                loading={index < 3 ? 'eager' : 'lazy'}
-                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
-              />
-            ) : (
-              <div className={`absolute inset-0 uniinx-fabric ${collection.isAll ? 'opacity-20' : 'bg-brand-surface-light'}`} />
-            )}
-            <div className={`absolute inset-0 ${collection.isAll ? 'bg-gradient-to-br from-white/10 to-black/20' : 'bg-gradient-to-t from-black/75 via-black/10 to-transparent'}`} />
-
-            <div className="relative z-10">
-              <h3 className="font-marcellus text-2xl md:text-3xl tracking-wide text-white uppercase group-hover:translate-x-1 transition-transform duration-300">
-                {collection.isAll ? 'All Collections' : collection.title}
-              </h3>
-              {collection.description ? (
-                <p className="font-work text-xs leading-relaxed text-white/70 mt-2 line-clamp-2 max-w-sm">
-                  {collection.description}
-                </p>
-              ) : null}
-              <span className="font-work text-[10px] tracking-wide text-white/75 uppercase block mt-4">
-                {collection.isAll ? 'Shop everything →' : 'Explore collection →'}
-              </span>
-            </div>
+    <section
+      className="uniinx-home-gutter bg-white pb-10 pt-3 sm:pb-12 sm:pt-4 lg:pb-0 lg:pt-0"
+      aria-labelledby="new-collections-title"
+    >
+      <div className="w-full">
+        <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+          <Reveal className="flex flex-col items-start justify-center lg:col-span-4 lg:pr-8">
+            <h2
+              id="new-collections-title"
+              className="text-[clamp(34px,10vw,44px)] font-normal leading-[0.95] tracking-[-0.06em] sm:text-[clamp(36px,4.5vw,65px)]"
+            >
+              New
+              <br />
+              Collections
+            </h2>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-black/65 sm:mt-5 sm:text-base lg:text-lg lg:leading-[26px]">
+              Explore current UniinX themes, language-led graphics, and everyday
+              silhouettes.
+            </p>
+            <Link
+              to="/collections"
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-black px-6 text-sm font-medium sm:mt-6 lg:min-h-[50px] lg:w-[306px] lg:justify-center lg:text-lg"
+            >
+              Browse Collections
+            </Link>
           </Reveal>
-          );
-        })}
+          <div className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:contents">
+            {featured.map((collection, index) => (
+              <CollectionTile
+                key={collection.id}
+                collection={collection}
+                delay={index * 80}
+                className="h-[340px] w-[82vw] max-w-[340px] shrink-0 snap-center sm:h-auto sm:w-auto sm:max-w-none sm:min-h-[340px] lg:col-span-4 lg:min-h-[306px]"
+              />
+            ))}
+          </div>
+        </div>
       </div>
-
-      <Link
-        to="/collections"
-        prefetch="intent"
-        className="sm:hidden inline-flex mt-8 font-work text-[10px] tracking-[0.16em] uppercase text-black/55"
-      >
-        View all collections →
-      </Link>
     </section>
+  );
+}
+
+export function CollectionTile({collection, className = '', delay = 0}) {
+  const image =
+    collection.image ?? collection.products?.nodes?.[0]?.featuredImage;
+  const fallbackImages = collection.fallbackImages ?? [];
+  return (
+    <MotionLink
+      to={`/collections/${collection.handle}`}
+      prefetch="intent"
+      aria-label={`${collection.title} collection`}
+      initial={{opacity: 0, y: 28, scale: 0.985}}
+      whileInView={{opacity: 1, y: 0, scale: 1}}
+      viewport={{once: true, amount: 0.16}}
+      transition={{duration: 0.68, delay: delay / 1000, ease: MOTION_EASE}}
+      whileHover={{y: -6}}
+      className={`group relative flex overflow-hidden rounded-[20px] bg-[#e9e7e3] p-5 lg:p-4 ${className}`}
+    >
+      {image ? (
+        <Image
+          data={image}
+          alt={image.altText || collection.title}
+          sizes="(min-width:1024px) 34vw, 90vw"
+          className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+        />
+      ) : fallbackImages.length ? (
+        <span
+          className={`absolute inset-0 grid ${fallbackImages.length > 1 ? 'grid-cols-2 gap-px bg-white' : ''}`}
+        >
+          {fallbackImages.map((fallbackImage, index) => (
+            <img
+              key={fallbackImage}
+              src={fallbackImage}
+              alt={index === 0 ? collection.fallbackAlt || collection.title : ''}
+              className="size-full min-w-0 object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+            />
+          ))}
+        </span>
+      ) : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 grid place-items-center text-[clamp(48px,8vw,92px)] font-semibold tracking-[-0.07em] text-black/[0.06]"
+        >
+          UNIINX
+        </span>
+      )}
+      <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+      <span className="relative mt-auto flex w-full items-end justify-between gap-4 text-white">
+        <span>
+          {collection.eyebrow ? (
+            <span className="block text-[clamp(22px,3vw,40px)] font-medium leading-none tracking-[-0.055em]">
+              {collection.eyebrow}
+            </span>
+          ) : null}
+          <span className="block text-[clamp(22px,3vw,40px)] font-medium leading-none tracking-[-0.055em]">
+            {collection.title}
+          </span>
+          {collection.description ? (
+            <span className="mt-3 block max-w-sm text-xs leading-5 text-white/80">
+              {collection.description}
+            </span>
+          ) : null}
+        </span>
+        <span aria-hidden="true" className="text-3xl">
+          ↗
+        </span>
+      </span>
+    </MotionLink>
   );
 }
 

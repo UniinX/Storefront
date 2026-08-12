@@ -1,9 +1,15 @@
-import {useLoaderData} from 'react-router';
+import {useLoaderData, useRouteLoaderData} from 'react-router';
 import {CacheShort, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductCard} from '~/components/ds/index.js';
 import {BentoFeaturedGrid} from '~/components/product/BentoFeaturedGrid';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {
+  FALLBACK_COLLECTION_THEMES,
+  getCollectionThemeStyle,
+  uniqueThemeNames,
+} from '~/lib/collectionTheme.js';
 import {
   getCatalogFilterOptions,
   getCatalogSort,
@@ -29,49 +35,90 @@ export async function loader({context, request}) {
     ...getCatalogSort(sort),
     query,
   };
-  const {products: rawProducts} = await context.storefront.query(CATALOG_QUERY, {
-    variables,
-    cache: CacheShort(),
-  });
+  const {products: rawProducts} = await context.storefront.query(
+    CATALOG_QUERY,
+    {
+      variables,
+      cache: CacheShort(),
+    },
+  );
   const products = groupCatalogFamilies(rawProducts);
 
   return {
     products,
     filterOptions: getCatalogFilterOptions(rawProducts),
+    selectedTheme: url.searchParams.get('theme') || '',
     totalCount: products.nodes.length,
-    hasMoreResults: Boolean(products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage),
+    hasMoreResults: Boolean(
+      products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,
+    ),
   };
 }
 
 export default function Catalog() {
-  const {products, filterOptions, totalCount, hasMoreResults} = useLoaderData();
+  const {products, filterOptions, totalCount, hasMoreResults, selectedTheme} =
+    useLoaderData();
+  const rootData = useRouteLoaderData('root');
+  const themes = uniqueThemeNames([
+    ...filterOptions.themes,
+    ...(rootData?.megaMenuProducts ?? []).map(
+      (product) => product.collectionName?.value,
+    ),
+    ...FALLBACK_COLLECTION_THEMES,
+  ]);
+  const visualTheme = selectedTheme || 'Linguistic essentials';
   return (
-    <section className="px-6 md:px-14 py-28 max-w-6xl mx-auto flex flex-col gap-10 text-black dark:text-white">
-      <div>
-        <span className="font-work text-xs tracking-[0.2em] text-brand-accent dark:text-brand-accent-light uppercase mb-2 block">Editorial Catalog</span>
-        <h2 className="font-marcellus text-4xl uppercase font-light">Linguistic Templates</h2>
-        <p className="font-work text-xs text-black/50 dark:text-white/40 mt-1">Explore products featuring script details in Telugu, Hindi, Tamil, and Sanskrit.</p>
-      </div>
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
-      <CatalogFilters totalCount={totalCount} hasMoreResults={hasMoreResults} filterOptions={filterOptions} />
-      {totalCount === 0 ? (
-        <div className="py-20 border border-dashed border-black/10 dark:border-white/10 text-center flex flex-col items-center justify-center gap-3">
-          <span className="font-marcellus text-lg text-black/60 dark:text-white/50">No products match selected filters</span>
-          <span className="font-work text-xs text-black/40 dark:text-white/40">Try adjusting your search query, scripts, or color options.</span>
-        </div>
-      ) : (
-        <PaginatedResourceSection connection={products} resourcesClassName="uniinx-product-grid" previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3" nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3">
-          {({node: product, index}) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              loading={index < 8 ? 'eager' : undefined}
-              revealDelay={Math.min(index, 8) * 0.06}
-            />
-          )}
-        </PaginatedResourceSection>
-      )}
-    </section>
+    <div
+      style={getCollectionThemeStyle(visualTheme)}
+      className="bg-[var(--collection-page,#f5f1ea)]"
+    >
+      <CollectionThemeHero
+        title="Linguistic essentials"
+        activeTheme={selectedTheme}
+        themes={themes}
+        eyebrow="Shop all themes"
+        description={
+          selectedTheme
+            ? undefined
+            : 'Explore contemporary garments shaped by Indian scripts, language, and culture.'
+        }
+      />
+      <section className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 pb-24 pt-14 text-black sm:px-8 lg:px-[60px] lg:pt-20">
+        <CatalogFilters
+          totalCount={totalCount}
+          hasMoreResults={hasMoreResults}
+          filterOptions={filterOptions}
+          hideTheme
+        />
+        {totalCount === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 bg-white/50 py-20 text-center">
+            <span className="text-lg text-black/60">
+              No products match selected filters
+            </span>
+            <span className="text-xs text-black/45">
+              Try another theme, script, color, or category.
+            </span>
+          </div>
+        ) : (
+          <PaginatedResourceSection
+            connection={products}
+            resourcesClassName="uniinx-product-grid"
+            autoLoadNext
+            previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+            nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+          >
+            {({node: product, index}) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+                revealDelay={0}
+              />
+            )}
+          </PaginatedResourceSection>
+        )}
+      </section>
+    </div>
   );
 }
 

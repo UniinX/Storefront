@@ -1,15 +1,15 @@
-import {useOutletContext, Form} from 'react-router';
+import {Form, Link, useOutletContext} from 'react-router';
+import {
+  AccountPageHeader,
+  AccountPanel,
+  AccountPanelLabel,
+  accountPrimaryButton,
+  accountSecondaryButton,
+} from '~/components/account/AccountUI.jsx';
+import {Reveal} from '~/components/motion/Reveal.jsx';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: 'Login & Security'}];
-};
+export const meta = () => [{title: 'Sign-in & security | UniinX'}];
 
-/**
- * @param {Route.LoaderArgs}
- */
 export async function loader({context}) {
   await context.customerAccount.handleAuthStatus();
   return {};
@@ -17,83 +17,92 @@ export async function loader({context}) {
 
 export default function AccountSecurity() {
   const {customer} = useOutletContext();
-  const email = customer?.emailAddress?.emailAddress ?? 'Connected Customer';
-  const phone = customer?.phoneNumber?.phoneNumber ?? 'No phone number attached';
+  const email = customer?.emailAddress?.emailAddress ?? 'Connected customer';
+  const returnTo = encodeURIComponent('/account/security');
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h3 className="font-marcellus text-2xl text-black dark:text-white uppercase mb-2">
-          Login & Security
-        </h3>
-        <p className="font-work text-xs text-black/50 dark:text-white/40">
-          Manage your login preferences, security credentials, and active studio sessions.
-        </p>
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Sign-in & security"
+        title="Passwordless by design"
+        description="Your UniinX account uses Shopify Customer Accounts. You verify your identity with a one-time code instead of maintaining another password."
+      />
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Reveal variant="card">
+          <AccountPanel className="h-full">
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <AccountPanelLabel>Verified identity</AccountPanelLabel>
+                <p className="mt-5 break-words text-xl font-medium tracking-[-0.025em]">{email}</p>
+                <p className="mt-3 text-sm leading-6 text-black/50">
+                  Verification codes and account notices are sent to this address.
+                </p>
+              </div>
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2f6d4c] text-sm text-white" aria-label="Verified">
+                ✓
+              </span>
+            </div>
+          </AccountPanel>
+        </Reveal>
+
+        <Reveal variant="card" delay={80}>
+          <AccountPanel className="h-full">
+            <AccountPanelLabel>Authentication method</AccountPanelLabel>
+            <p className="mt-5 text-xl font-medium tracking-[-0.025em]">One-time verification code</p>
+            <p className="mt-3 text-sm leading-6 text-black/50">
+              Shop recognition and social sign-in may also appear when enabled in Shopify.
+            </p>
+          </AccountPanel>
+        </Reveal>
       </div>
 
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+      <Reveal>
+        <AccountPanel className="bg-[#151515] text-white">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">Session controls</p>
+              <h3 className="mt-3 text-2xl font-medium tracking-[-0.035em]">Need to verify again?</h3>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/52">
+                Start a fresh verification flow or securely sign out of this browser. We never display invented device or IP-session data.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to={`/account/login?return_to=${returnTo}`}
+                className={`${accountSecondaryButton} border-white/20 bg-white text-black hover:border-white hover:bg-transparent hover:text-white`}
+              >
+                Verify again
+              </Link>
+              <Form method="POST" action="/account/logout">
+                <button type="submit" className={`${accountPrimaryButton} bg-[#a13a2d]`}>
+                  Sign out
+                </button>
+              </Form>
+            </div>
+          </div>
+        </AccountPanel>
+      </Reveal>
 
-      {/* Account Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="border border-black/5 dark:border-white/5 rounded-xl p-6 bg-black/[0.005] dark:bg-white/[0.005]">
-          <span className="font-work text-[9px] tracking-wider text-black/40 dark:text-white/30 uppercase block mb-1">
-            Connected Account Email
-          </span>
-          <span className="font-work text-sm text-black dark:text-white block font-medium">
-            {email}
-          </span>
-        </div>
-
-        <div className="border border-black/5 dark:border-white/5 rounded-xl p-6 bg-black/[0.005] dark:bg-white/[0.005]">
-          <span className="font-work text-[9px] tracking-wider text-black/40 dark:text-white/30 uppercase block mb-1">
-            Connected Account Phone
-          </span>
-          <span className="font-work text-sm text-black dark:text-white block font-medium">
-            {phone}
-          </span>
-        </div>
-      </div>
-
-      {/* Passwordless Security Explanation */}
-      <div className="flex flex-col gap-4">
-        <h4 className="font-work text-xs tracking-wider uppercase text-black/70 dark:text-white/70">
-          Passwordless Verification
-        </h4>
-        <div className="border border-black/5 dark:border-white/5 rounded-xl p-6 bg-black/[0.005] dark:bg-white/[0.005] font-work text-xs leading-relaxed text-black/70 dark:text-white/70 font-light flex flex-col gap-3">
-          <p>
-            UniinX utilizes <strong>Shopify Customer Accounts</strong> for all user authentication. This modern security model is entirely passwordless.
-          </p>
-          <p>
-            Instead of managing passwords that can be compromised, authentication is completed securely using disposable verification codes sent to your registered email address on each login.
-          </p>
-          <p>
-            This ensures your account remains highly secure and aligned with Shopify's latest OIDC (OpenID Connect) authentication guidelines.
-          </p>
-        </div>
-      </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
-
-      {/* Reauthenticate & Sign Out */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-0.5">
-          <span className="font-work text-xs text-black dark:text-white font-medium">
-            Terminate Session
-          </span>
-          <span className="font-work text-[10px] text-black/40 dark:text-white/40">
-            Sign out of your account on this browser.
-          </span>
-        </div>
-        <Form method="POST" action="/account/logout">
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-full border border-black/10 dark:border-white/10 text-black/75 dark:text-white/75 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 font-work text-[10px] tracking-wider uppercase font-semibold transition-all cursor-pointer"
-          >
-            Sign Out
-          </button>
-        </Form>
-      </div>
+      <Reveal>
+        <section className="grid gap-4 border-t border-black/10 pt-7 sm:grid-cols-3">
+          <SecurityNote number="01" title="No password database" text="UniinX does not collect or store customer passwords." />
+          <SecurityNote number="02" title="Private account data" text="Customer responses are explicitly marked private and never storefront-cached." />
+          <SecurityNote number="03" title="Secure checkout handoff" text="Your authenticated customer context follows you securely into Shopify checkout." />
+        </section>
+      </Reveal>
     </div>
   );
 }
+
+function SecurityNote({number, title, text}) {
+  return (
+    <div className="rounded-[18px] bg-[#f3f0ea] p-5">
+      <span className="text-[9px] tracking-[0.18em] text-black/30">{number}</span>
+      <h3 className="mt-5 text-sm font-semibold">{title}</h3>
+      <p className="mt-2 text-xs leading-5 text-black/48">{text}</p>
+    </div>
+  );
+}
+
+/** @typedef {import('./+types/account.security').Route} Route */

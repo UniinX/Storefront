@@ -1,5 +1,6 @@
 import {useLoaderData} from 'react-router';
 import {useState} from 'react';
+import {AccountPageHeader} from '~/components/account/AccountUI.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -38,18 +39,12 @@ export default function AccountPolicies() {
   const [openSection, setOpenSection] = useState(policies[0]?.id ?? '');
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h3 className="font-marcellus text-2xl text-black dark:text-white uppercase mb-2">
-          Store Policies
-        </h3>
-        <p className="font-work text-xs text-black/50 dark:text-white/40">
-          Review our terms of use, privacy statements, and fulfillment promises fetched directly from the storefront registry.
-        </p>
-      </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
+    <div className="space-y-8">
+      <AccountPageHeader
+        eyebrow="Transparency"
+        title="Store policies"
+        description="The current privacy, shipping, service, and refund policies published by UniinX."
+      />
 
       {/* Accordion List */}
       <div className="flex flex-col gap-4">
@@ -63,6 +58,8 @@ export default function AccountPolicies() {
               >
                 <button
                   onClick={() => setOpenSection(isOpen ? '' : policy.id)}
+                  aria-expanded={isOpen}
+                  aria-controls={`policy-${policy.id}`}
                   className="w-full flex items-center justify-between p-5 text-left focus:outline-none cursor-pointer hover:bg-black/[0.01] dark:hover:bg-white/[0.01]"
                 >
                   <span className="font-marcellus text-sm text-black dark:text-white uppercase tracking-wider font-light">
@@ -73,7 +70,7 @@ export default function AccountPolicies() {
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="p-6 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 font-work text-xs leading-relaxed text-black/70 dark:text-white/70 font-light prose prose-sm dark:prose-invert max-w-none">
+                  <div id={`policy-${policy.id}`} className="p-6 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 font-work text-xs leading-relaxed text-black/70 dark:text-white/70 font-light prose prose-sm dark:prose-invert max-w-none">
                     <div dangerouslySetInnerHTML={{__html: policy.body}} />
                   </div>
                 )}

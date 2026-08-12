@@ -1,11 +1,18 @@
-import {useLoaderData} from 'react-router';
+import {useLoaderData, useRouteLoaderData} from 'react-router';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {AboutPage} from '~/components/about/AboutPage.jsx';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.page.title ?? ''}`}];
+  const page = data?.page;
+  return [
+    {title: page?.seo?.title || `${page?.title ?? 'Page'} | UniinX`},
+    ...(page?.seo?.description
+      ? [{name: 'description', content: page.seo.description}]
+      : []),
+  ];
 };
 
 /**
@@ -65,6 +72,16 @@ function loadDeferredData({context}) {
 export default function Page() {
   /** @type {LoaderReturnData} */
   const {page} = useLoaderData();
+  const rootData = useRouteLoaderData('root');
+
+  if (page.handle === 'about') {
+    return (
+      <AboutPage
+        page={page}
+        language={rootData?.languagePreference ?? 'english'}
+      />
+    );
+  }
 
   return (
     <div className="page">

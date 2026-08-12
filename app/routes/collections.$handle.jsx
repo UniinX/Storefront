@@ -1,21 +1,39 @@
-import {useLoaderData} from 'react-router';
+import {useLoaderData, useRouteLoaderData} from 'react-router';
 import {Analytics, CacheShort, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductCard} from '~/components/ds/index.js';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
-import {getCatalogFilterOptions, getCatalogSort, getCollectionFilters, getProductSearchQuery, groupCatalogFamilies, matchesDepartment} from '~/lib/catalog';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {
+  FALLBACK_COLLECTION_THEMES,
+  getCollectionThemeStyle,
+  uniqueThemeNames,
+} from '~/lib/collectionTheme.js';
+import {
+  getCatalogFilterOptions,
+  getCatalogSort,
+  getCollectionFilters,
+  getProductSearchQuery,
+  groupCatalogFamilies,
+  matchesDepartment,
+} from '~/lib/catalog';
 
-export const meta = ({data}) => [{title: `UniinX | ${data?.collection.title ?? 'Collection'}`}];
+export const meta = ({data}) => [
+  {title: `UniinX | ${data?.collection.title ?? 'Collection'}`},
+];
 
 export async function loader({context, params, request}) {
   const {handle} = params;
-  if (!handle) throw new Response('Collection handle is required', {status: 404});
+  if (!handle)
+    throw new Response('Collection handle is required', {status: 404});
 
   const url = new URL(request.url);
   const selected = {
-    type: url.searchParams.get('type'), theme: url.searchParams.get('theme'),
-    language: url.searchParams.get('language'), color: url.searchParams.get('color'),
+    type: url.searchParams.get('type'),
+    theme: url.searchParams.get('theme'),
+    language: url.searchParams.get('language'),
+    color: url.searchParams.get('color'),
     collection: url.searchParams.get('collection'),
   };
   const variables = {
@@ -24,27 +42,54 @@ export async function loader({context, params, request}) {
     ...getCatalogSort(url.searchParams.get('sort') || 'featured', true),
     filters: getCollectionFilters(selected),
   };
-  let {collection} = await context.storefront.query(COLLECTION_QUERY, {variables, cache: CacheShort()});
+  let {collection} = await context.storefront.query(COLLECTION_QUERY, {
+    variables,
+    cache: CacheShort(),
+  });
   const isDepartment = ['men', 'women', 'accessories'].includes(handle);
 
   if (!collection && isDepartment) {
-    const query = getProductSearchQuery({...selected, collection: selected.collection || handle, q: url.searchParams.get('q')});
+    const query = getProductSearchQuery({
+      ...selected,
+      collection: selected.collection || handle,
+      q: url.searchParams.get('q'),
+    });
     const fallback = await context.storefront.query(CATALOG_PRODUCTS_QUERY, {
-      variables: {...getPaginationVariables(request, {pageBy: 12}), ...getCatalogSort(url.searchParams.get('sort') || 'featured'), query},
+      variables: {
+        ...getPaginationVariables(request, {pageBy: 12}),
+        ...getCatalogSort(url.searchParams.get('sort') || 'featured'),
+        query,
+      },
       cache: CacheShort(),
     });
-    const nodes = (fallback.products?.nodes ?? []).filter((product) => matchesDepartment(product, handle));
-    collection = {id: `virtual-collection-${handle}`, handle, title: handle[0].toUpperCase() + handle.slice(1), description: '', products: {...fallback.products, nodes}};
+    const nodes = (fallback.products?.nodes ?? []).filter((product) =>
+      matchesDepartment(product, handle),
+    );
+    collection = {
+      id: `virtual-collection-${handle}`,
+      handle,
+      title: handle[0].toUpperCase() + handle.slice(1),
+      description: '',
+      products: {...fallback.products, nodes},
+    };
   }
 
-  if (!collection) throw new Response(`Collection ${handle} not found`, {status: 404});
+  if (!collection)
+    throw new Response(`Collection ${handle} not found`, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
   // Shopify collection connections cannot text-search. Keep the URL contract while
   // limiting the fallback to the already cursor-paginated page.
   const search = url.searchParams.get('q')?.toLowerCase();
   const rawProducts = search
-    ? {...collection.products, nodes: collection.products.nodes.filter((product) => product.title.toLowerCase().includes(search) || product.tags.some((tag) => tag.toLowerCase().includes(search)))}
+    ? {
+        ...collection.products,
+        nodes: collection.products.nodes.filter(
+          (product) =>
+            product.title.toLowerCase().includes(search) ||
+            product.tags.some((tag) => tag.toLowerCase().includes(search)),
+        ),
+      }
     : collection.products;
   const products = groupCatalogFamilies(rawProducts);
 
@@ -52,41 +97,83 @@ export async function loader({context, params, request}) {
     collection,
     products,
     filterOptions: getCatalogFilterOptions(collection.products),
+    selectedTheme: url.searchParams.get('theme') || '',
     totalCount: products.nodes.length,
-    hasMoreResults: Boolean(products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage),
+    hasMoreResults: Boolean(
+      products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,
+    ),
   };
 }
 
 export default function Collection() {
-  const {collection, products, filterOptions, totalCount, hasMoreResults} = useLoaderData();
+  const {
+    collection,
+    products,
+    filterOptions,
+    totalCount,
+    hasMoreResults,
+    selectedTheme,
+  } = useLoaderData();
+  const rootData = useRouteLoaderData('root');
+  const themes = uniqueThemeNames([
+    ...filterOptions.themes,
+    ...(rootData?.megaMenuProducts ?? []).map(
+      (product) => product.collectionName?.value,
+    ),
+    ...FALLBACK_COLLECTION_THEMES,
+  ]);
+  const visualTheme = selectedTheme || collection.title;
   return (
-    <section className="px-6 md:px-14 py-28 max-w-6xl mx-auto flex flex-col gap-10 text-black dark:text-white">
-      <div>
-        <span className="font-work text-xs tracking-[0.2em] text-brand-accent dark:text-brand-accent-light uppercase mb-2 block">Theme Collection</span>
-        <h1 className="font-marcellus text-4xl uppercase font-light">{collection.title}</h1>
-        {collection.description && <p className="font-work text-xs text-black/50 dark:text-white/40 mt-1 max-w-lg">{collection.description}</p>}
-      </div>
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
-      <CatalogFilters totalCount={totalCount} hasMoreResults={hasMoreResults} filterOptions={filterOptions} currentCollection={collection.handle} />
-      {totalCount === 0 ? (
-        <div className="py-20 border border-dashed border-black/10 dark:border-white/10 text-center flex flex-col items-center justify-center gap-3">
-          <span className="font-marcellus text-lg text-black/60 dark:text-white/50">No products match selected filters in this collection</span>
-          <span className="font-work text-xs text-black/40 dark:text-white/40">Try adjusting your search criteria, script filter, or color options.</span>
-        </div>
-      ) : (
-        <PaginatedResourceSection connection={products} resourcesClassName="uniinx-product-grid" previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3" nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3">
-          {({node: product, index}) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              loading={index < 8 ? 'eager' : undefined}
-              revealDelay={Math.min(index, 8) * 0.06}
-            />
-          )}
-        </PaginatedResourceSection>
-      )}
-      <Analytics.CollectionView data={{collection: {id: collection.id, handle: collection.handle}}} />
-    </section>
+    <div
+      style={getCollectionThemeStyle(visualTheme)}
+      className="bg-[var(--collection-page,#f5f1ea)]"
+    >
+      <CollectionThemeHero
+        title={collection.title}
+        activeTheme={selectedTheme}
+        themes={themes}
+        description={collection.description || undefined}
+      />
+      <section className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 pb-24 pt-14 text-black sm:px-8 lg:px-[60px] lg:pt-20">
+        <CatalogFilters
+          totalCount={totalCount}
+          hasMoreResults={hasMoreResults}
+          filterOptions={filterOptions}
+          currentCollection={collection.handle}
+          hideTheme
+        />
+        {totalCount === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 bg-white/50 py-20 text-center">
+            <span className="text-lg text-black/60">
+              No products match this theme and filter combination
+            </span>
+            <span className="text-xs text-black/45">
+              Swipe to another theme or adjust the product filters.
+            </span>
+          </div>
+        ) : (
+          <PaginatedResourceSection
+            connection={products}
+            resourcesClassName="uniinx-product-grid"
+            autoLoadNext
+            previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+            nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+          >
+            {({node: product, index}) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+                revealDelay={0}
+              />
+            )}
+          </PaginatedResourceSection>
+        )}
+        <Analytics.CollectionView
+          data={{collection: {id: collection.id, handle: collection.handle}}}
+        />
+      </section>
+    </div>
   );
 }
 

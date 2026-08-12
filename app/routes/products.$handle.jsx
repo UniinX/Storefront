@@ -178,183 +178,183 @@ export default function Product() {
 
   return (
     <>
-    <section className="px-5 sm:px-8 md:px-14 pt-24 pb-12 md:pt-28 md:pb-16 max-w-7xl mx-auto text-black">
-      {/* Back CTA */}
-      <button
-        onClick={() => navigate('/collections/all')}
-        className="font-work text-[10px] tracking-wider uppercase text-black/50 hover:text-black dark:text-white/40 dark:hover:text-white mb-6 flex items-center gap-1 transition-all cursor-pointer"
-      >
-        ← Back to catalog
-      </button>
-
-      {/* 2D Split Layout Configurator */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] gap-8 xl:gap-14 items-start">
-        {/* Left 2D Preview Pane (70% width) */}
-        <div className="flex flex-col gap-4 w-full min-w-0 lg:sticky lg:top-24 lg:self-start">
-          <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)] rounded-[32px] overflow-hidden bg-[#f3eee5] border border-black/[0.06] flex items-center justify-center shadow-[0_30px_90px_-58px_rgba(46,28,18,0.5)]">
-            {activeImage ? (
-              <Image
-                data={activeImage}
-                alt={activeImage.altText || product.title}
-                aspectRatio="4/5"
-                sizes="(min-width: 45em) 720px, 100vw"
-                className={`w-full h-full object-cover lg:object-contain transition-transform duration-500 ease-out ${
-                  zoomed
-                    ? 'scale-[1.18] cursor-zoom-out'
-                    : 'scale-100 cursor-zoom-in'
-                }`}
-                onClick={() => setZoomed(!zoomed)}
-              />
-            ) : (
-              <div className="uniinx-fabric w-full h-full flex items-center justify-center">
-                <span className="font-work text-xs opacity-40">
-                  Garment Preview Template
-                </span>
-              </div>
-            )}
-
-            {/* Floating Zoom & View Controls */}
-            <div className="absolute bottom-6 right-6 flex items-center gap-2 z-30">
-              <button
-                type="button"
-                onClick={() => setZoomed(!zoomed)}
-                className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
-                title={zoomed ? 'Zoom Out' : 'Zoom In'}
-              >
-                🔍
-              </button>
-              <button
-                ref={fullscreenTriggerRef}
-                type="button"
-                onClick={() => setFullscreen(true)}
-                className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
-                title="Fullscreen Preview"
-              >
-                ⛶
-              </button>
-            </div>
-
-            {/* Front / Back selection buttons */}
-            {imagesList.length > 1 && (
-              <div className="absolute bottom-6 left-6 flex items-center gap-1.5 z-30 bg-white/90 dark:bg-black/90 p-1.5 rounded-full border border-black/5 dark:border-white/5">
-                <button
-                  type="button"
-                  onClick={() => setActiveImageIdx(0)}
-                  className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
-                    activeImageIdx === 0
-                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                      : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  Front
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveImageIdx(1)}
-                  className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
-                    activeImageIdx === 1
-                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                      : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  Back
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Swipeable Thumbnails Row */}
-          {imagesList.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto py-1 scrollbar-none">
-              {imagesList.map((img, idx) => (
-                <button
-                  key={img.id || idx}
-                  type="button"
-                  onClick={() => setActiveImageIdx(idx)}
-                  className={`w-16 h-16 rounded-xl overflow-hidden border flex-shrink-0 relative transition-all cursor-pointer ${
-                    activeImageIdx === idx
-                      ? 'border-brand-accent dark:border-brand-accent-light scale-[1.02] shadow-sm'
-                      : 'border-black/10 dark:border-white/10 hover:border-black/25'
-                  }`}
-                >
-                  <Image
-                    data={img}
-                    alt={`Preview thumb ${idx}`}
-                    className="w-full h-full object-cover"
-                    sizes="64px"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right Configuration Panel (30% width) */}
-        <div className="w-full min-w-0">
-          <Reveal delay={120}>
-            <Configurator
-              product={product}
-              selectedVariant={selectedVariant}
-              productOptions={productOptions}
-            />
-          </Reveal>
-        </div>
-      </div>
-
-      {/* Fullscreen Modal Overlay */}
-      {fullscreen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${product.title} fullscreen preview`}
-          className="fixed inset-0 bg-black/95 dark:bg-black/98 z-50 flex items-center justify-center p-6 animate-fade-in text-white"
+      <section className="mx-auto max-w-[1320px] px-5 pb-16 pt-8 text-black sm:px-8 lg:px-[60px] lg:pt-12">
+        {/* Back CTA */}
+        <button
+          onClick={() => navigate('/collections/all')}
+          className="mb-6 flex min-h-11 cursor-pointer items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-black/50 transition-colors hover:text-black"
         >
-          <button
-            ref={fullscreenCloseRef}
-            type="button"
-            onClick={() => setFullscreen(false)}
-            aria-label="Close fullscreen preview"
-            className="absolute top-8 right-8 w-12 h-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/15 cursor-pointer transition-all text-lg font-mono font-light"
-          >
-            ✕
-          </button>
+          ← Back to catalog
+        </button>
 
-          <div className="relative max-w-2xl max-h-[85vh] aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-900 flex items-center justify-center">
-            {activeImage && (
-              <Image
-                data={activeImage}
-                alt={activeImage.altText || product.title}
-                className="w-full h-full object-cover"
-                sizes="(min-width: 45em) 1024px, 100vw"
-              />
+        {/* 2D Split Layout Configurator */}
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] xl:gap-16">
+          {/* Left 2D Preview Pane (70% width) */}
+          <div className="flex w-full min-w-0 flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
+            <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-[18px] border border-black/[0.06] bg-[#ececec] lg:aspect-auto lg:h-[calc(100vh-10rem)]">
+              {activeImage ? (
+                <Image
+                  data={activeImage}
+                  alt={activeImage.altText || product.title}
+                  aspectRatio="4/5"
+                  sizes="(min-width: 45em) 720px, 100vw"
+                  className={`h-full w-full object-contain transition-transform duration-500 ease-out ${
+                    zoomed
+                      ? 'scale-[1.18] cursor-zoom-out'
+                      : 'scale-100 cursor-zoom-in'
+                  }`}
+                  onClick={() => setZoomed(!zoomed)}
+                />
+              ) : (
+                <div className="uniinx-fabric w-full h-full flex items-center justify-center">
+                  <span className="font-work text-xs opacity-40">
+                    Garment Preview Template
+                  </span>
+                </div>
+              )}
+
+              {/* Floating Zoom & View Controls */}
+              <div className="absolute bottom-6 right-6 flex items-center gap-2 z-30">
+                <button
+                  type="button"
+                  onClick={() => setZoomed(!zoomed)}
+                  className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                  title={zoomed ? 'Zoom Out' : 'Zoom In'}
+                >
+                  🔍
+                </button>
+                <button
+                  ref={fullscreenTriggerRef}
+                  type="button"
+                  onClick={() => setFullscreen(true)}
+                  className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                  title="Fullscreen Preview"
+                >
+                  ⛶
+                </button>
+              </div>
+
+              {/* Front / Back selection buttons */}
+              {imagesList.length > 1 && (
+                <div className="absolute bottom-6 left-6 flex items-center gap-1.5 z-30 bg-white/90 dark:bg-black/90 p-1.5 rounded-full border border-black/5 dark:border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveImageIdx(0)}
+                    className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                      activeImageIdx === 0
+                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                        : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
+                    }`}
+                  >
+                    Front
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveImageIdx(1)}
+                    className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                      activeImageIdx === 1
+                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                        : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
+                    }`}
+                  >
+                    Back
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Swipeable Thumbnails Row */}
+            {imagesList.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto py-1 scrollbar-none">
+                {imagesList.map((img, idx) => (
+                  <button
+                    key={img.id || idx}
+                    type="button"
+                    onClick={() => setActiveImageIdx(idx)}
+                    className={`w-16 h-16 rounded-xl overflow-hidden border flex-shrink-0 relative transition-all cursor-pointer ${
+                      activeImageIdx === idx
+                        ? 'border-brand-accent dark:border-brand-accent-light scale-[1.02] shadow-sm'
+                        : 'border-black/10 dark:border-white/10 hover:border-black/25'
+                    }`}
+                  >
+                    <Image
+                      data={img}
+                      alt={`Preview thumb ${idx}`}
+                      className="w-full h-full object-cover"
+                      sizes="64px"
+                    />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* Analytics integration */}
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || '0',
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
-              quantity: 1,
-            },
-          ],
-        }}
-      />
-      <MobileBuyBar
-        selectedVariant={selectedVariant}
-        language={activeLanguage}
-        productOptions={productOptions}
-        hasProductFamily={Boolean(product.productFamily?.reference)}
-      />
-    </section>
+          {/* Right Configuration Panel (30% width) */}
+          <div className="w-full min-w-0">
+            <Reveal delay={120}>
+              <Configurator
+                product={product}
+                selectedVariant={selectedVariant}
+                productOptions={productOptions}
+              />
+            </Reveal>
+          </div>
+        </div>
+
+        {/* Fullscreen Modal Overlay */}
+        {fullscreen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${product.title} fullscreen preview`}
+            className="fixed inset-0 bg-black/95 dark:bg-black/98 z-50 flex items-center justify-center p-6 animate-fade-in text-white"
+          >
+            <button
+              ref={fullscreenCloseRef}
+              type="button"
+              onClick={() => setFullscreen(false)}
+              aria-label="Close fullscreen preview"
+              className="absolute top-8 right-8 w-12 h-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/15 cursor-pointer transition-all text-lg font-mono font-light"
+            >
+              ✕
+            </button>
+
+            <div className="relative max-w-2xl max-h-[85vh] aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-900 flex items-center justify-center">
+              {activeImage && (
+                <Image
+                  data={activeImage}
+                  alt={activeImage.altText || product.title}
+                  className="w-full h-full object-cover"
+                  sizes="(min-width: 45em) 1024px, 100vw"
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Analytics integration */}
+        <Analytics.ProductView
+          data={{
+            products: [
+              {
+                id: product.id,
+                title: product.title,
+                price: selectedVariant?.price.amount || '0',
+                vendor: product.vendor,
+                variantId: selectedVariant?.id || '',
+                variantTitle: selectedVariant?.title || '',
+                quantity: 1,
+              },
+            ],
+          }}
+        />
+        <MobileBuyBar
+          selectedVariant={selectedVariant}
+          language={activeLanguage}
+          productOptions={productOptions}
+          hasProductFamily={Boolean(product.productFamily?.reference)}
+        />
+      </section>
 
       <Suspense fallback={null}>
         <Await resolve={recommendedProducts}>
@@ -586,6 +586,7 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
     handle
     availableForSale
     productType
+    collectionName: metafield(namespace: "custom", key: "collection_name") { value }
     collections(first: 1) {
       nodes {
         title

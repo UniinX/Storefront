@@ -1,9 +1,9 @@
 /** @file Tests for ProductCard. */
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import {describe, it, expect} from 'vitest';
+import {render, screen} from '@testing-library/react';
 import {renderToString} from 'react-dom/server';
-import { MemoryRouter } from 'react-router';
-import { ProductCard } from './ProductCard.jsx';
+import {MemoryRouter} from 'react-router';
+import {ProductCard} from './ProductCard.jsx';
 
 const product = {
   id: 'gid://shopify/Product/1',
@@ -11,13 +11,13 @@ const product = {
   title: 'Tshirt',
   availableForSale: true,
   featuredImage: null,
-  priceRange: { minVariantPrice: { amount: '200', currencyCode: 'INR' } },
+  priceRange: {minVariantPrice: {amount: '200', currencyCode: 'INR'}},
 };
 
 function renderCard(overrides = {}) {
   return render(
     <MemoryRouter>
-      <ProductCard product={{ ...product, ...overrides }} />
+      <ProductCard product={{...product, ...overrides}} />
     </MemoryRouter>,
   );
 }
@@ -54,12 +54,18 @@ describe('ProductCard', () => {
     const image = screen.getByRole('img', {name: 'Test product'});
     expect(image).toHaveAttribute('loading', 'eager');
     expect(image).not.toHaveClass('opacity-0');
-    expect(image).toHaveClass('motion-reduce:scale-100', 'motion-reduce:transition-none');
+    expect(image).toHaveClass(
+      'motion-reduce:scale-100',
+      'motion-reduce:transition-none',
+    );
   });
 
   it('links to the product page', () => {
     renderCard();
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/products/test-tshirt');
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
+      '/products/test-tshirt',
+    );
   });
 
   it('has no visible outer card chrome', () => {
@@ -67,6 +73,15 @@ describe('ProductCard', () => {
     const card = screen.getByTestId('product-card');
     expect(card).toHaveClass('bg-transparent');
     expect(card).not.toHaveClass('border', 'shadow', 'rounded-xl');
+  });
+
+  it('uses the red fallback while exposing the collection theme hook', () => {
+    renderCard({collectionName: {value: 'Antariksham'}});
+    const card = screen.getByTestId('product-card');
+    const image = screen.getByTestId('product-image-motion');
+
+    expect(card).toHaveAttribute('data-product-collection', 'antariksham');
+    expect(image).toHaveStyle({'--product-card-color': '#f15353'});
   });
 
   it('server-renders visible card content without an observer-dependent mask', () => {
@@ -88,7 +103,9 @@ describe('ProductCard', () => {
 
   it('shows a sale badge and strikethrough price when compareAtPrice is higher', () => {
     renderCard({
-      compareAtPriceRange: { minVariantPrice: { amount: '300', currencyCode: 'INR' } },
+      compareAtPriceRange: {
+        minVariantPrice: {amount: '300', currencyCode: 'INR'},
+      },
     });
     expect(screen.getByText('Sale')).toBeInTheDocument();
     expect(screen.getByText(/300/)).toBeInTheDocument();
@@ -110,7 +127,9 @@ describe('ProductCard', () => {
     });
     expect(screen.getByText('Sold out')).toBeInTheDocument();
     expect(screen.getByText('From')).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: 'View Tshirt, sold out'})).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {name: 'View Tshirt, sold out'}),
+    ).toBeInTheDocument();
   });
 
   it('keeps product-family choices off the card and exposes one destination', () => {
@@ -119,10 +138,26 @@ describe('ProductCard', () => {
         reference: {
           __typename: 'Metaobject',
           id: 'family-1',
-          products: {references: {nodes: [
-            {id: product.id, handle: product.handle, title: product.title, availableForSale: true, familyValue: {value: 'Black'}},
-            {id: 'product-2', handle: 'test-tshirt-blue', title: 'Tshirt Blue', availableForSale: true, familyValue: {value: 'Blue'}},
-          ]}},
+          products: {
+            references: {
+              nodes: [
+                {
+                  id: product.id,
+                  handle: product.handle,
+                  title: product.title,
+                  availableForSale: true,
+                  familyValue: {value: 'Black'},
+                },
+                {
+                  id: 'product-2',
+                  handle: 'test-tshirt-blue',
+                  title: 'Tshirt Blue',
+                  availableForSale: true,
+                  familyValue: {value: 'Blue'},
+                },
+              ],
+            },
+          },
         },
       },
     });

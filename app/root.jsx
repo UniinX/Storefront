@@ -1,4 +1,5 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {MotionConfig} from 'framer-motion';
 import {
   Outlet,
   useRouteError,
@@ -81,7 +82,7 @@ export async function loader(args) {
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
     }),
     consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN || env.PUBLIC_STORE_DOMAIN,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       withPrivacyBanner: true,
       // localize the privacy banner
@@ -100,17 +101,19 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {storefront} = context;
 
-  const [header] = await Promise.all([
+  const [header, megaMenu] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    storefront.query(MEGA_MENU_QUERY, {
+      cache: storefront.CacheShort(),
+    }),
   ]);
 
-  return {header};
+  return {header, megaMenuProducts: megaMenu.products?.nodes ?? []};
 }
 
 /**
@@ -160,7 +163,13 @@ export function Layout({children}) {
         <Links />
       </head>
       <body className="bg-brand-bg-light text-black">
-        {children}
+        <MotionConfig
+          reducedMotion="user"
+          transition={{duration: 0.6, ease: [0.16, 0.84, 0.32, 1]}}
+          nonce={nonce}
+        >
+          {children}
+        </MotionConfig>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>
@@ -171,7 +180,9 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
-  const {language, changeLanguage} = useLanguage(data?.languagePreference ?? 'english');
+  const {language, changeLanguage} = useLanguage(
+    data?.languagePreference ?? 'english',
+  );
 
   if (!data) {
     return <Outlet context={{language, changeLanguage}} />;
@@ -188,6 +199,7 @@ export default function App() {
         language={language}
         onLanguageChange={changeLanguage}
         isLoggedIn={data.isLoggedIn}
+        megaMenuProducts={data.megaMenuProducts}
       >
         <Outlet context={{language, changeLanguage}} />
       </PageLayout>
@@ -196,9 +208,30 @@ export default function App() {
 }
 
 const HTML_LANGUAGE_CODES = {
-  english: 'en', hindi: 'hi', tamil: 'ta', telugu: 'te', kannada: 'kn',
-  bengali: 'bn', marathi: 'mr', gujarati: 'gu', punjabi: 'pa', odia: 'or', urdu: 'ur',
+  english: 'en',
+  hindi: 'hi',
+  telugu: 'te',
+  tamil: 'ta',
+  malayalam: 'ml',
+  kannada: 'kn',
+  bengali: 'bn',
+  odia: 'or',
 };
+
+const MEGA_MENU_QUERY = `#graphql
+  query MegaMenuProducts($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    products(first: 24, sortKey: BEST_SELLING) {
+      nodes {
+        id
+        handle
+        title
+        collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+        featuredImage { id url altText width height }
+      }
+    }
+  }
+`;
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -207,11 +240,14 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     errorStatus = error.status;
-    errorMessage = errorStatus >= 500 && !import.meta.env.DEV
-      ? 'An unexpected error occurred.'
-      : error?.data?.message ?? error.data;
+    errorMessage =
+      errorStatus >= 500 && !import.meta.env.DEV
+        ? 'An unexpected error occurred.'
+        : (error?.data?.message ?? error.data);
   } else if (error instanceof Error) {
-    errorMessage = import.meta.env.DEV ? error.message : 'An unexpected error occurred.';
+    errorMessage = import.meta.env.DEV
+      ? error.message
+      : 'An unexpected error occurred.';
   }
 
   return (

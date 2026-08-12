@@ -1,6 +1,7 @@
 import {redirect, useLoaderData, Link} from 'react-router';
 import {Money, Image} from '@shopify/hydrogen';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
+import {AccountPageHeader} from '~/components/account/AccountUI.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -78,30 +79,24 @@ export default function OrderRoute() {
   );
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in text-black dark:text-white">
-      {/* Back Button & Header */}
+    <div className="space-y-8 text-black">
       <div>
         <Link
           to="/account/orders"
-          className="font-work text-[9px] tracking-wider uppercase text-black/50 hover:text-black dark:text-white/40 dark:hover:text-white mb-4 inline-flex items-center gap-1 transition-all"
+          className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-black/48 transition-colors hover:text-black"
         >
           ← Back to orders
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="font-marcellus text-2xl uppercase">
-              Order {order.name}
-            </h3>
-            <p className="font-work text-xs text-black/50 dark:text-white/40 mt-1">
-              Placed on {new Date(order.processedAt).toLocaleDateString(undefined, {
+        <AccountPageHeader
+          eyebrow="Order details"
+          title={`Order ${order.name}`}
+          description={`Placed on ${new Date(order.processedAt).toLocaleDateString(undefined, {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
-              })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+              })}`}
+          action={<div className="flex items-center gap-2">
             <span className={`font-work text-[8px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded ${
               order.financialStatus === 'PAID'
                 ? 'bg-green-500/10 text-green-600 dark:text-green-400'
@@ -112,11 +107,9 @@ export default function OrderRoute() {
             <span className={`font-work text-[8px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-brand-accent/15 text-brand-accent dark:bg-brand-accent-light/15 dark:text-brand-accent-light`}>
               {fulfillmentStatus}
             </span>
-          </div>
-        </div>
+          </div>}
+        />
       </div>
-
-      <div className="w-full h-[1px] bg-black/10 dark:bg-white/10" />
 
       {/* Tracking Card */}
       {trackingInfo.length > 0 && (

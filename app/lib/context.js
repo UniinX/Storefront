@@ -1,4 +1,5 @@
 import {createHydrogenContext} from '@shopify/hydrogen';
+import {redirect} from 'react-router';
 import {AppSession} from '~/lib/session';
 import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
 import {getStorefrontLanguageCode} from '~/hooks/useLanguage.js';
@@ -11,6 +12,12 @@ const additionalContext = {
   // cms: await createCMSClient(env),
   // reviews: await createReviewsClient(env),
 };
+
+export function getSignedOutRedirect(request) {
+  const url = new URL(request.url);
+  const returnTo = `${url.pathname}${url.search}`;
+  return `/account/login?return_to=${encodeURIComponent(returnTo)}`;
+}
 
 /**
  * Creates Hydrogen context for React Router 7.9.x
@@ -46,6 +53,9 @@ export async function createHydrogenRouterContext(
       session,
       // Or detect from URL path based on locale subpath, cookies, or any other strategy
       i18n: {language: getStorefrontLanguageCode(request), country: 'IN'},
+      customerAccount: {
+        customAuthStatusHandler: () => redirect(getSignedOutRedirect(request)),
+      },
       cart: {
         queryFragment: CART_QUERY_FRAGMENT,
       },

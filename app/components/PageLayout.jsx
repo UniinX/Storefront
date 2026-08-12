@@ -1,22 +1,22 @@
-import {useState} from 'react';
 import {useLocation} from 'react-router';
+import {motion, useReducedMotion} from 'framer-motion';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header} from '~/components/Header';
-import {BottomNav} from '~/components/BottomNav';
-import {SignInModal} from '~/components/SignInModal';
 
 /**
  * @param {PageLayoutProps}
  */
-export function PageLayout({cart, children = null, language, onLanguageChange, isLoggedIn}) {
+export function PageLayout({
+  cart,
+  children = null,
+  language,
+  onLanguageChange,
+  isLoggedIn,
+  megaMenuProducts,
+}) {
   const {pathname} = useLocation();
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [signInReturnTo, setSignInReturnTo] = useState('/account');
-  const openSignIn = (returnTo = pathname) => {
-    setSignInReturnTo(returnTo);
-    setIsSignInOpen(true);
-  };
+  const reduceMotion = useReducedMotion();
 
   return (
     <Aside.Provider>
@@ -25,24 +25,21 @@ export function PageLayout({cart, children = null, language, onLanguageChange, i
         language={language}
         onLanguageChange={onLanguageChange}
         isLoggedIn={isLoggedIn}
-        onSignIn={openSignIn}
+        megaMenuProducts={megaMenuProducts}
       />
-      <main style={{paddingTop: pathname === '/' ? 0 : 80}}>{children}</main>
+      <motion.main
+        key={pathname}
+        initial={{opacity: 0, y: reduceMotion ? 0 : 8}}
+        animate={{opacity: 1, y: 0}}
+        transition={{duration: reduceMotion ? 0.15 : 0.42}}
+        style={{paddingTop: pathname === '/' ? 0 : 80}}
+      >
+        {children}
+      </motion.main>
       <Footer
         language={language}
-        onLanguageChange={onLanguageChange}
         isLoggedIn={isLoggedIn}
-        onSignIn={openSignIn}
       />
-      <SignInModal
-        isOpen={isSignInOpen}
-        onClose={() => setIsSignInOpen(false)}
-        returnTo={signInReturnTo}
-        language={language}
-      />
-      {/* On mobile PDP, the sticky buy bar (MobileBuyBar) is the bottom action
-          bar — a persistent tab bar underneath it would overlap it. */}
-      {!pathname.startsWith('/products/') && <BottomNav cart={cart} />}
     </Aside.Provider>
   );
 }
