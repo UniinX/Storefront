@@ -6,8 +6,8 @@ import {
 } from './productCardTheme.js';
 
 describe('product card theme resolution', () => {
-  it('defaults to the approved red', () => {
-    expect(resolveProductCardColor({title: 'A product'})).toBe('#f15353');
+  it('defaults to the neutral stone surface', () => {
+    expect(resolveProductCardColor({title: 'A product'})).toBe('#f0ede7');
   });
 
   it('normalizes custom.collection_name and supports a future palette', () => {

@@ -11,14 +11,19 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.resolve(import.meta.dirname, 'app'),
-      '@ds': path.resolve(import.meta.dirname, 'Uniinx Design System'),
     },
   },
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: './vitest.setup.js',
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.react-router/**', '**/.next/**', '**/.git/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.react-router/**',
+      '**/.next/**',
+      '**/.git/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

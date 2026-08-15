@@ -1,0 +1,104 @@
+:root {
+  color-scheme: light;
+
+  /* Semantic shadcn-style surface tokens. */
+  --background: #ffffff;
+  --foreground: #151515;
+  --surface: #ffffff;
+  --surface-subtle: #f4f0e9;
+  --surface-muted: #f0ede7;
+  --muted: #e9e4dc;
+  --muted-foreground: #66615b;
+  --border: rgb(21 21 21 / 0.12);
+  --border-strong: rgb(21 21 21 / 0.28);
+  --primary: #151515;
+  --primary-foreground: #ffffff;
+  --accent: #233c6b;
+  --accent-foreground: #ffffff;
+  --destructive: #a13a2d;
+  --destructive-foreground: #ffffff;
+  --success: #2f6d4c;
+  --focus-ring: #233c6b;
+
+  /* Responsive system tokens. */
+  --container-max: 90rem;
+  --content-max: 82.5rem;
+  --page-gutter: clamp(1.25rem, 4.1667vw, 6rem);
+  --header-inset: clamp(0.5rem, 1.4vw, 1.25rem);
+  --header-clearance: 6rem;
+  --touch-target: 2.75rem;
+  --ui-radius-sm: 0.5rem;
+  --ui-radius-md: 0.75rem;
+  --ui-radius-lg: 1.125rem;
+  --ui-radius-xl: 1.5rem;
+  --ui-radius-full: 999px;
+  --shadow-floating: 0 0.75rem 2.375rem rgb(0 0 0 / 0.1);
+  --shadow-overlay: 0 1.75rem 4.375rem rgb(0 0 0 / 0.18);
+  --motion-fast: 160ms;
+  --motion-base: 260ms;
+  --ease-standard: cubic-bezier(0.16, 0.84, 0.32, 1);
+
+  /* Typography and existing public API compatibility. */
+  --font-marcellus:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-work-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-inter: var(--font-work-sans);
+  --font-devanagari: 'Noto Serif Devanagari', var(--font-marcellus);
+  --font-tamil: 'Noto Serif Tamil', var(--font-marcellus);
+  --font-telugu: 'Noto Serif Telugu', var(--font-marcellus);
+  --font-kannada: 'Noto Serif Kannada', var(--font-marcellus);
+  --font-bengali: 'Noto Serif Bengali', var(--font-marcellus);
+  --font-malayalam: 'Noto Sans Malayalam', var(--font-marcellus);
+  --font-oriya: 'Noto Serif Oriya', var(--font-marcellus);
+  --uniinx-tracking-tight: -0.02em;
+  --uniinx-tracking-wide: 0.08em;
+  --uniinx-cta-size: 0.8125rem;
+
+  /* Compatibility aliases while components migrate to semantic names. */
+  --ink: var(--foreground);
+  --ink-soft: #292725;
+  --paper: var(--background);
+  --paper-soft: var(--surface-subtle);
+  --paper-warm: var(--surface-subtle);
+  --paper-sand: var(--surface-muted);
+  --mist: var(--muted);
+  --stone: var(--muted-foreground);
+  --accent-primary: var(--accent);
+  --accent-cta: var(--primary);
+  --accent-festive: var(--accent);
+  --color-light: var(--background);
+  --color-dark: var(--foreground);
+  --radius-sm: var(--ui-radius-sm);
+  --radius-md: var(--ui-radius-md);
+  --radius-lg: var(--ui-radius-lg);
+  --radius-xl: var(--ui-radius-xl);
+  --radius-full: var(--ui-radius-full);
+}
+
+:root[data-theme='dark'],
+.dark {
+  color-scheme: dark;
+  --background: #121212;
+  --foreground: #f5f2ed;
+  --surface: #1a1a1a;
+  --surface-subtle: #1e1e1e;
+  --surface-muted: #292725;
+  --muted: #35322f;
+  --muted-foreground: #b7b0a8;
+  --border: rgb(245 242 237 / 0.14);
+  --border-strong: rgb(245 242 237 / 0.3);
+  --primary: #f5f2ed;
+  --primary-foreground: #151515;
+  --accent: #8fa3d2;
+  --accent-foreground: #121212;
+  --focus-ring: #8fa3d2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-base: 1ms;
+  }
+}

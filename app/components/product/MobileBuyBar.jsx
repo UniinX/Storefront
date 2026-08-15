@@ -42,7 +42,7 @@ export function MobileBuyBar({
 
   return (
     <div
-      className="uniinx-hide-desktop uniinx-sticky-buy"
+      className="uniinx-sticky-buy lg:hidden"
       aria-label="Mobile purchase controls"
     >
       <div style={{minWidth: 0}}>

@@ -1,12 +1,11 @@
 /**
  * Product-card color bridge.
  *
- * The storefront intentionally ships with the Figma coral as the universal
- * fallback. Add normalized `custom.collection_name` keys to the map below when
- * the collection palette is approved; ProductCard will adopt them without a
- * component rewrite.
+ * Product imagery sits on a neutral stone surface by default. Add normalized
+ * `custom.collection_name` keys only when a collection-specific card surface
+ * is deliberately approved.
  */
-export const PRODUCT_CARD_FALLBACK_COLOR = '#f15353';
+export const PRODUCT_CARD_FALLBACK_COLOR = '#f0ede7';
 
 export const PRODUCT_CARD_COLLECTION_COLORS = Object.freeze({
   // Example future mappings:

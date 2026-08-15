@@ -162,7 +162,7 @@ export function Layout({children}) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-brand-bg-light text-black">
+      <body className="bg-background text-foreground">
         <MotionConfig
           reducedMotion="user"
           transition={{duration: 0.6, ease: [0.16, 0.84, 0.32, 1]}}
@@ -197,7 +197,6 @@ export default function App() {
       <PageLayout
         cart={data.cart}
         language={language}
-        onLanguageChange={changeLanguage}
         isLoggedIn={data.isLoggedIn}
         megaMenuProducts={data.megaMenuProducts}
       >
@@ -226,6 +225,9 @@ const MEGA_MENU_QUERY = `#graphql
         id
         handle
         title
+        productType
+        tags
+        publishedAt
         collectionName: metafield(namespace: "custom", key: "collection_name") { value }
         featuredImage { id url altText width height }
       }

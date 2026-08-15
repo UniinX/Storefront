@@ -29,15 +29,37 @@ export default function Policies() {
   const {policies} = useLoaderData();
 
   return (
-    <div className="policies">
-      <h1>Policies</h1>
-      <div>
-        {policies.map((policy) => (
-          <fieldset key={policy.id}>
-            <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-          </fieldset>
-        ))}
-      </div>
+    <div className="bg-surface-subtle text-foreground">
+      <header className="uniinx-home-gutter border-b border-black/10 pb-16 pt-20 sm:pt-28 lg:pb-24 lg:pt-36">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/45">
+          Legal & transparent
+        </p>
+        <h1 className="mt-7 text-[clamp(48px,10vw,150px)] font-normal leading-[0.84] tracking-[-0.065em] sm:leading-[0.76] sm:tracking-[-0.08em]">
+          Policies.
+        </h1>
+      </header>
+      <nav
+        aria-label="Store policies"
+        className="uniinx-home-gutter py-14 lg:py-24"
+      >
+        <div className="border-t border-black/15">
+          {policies.map((policy) => (
+            <Link
+              key={policy.id}
+              to={`/policies/${policy.handle}`}
+              className="group flex min-h-24 items-center justify-between border-b border-black/15 py-5 text-[clamp(24px,3vw,44px)] font-normal tracking-[-0.04em]"
+            >
+              {policy.title}
+              <span
+                aria-hidden="true"
+                className="text-2xl transition-transform group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

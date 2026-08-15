@@ -1,72 +1,89 @@
 # UniinX Storefront
 
-The production Shopify Hydrogen storefront for UniinX, deployed to Shopify Oxygen.
+Responsive ecommerce storefront for UniinX, built with Shopify Hydrogen and
+React Router.
 
-## Runtime
+## What is included
 
-- Node.js 24
-- Shopify Hydrogen and Oxygen
-- React Router 7
-- Vite
-- npm lockfile installs
+- Dynamic Shopify catalog, collection, product, search, cart, and account flows
+- Responsive layouts for desktop, tablet, and mobile browsers
+- Accessible navigation, dialogs, sheets, and accordions using Radix Primitives
+- Semantic design tokens and reusable shadcn-style UI components
+- Server rendering and deployment support through Shopify Oxygen
+
+## Technology
+
+- Shopify Hydrogen
+- React and React Router
+- Vite and Tailwind CSS
+- Radix Primitives
+- Vitest and Testing Library
+
+## Requirements
+
+- Node.js 22 or 24
+- npm
+- Authorized access to the project's development environment configuration
 
 ## Local development
 
-Install dependencies and link the checkout to the UniinX Hydrogen storefront:
+Install dependencies:
 
 ```bash
 npm ci
-npx shopify hydrogen link
+```
+
+Obtain the development environment configuration through the team's approved
+secret-sharing process and store it in a local `.env` file. Environment files
+and credentials must never be committed.
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-Local secrets belong in `.env`, which is ignored by Git. Do not commit storefront tokens or deployment credentials.
+## Quality checks
 
-## Release validation
-
-Run the complete release gate locally:
+Run the complete validation gate:
 
 ```bash
 npm run ci
 ```
 
-This runs the test suite, ESLint, GraphQL code generation, and the production Oxygen build.
-
-## Oxygen deployment
-
-The project is linked to the Shopify Hydrogen storefront `uniinx`.
-
-Deploy the current commit to production:
+Individual commands are also available:
 
 ```bash
-npm run deploy
+npm test
+npm run lint
+npm run build
 ```
 
-Deploy to the Oxygen preview environment:
-
-```bash
-npm run deploy:preview
-```
-
-## GitHub CI/CD
-
-`.github/workflows/oxygen-deployment-1000166069.yml` validates pull requests and pushes. Push events deploy only after tests, lint, and the production build succeed.
-
-Add this encrypted repository Actions secret before enabling automated deployment:
+## Project structure
 
 ```text
-OXYGEN_DEPLOYMENT_TOKEN_1000166069
+app/
+  components/   Shared storefront and UI components
+  lib/          Catalog, theme, and application utilities
+  routes/       React Router storefront routes
+  styles/       Semantic tokens and global styles
+public/         Static public assets
 ```
 
-The workflow exposes it to Shopify CLI as `SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN`. Generate the token from the Hydrogen storefront's Oxygen deployment settings or connect the repository through Shopify's GitHub integration.
+Reusable primitives live in `app/components/ui`, while the semantic color,
+spacing, typography, motion, and responsive values live in
+`app/styles/tokens.css`.
 
-## Oxygen environment variables
+## Deployment
 
-Shopify provisions the standard Storefront API and Customer Account variables when the Hydrogen storefront is created. Configure these application-specific values for the production and preview environments as needed:
+Deployments are performed by authorized maintainers through the configured
+CI/CD environment. Deployment credentials, environment variable names,
+storefront identifiers, workflow identifiers, and production URLs are
+intentionally not documented in this public file.
 
-```text
-ADMIN_PASSCODE
-SHOPIFY_TEST_MODE
-```
+## Security
 
-`SESSION_SECRET` must also be present; Shopify normally provisions it for Oxygen environments.
+- Never commit `.env` files, access tokens, customer data, or deployment keys.
+- Do not place secrets in client-visible variables or source code.
+- Share operational configuration only through approved private channels.
+- Report suspected credential exposure privately to a project maintainer.

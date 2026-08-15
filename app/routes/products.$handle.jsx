@@ -12,7 +12,7 @@ import {
   getSeoMeta,
 } from '@shopify/hydrogen';
 import {Reveal} from '~/components/motion/Reveal.jsx';
-import {LANGUAGES} from '~/components/ds/index.js';
+import {LANGUAGES} from '~/lib/languages.js';
 import {Configurator} from '~/components/product/Configurator';
 import {MobileBuyBar} from '~/components/product/MobileBuyBar';
 import {ProductGrid} from '~/components/home/ProductGrid.jsx';
@@ -218,7 +218,7 @@ export default function Product() {
                 <button
                   type="button"
                   onClick={() => setZoomed(!zoomed)}
-                  className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-white/95 font-work text-xs text-black shadow-md transition-all hover:scale-105 active:scale-[0.98] dark:border-white/5 dark:bg-black/95 dark:text-white"
                   title={zoomed ? 'Zoom Out' : 'Zoom In'}
                 >
                   🔍
@@ -227,7 +227,7 @@ export default function Product() {
                   ref={fullscreenTriggerRef}
                   type="button"
                   onClick={() => setFullscreen(true)}
-                  className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/95 text-black dark:text-white flex items-center justify-center shadow-md font-work text-xs hover:scale-105 active:scale-[0.98] transition-all cursor-pointer border border-black/5 dark:border-white/5"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-white/95 font-work text-xs text-black shadow-md transition-all hover:scale-105 active:scale-[0.98] dark:border-white/5 dark:bg-black/95 dark:text-white"
                   title="Fullscreen Preview"
                 >
                   ⛶
@@ -240,7 +240,7 @@ export default function Product() {
                   <button
                     type="button"
                     onClick={() => setActiveImageIdx(0)}
-                    className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                    className={`min-h-11 rounded-full px-4 py-2 font-work text-[9px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                       activeImageIdx === 0
                         ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
                         : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
@@ -251,7 +251,7 @@ export default function Product() {
                   <button
                     type="button"
                     onClick={() => setActiveImageIdx(1)}
-                    className={`px-4 py-1.5 rounded-full font-work text-[9px] tracking-wider uppercase font-semibold transition-all cursor-pointer ${
+                    className={`min-h-11 rounded-full px-4 py-2 font-work text-[9px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                       activeImageIdx === 1
                         ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
                         : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
@@ -381,6 +381,7 @@ export default function Product() {
           }}
         </Await>
       </Suspense>
+      <div className="h-24 lg:hidden" aria-hidden="true" />
     </>
   );
 }

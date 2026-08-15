@@ -5,12 +5,22 @@ const CATEGORY_LABELS = new Map([
   ['sweatshirt', 'Sweatshirts'],
   ['sweatpant', 'Sweatpants'],
   ['jogger', 'Joggers'],
+  ['oversized', 'Oversized'],
+  ['shirt', 'Shirts'],
+  ['cap', 'Caps'],
+  ['bag', 'Bags'],
+  ['totebag', 'Tote Bags'],
+  ['phonecase', 'Phone Cases'],
   ['terryshort', 'Terry Shorts'],
   ['accessory', 'Accessories'],
+  ['accessorie', 'Accessories'],
 ]);
 
 export function normalizeCatalogValue(value = '') {
-  return String(value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/s$/, '');
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/s$/, '');
 }
 
 export function categoryLabel(value) {
@@ -21,7 +31,14 @@ function quoteSearchValue(value) {
   return `"${String(value).replace(/[\\"]/g, '\\$&')}"`;
 }
 
-export function getProductSearchQuery({type, theme, language, color, collection, q}) {
+export function getProductSearchQuery({
+  type,
+  theme,
+  language,
+  color,
+  collection,
+  q,
+}) {
   const clauses = [];
   const normalizedType = normalizeCatalogValue(type);
 
@@ -32,17 +49,34 @@ export function getProductSearchQuery({type, theme, language, color, collection,
       sweatshirt: '(tag:sweatshirt OR product_type:Sweatshirt)',
       sweatpant: '(tag:sweatpant OR tag:sweatpants OR product_type:Sweatpants)',
       jogger: '(tag:jogger OR tag:joggers OR product_type:Joggers)',
-      terryshort: '(tag:"terry short" OR tag:terryshort OR product_type:"Terry Shorts")',
-      accessory: '(tag:accessories OR tag:accessory OR product_type:Accessories)',
+      oversized: '(tag:oversized OR title:oversized)',
+      shirt: '(tag:shirt OR tag:shirts OR product_type:Shirt OR title:shirt)',
+      cap: '(tag:cap OR tag:caps OR product_type:Cap)',
+      bag: '(tag:bag OR tag:bags OR product_type:Bag)',
+      totebag: '(tag:tote OR tag:"tote bag" OR product_type:"Tote Bag")',
+      phonecase:
+        '(tag:"phone case" OR tag:phonecase OR product_type:"Phone Case")',
+      terryshort:
+        '(tag:"terry short" OR tag:terryshort OR product_type:"Terry Shorts")',
+      accessory:
+        '(tag:accessories OR tag:accessory OR product_type:Accessories)',
     };
-    clauses.push(categoryQueries[normalizedType] ?? `tag:${quoteSearchValue(type)}`);
+    clauses.push(
+      categoryQueries[normalizedType] ?? `tag:${quoteSearchValue(type)}`,
+    );
   }
 
-  if (theme) clauses.push(`metafields.custom.collection_name:${quoteSearchValue(theme)}`);
-  if (language) clauses.push(`metafields.custom.language:${quoteSearchValue(language)}`);
+  if (theme)
+    clauses.push(
+      `metafields.custom.collection_name:${quoteSearchValue(theme)}`,
+    );
+  if (language)
+    clauses.push(`metafields.custom.language:${quoteSearchValue(language)}`);
   if (color) {
     const value = quoteSearchValue(color);
-    clauses.push(`(metafields.custom.family_value:${value} OR metafields.custom.color:${value} OR variant_option:${quoteSearchValue(`Color:${color}`)})`);
+    clauses.push(
+      `(metafields.custom.family_value:${value} OR metafields.custom.color:${value} OR variant_option:${quoteSearchValue(`Color:${color}`)})`,
+    );
   }
   if (collection) {
     const value = collection.toLowerCase();
@@ -78,12 +112,35 @@ export function getCatalogSort(sort, collection = false) {
   return {sortKey, reverse};
 }
 
-export function getCollectionFilters({type, theme, language, color, collection}) {
+export function getCollectionFilters({
+  type,
+  theme,
+  language,
+  color,
+  collection,
+}) {
   const filters = [];
   if (type && type !== 'All') filters.push({tag: normalizeCatalogValue(type)});
-  if (theme) filters.push({productMetafield: {namespace: 'custom', key: 'collection_name', value: theme}});
-  if (language) filters.push({productMetafield: {namespace: 'custom', key: 'language', value: language}});
-  if (color) filters.push({productMetafield: {namespace: 'custom', key: 'family_value', value: color}});
+  if (theme)
+    filters.push({
+      productMetafield: {
+        namespace: 'custom',
+        key: 'collection_name',
+        value: theme,
+      },
+    });
+  if (language)
+    filters.push({
+      productMetafield: {namespace: 'custom', key: 'language', value: language},
+    });
+  if (color)
+    filters.push({
+      productMetafield: {
+        namespace: 'custom',
+        key: 'family_value',
+        value: color,
+      },
+    });
   if (collection) filters.push({tag: collection});
   return filters;
 }
@@ -104,8 +161,14 @@ export function getCatalogFilterOptions(connection) {
       if (!value.count) continue;
       if (id.includes('custom.collection_name')) add(themes, value.label);
       else if (id.includes('custom.language')) add(languages, value.label);
-      else if (id.includes('custom.family_value') || id.includes('custom.color') || id.includes('option.color')) add(colors, value.label);
-      else if (id.includes('product_type') || id.includes('tag')) add(categories, categoryLabel(value.label));
+      else if (
+        id.includes('custom.family_value') ||
+        id.includes('custom.color') ||
+        id.includes('option.color')
+      )
+        add(colors, value.label);
+      else if (id.includes('product_type') || id.includes('tag'))
+        add(categories, categoryLabel(value.label));
     }
   }
 
@@ -119,7 +182,12 @@ export function getCatalogFilterOptions(connection) {
       add(colors, member.familyValue?.value ?? member.color?.value);
     }
     for (const variant of product.variants?.nodes ?? []) {
-      add(colors, variant.selectedOptions?.find(({name}) => name.toLowerCase() === 'color')?.value);
+      add(
+        colors,
+        variant.selectedOptions?.find(
+          ({name}) => name.toLowerCase() === 'color',
+        )?.value,
+      );
     }
   }
 
@@ -134,7 +202,11 @@ export function getCatalogFilterOptions(connection) {
 
 export function getFamilyProducts(product) {
   if (product.productFamily?.reference?.__typename !== 'Metaobject') return [];
-  return product.productFamily.reference.products?.references?.nodes?.filter(Boolean) ?? [];
+  return (
+    product.productFamily.reference.products?.references?.nodes?.filter(
+      Boolean,
+    ) ?? []
+  );
 }
 
 export function groupCatalogFamilies(connection) {

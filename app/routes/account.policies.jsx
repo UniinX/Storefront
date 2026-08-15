@@ -1,6 +1,11 @@
 import {useLoaderData} from 'react-router';
-import {useState} from 'react';
 import {AccountPageHeader} from '~/components/account/AccountUI.jsx';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '~/components/ui/accordion.jsx';
 
 /**
  * @type {Route.MetaFunction}
@@ -36,7 +41,6 @@ export async function loader({context}) {
 export default function AccountPolicies() {
   /** @type {LoaderReturnData} */
   const {policies} = useLoaderData();
-  const [openSection, setOpenSection] = useState(policies[0]?.id ?? '');
 
   return (
     <div className="space-y-8">
@@ -47,36 +51,32 @@ export default function AccountPolicies() {
       />
 
       {/* Accordion List */}
-      <div className="flex flex-col gap-4">
+      <div>
         {policies.length > 0 ? (
-          policies.map((policy) => {
-            const isOpen = openSection === policy.id;
-            return (
-              <div
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue={policies[0]?.id}
+            className="flex flex-col gap-4"
+          >
+            {policies.map((policy) => (
+              <AccordionItem
                 key={policy.id}
+                value={policy.id}
                 className="border border-black/5 dark:border-white/5 rounded-xl overflow-hidden transition-all duration-300 bg-black/[0.005] dark:bg-white/[0.005]"
               >
-                <button
-                  onClick={() => setOpenSection(isOpen ? '' : policy.id)}
-                  aria-expanded={isOpen}
-                  aria-controls={`policy-${policy.id}`}
-                  className="w-full flex items-center justify-between p-5 text-left focus:outline-none cursor-pointer hover:bg-black/[0.01] dark:hover:bg-white/[0.01]"
-                >
-                  <span className="font-marcellus text-sm text-black dark:text-white uppercase tracking-wider font-light">
-                    {policy.title}
-                  </span>
-                  <span className="font-work text-xs text-black/40 dark:text-white/40">
-                    {isOpen ? '−' : '+'}
-                  </span>
-                </button>
-                {isOpen && (
-                  <div id={`policy-${policy.id}`} className="p-6 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 font-work text-xs leading-relaxed text-black/70 dark:text-white/70 font-light prose prose-sm dark:prose-invert max-w-none">
-                    <div dangerouslySetInnerHTML={{__html: policy.body}} />
-                  </div>
-                )}
-              </div>
-            );
-          })
+                <AccordionTrigger className="w-full p-5 font-marcellus text-sm font-light uppercase tracking-wider text-black hover:bg-black/[0.01] dark:text-white dark:hover:bg-white/[0.01]">
+                  {policy.title}
+                </AccordionTrigger>
+                <AccordionContent className="border-t border-black/5 bg-white p-6 font-work text-xs font-light leading-relaxed text-black/70 dark:border-white/5 dark:bg-black dark:text-white/70">
+                  <div
+                    className="uniinx-rich-text max-w-none"
+                    dangerouslySetInnerHTML={{__html: policy.body}}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         ) : (
           <span className="font-work text-xs text-black/40 dark:text-white/40">
             No policies defined for this shop locale.

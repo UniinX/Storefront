@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600&family=Noto+Serif+Tamil:wght@400;600&family=Noto+Serif+Telugu:wght@400;600&family=Noto+Serif+Kannada:wght@400;600&family=Noto+Serif+Bengali:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Serif+Oriya:wght@400;600&display=swap');
 
-@import '../../Uniinx Design System/styles.css';
+@import './tokens.css';
 
 html {
   background: var(--paper);
@@ -20,9 +20,123 @@ body {
   box-sizing: border-box;
 }
 
+@keyframes radix-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes radix-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.985);
+  }
+}
+@keyframes radix-navigation-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.985);
+  }
+}
+@keyframes radix-accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes radix-accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+.radix-sheet-overlay[data-state='open'] {
+  animation: radix-overlay-in var(--motion-fast) ease-out;
+}
+.radix-sheet-content[data-state='open'] {
+  animation: radix-content-in var(--motion-base) var(--ease-standard);
+}
+.radix-navigation-content[data-state='open'] {
+  transform-origin: top left;
+  animation: radix-navigation-in var(--motion-base) var(--ease-standard);
+}
+.radix-accordion-content[data-state='open'] {
+  animation: radix-accordion-down var(--motion-base) var(--ease-standard);
+}
+.radix-accordion-content[data-state='closed'] {
+  animation: radix-accordion-up var(--motion-base) var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radix-sheet-overlay,
+  .radix-sheet-content,
+  .radix-navigation-content,
+  .radix-accordion-content {
+    animation: none !important;
+  }
+}
+
+.uniinx-rich-text > :first-child {
+  margin-top: 0;
+}
+.uniinx-rich-text > :last-child {
+  margin-bottom: 0;
+}
+.uniinx-rich-text h2,
+.uniinx-rich-text h3 {
+  margin: 2.25em 0 0.75em;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+.uniinx-rich-text h2 {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+}
+.uniinx-rich-text h3 {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+.uniinx-rich-text p,
+.uniinx-rich-text ul,
+.uniinx-rich-text ol,
+.uniinx-rich-text blockquote {
+  margin-block: 1.25em;
+}
+.uniinx-rich-text ul,
+.uniinx-rich-text ol {
+  padding-left: 1.4em;
+}
+.uniinx-rich-text ul {
+  list-style: disc;
+}
+.uniinx-rich-text ol {
+  list-style: decimal;
+}
+.uniinx-rich-text a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.uniinx-rich-text img {
+  width: 100%;
+  height: auto;
+  margin-block: 2em;
+  border-radius: 18px;
+}
+.uniinx-rich-text blockquote {
+  border-left: 1px solid rgb(0 0 0 / 0.25);
+  padding-left: 1.25em;
+  font-size: 1.15em;
+  color: rgb(0 0 0 / 0.6);
+}
+
 /* Keep the 60px Figma gutter at 1440px without fixing the content width. */
 .uniinx-home-gutter {
-  padding-inline: clamp(20px, 4.1667vw, 96px);
+  padding-inline: var(--page-gutter);
 }
 
 .uniinx-horizontal-scroll {
@@ -65,12 +179,12 @@ body {
 }
 
 /* Responsive show/hide */
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .uniinx-hide-mobile {
     display: none !important;
   }
 }
-@media (min-width: 721px) {
+@media (min-width: 768px) {
   .uniinx-hide-desktop {
     display: none !important;
   }
@@ -126,19 +240,119 @@ body {
   }
 }
 
-/* PLP layout (sidebar + grid) */
-.uniinx-plp-layout {
+/* Figma collection directory mosaic */
+.uniinx-collection-mosaic {
   display: grid;
-  grid-template-columns: 224px 1fr;
-  gap: 48px;
-  align-items: start;
+  grid-auto-rows: 240px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
-.uniinx-plp-layout > * {
+.uniinx-collection-mosaic > * {
   min-width: 0;
 }
-@media (max-width: 720px) {
-  .uniinx-plp-layout {
-    grid-template-columns: 1fr;
+.uniinx-collection-mosaic > :nth-child(5n + 1) {
+  grid-column: span 2;
+}
+@media (min-width: 768px) {
+  .uniinx-collection-mosaic {
+    grid-auto-rows: 360px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .uniinx-collection-mosaic > :nth-child(5n + 1) {
+    grid-column: span 2;
+  }
+  .uniinx-collection-mosaic > :nth-child(5n + 3) {
+    grid-column: span 2;
+  }
+}
+@media (min-width: 1100px) {
+  .uniinx-collection-mosaic {
+    grid-auto-rows: 377px;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 1) {
+    grid-column: span 9;
+    grid-row: span 2;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 2),
+  .uniinx-collection-mosaic > :nth-child(10n + 3) {
+    grid-column: span 3;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 4),
+  .uniinx-collection-mosaic > :nth-child(10n + 5) {
+    grid-column: span 6;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 6),
+  .uniinx-collection-mosaic > :nth-child(10n + 7) {
+    grid-column: span 3;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 8) {
+    grid-column: span 6;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n + 9) {
+    grid-column: span 4;
+  }
+  .uniinx-collection-mosaic > :nth-child(10n) {
+    grid-column: span 8;
+  }
+}
+
+/* Figma PLP layout: toolbar above a filter rail and three-column grid. */
+.uniinx-plp-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 32px;
+  row-gap: 24px;
+  align-items: start;
+}
+.uniinx-plp-shell > * {
+  min-width: 0;
+}
+.uniinx-plp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  grid-column: 1 / -1;
+  padding-block: 4px 20px;
+  border-bottom: 1px solid rgb(0 0 0 / 0.1);
+}
+.uniinx-plp-results {
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  .uniinx-plp-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+  .uniinx-plp-count {
+    justify-self: end;
+    text-align: right;
+  }
+  .uniinx-plp-sort {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-left: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .uniinx-plp-shell {
+    grid-template-columns: 306px minmax(0, 1fr);
+    column-gap: 32px;
+  }
+  .uniinx-plp-results .uniinx-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 20px;
+  }
+}
+@media (min-width: 1180px) {
+  .uniinx-plp-shell {
+    column-gap: 32px;
+  }
+  .uniinx-plp-results .uniinx-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px 32px;
   }
 }
 
@@ -200,7 +414,7 @@ body {
   grid-column: 2;
   grid-row: 1 / span 2;
 }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .uniinx-dept-bento {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
@@ -222,7 +436,7 @@ body {
 .uniinx-editorial-split > * {
   min-width: 0;
 }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .uniinx-editorial-split {
     grid-template-columns: 1fr;
   }
@@ -238,7 +452,7 @@ body {
 .uniinx-cart-layout > * {
   min-width: 0;
 }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .uniinx-cart-layout {
     grid-template-columns: 1fr;
   }
@@ -274,6 +488,11 @@ body {
   padding-bottom: calc(12px + env(safe-area-inset-bottom));
   z-index: 50;
   animation: uniinx-buy-bar-in 0.35s cubic-bezier(0.16, 0.84, 0.32, 1) both;
+}
+@media (min-width: 1024px) {
+  .uniinx-sticky-buy {
+    display: none;
+  }
 }
 
 /* Scroll-reveal */
