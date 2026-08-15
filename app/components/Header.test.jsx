@@ -1,6 +1,12 @@
 /** @file Tests for the responsive storefront header. */
 import {describe, expect, it} from 'vitest';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {Header} from './Header.jsx';
 
@@ -19,45 +25,117 @@ describe('Header', () => {
     renderHeader();
     expect(document.querySelector('header')).toHaveAttribute(
       'data-header-state',
-      'full',
+      'floating',
     );
-    expect(screen.getByRole('button', {name: /Shop/i})).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: 'Collections'})).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: 'Pages'})).toBeInTheDocument();
-    expect(screen.getByRole('button', {name: /Language/i})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Men'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Women'})).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {name: 'Collections'}),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', {name: 'Accessories'}),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', {name: 'New Collection'}),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'More'})).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', {name: /Language/i}),
+    ).not.toBeInTheDocument();
   });
 
-  it('opens a full shop mega menu with editorial shortcuts', () => {
+  it('links every public content page from the pages menu', () => {
     renderHeader();
-    fireEvent.click(screen.getByRole('button', {name: /Shop/i}));
+    fireEvent.click(screen.getByRole('button', {name: 'More'}));
+
+    const pages = screen.getByRole('navigation', {name: 'More'});
+    expect(pages).toBeInTheDocument();
+    expect(screen.getByRole('link', {name: 'About'})).toHaveAttribute(
+      'href',
+      '/pages/about',
+    );
+    expect(screen.getByRole('link', {name: 'Journal'})).toHaveAttribute(
+      'href',
+      '/blogs',
+    );
+    expect(screen.getByRole('link', {name: 'FAQ'})).toHaveAttribute(
+      'href',
+      '/pages/faq',
+    );
+    expect(screen.getByRole('link', {name: 'Contact'})).toHaveAttribute(
+      'href',
+      '/pages/contact',
+    );
+  });
+
+  it('opens a department mega menu with category shortcuts', () => {
+    renderHeader();
+    fireEvent.click(screen.getByRole('button', {name: 'Men'}));
 
     expect(
-      screen.getByRole('navigation', {name: 'Shop shortcuts'}),
+      screen.getByRole('navigation', {name: 'Men categories'}),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', {name: 'New Arrivals'}),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: 'Shop All'})).toBeInTheDocument();
+    expect(screen.getByRole('link', {name: /Oversized/})).toHaveAttribute(
+      'href',
+      '/collections/men?type=Oversized',
+    );
+    expect(screen.getByRole('link', {name: /T-Shirts/})).toBeInTheDocument();
     expect(screen.getByText('Campaign placeholder')).toBeInTheDocument();
   });
 
-  it('derives mega-menu themes from custom.collection_name', () => {
+  it('opens department categories on pointer hover', () => {
+    renderHeader();
+    fireEvent.pointerEnter(screen.getByRole('button', {name: 'Women'}));
+
+    expect(
+      screen.getByRole('navigation', {name: 'Women categories'}),
+    ).toBeInTheDocument();
+  });
+
+  it('opens live Shopify collections from the primary navigation', () => {
     renderHeader({
       megaMenuProducts: [
         {
           id: 'product-1',
           handle: 'orbit-tee',
           title: 'Orbit Tee',
+          productType: 'T-Shirt',
+          tags: ['men'],
           collectionName: {value: 'Antariksham'},
           featuredImage: null,
         },
       ],
     });
-    fireEvent.click(screen.getByRole('button', {name: /Shop/i}));
+    fireEvent.click(screen.getByRole('button', {name: 'Collections'}));
 
+    expect(
+      screen.getByRole('navigation', {name: 'Collections menu'}),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', {name: 'Antariksham'})).toHaveAttribute(
       'href',
       '/collections/all?theme=Antariksham',
+    );
+  });
+
+  it('derives department categories from live product data', () => {
+    renderHeader({
+      megaMenuProducts: [
+        {
+          id: 'product-1',
+          handle: 'orbit-tee',
+          title: 'Orbit Tee',
+          productType: 'T-Shirt',
+          tags: ['men'],
+          collectionName: {value: 'Antariksham'},
+          featuredImage: null,
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', {name: 'Men'}));
+
+    expect(screen.getByRole('link', {name: /T-Shirts/})).toHaveAttribute(
+      'href',
+      '/collections/men?type=T-Shirts',
     );
   });
 
@@ -88,21 +166,32 @@ describe('Header', () => {
 
     const dialog = screen.getByRole('dialog', {name: 'Mobile menu'});
     expect(dialog).toHaveAttribute('id', 'mobile-navigation');
+    expect(dialog).toHaveAttribute('data-state', 'open');
     expect(dialog).toHaveClass('z-[80]', 'overscroll-contain');
-    expect(
-      dialog.querySelector('#mobile-menu-search'),
-    ).toBeInTheDocument();
+    expect(dialog.querySelector('#mobile-menu-search')).toBeInTheDocument();
     expect(
       screen.getByRole('navigation', {name: 'Mobile navigation'}),
-    ).toHaveClass('grid-cols-2');
-    expect(document.body.style.overflow).toBe('hidden');
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Language')).not.toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', {name: 'Men'}));
+    expect(
+      within(dialog).getByRole('link', {name: 'Oversized'}),
+    ).toHaveAttribute('href', '/collections/men?type=Oversized');
+
+    fireEvent.click(within(dialog).getByRole('button', {name: 'Collections'}));
+    expect(
+      within(dialog).getByRole('link', {name: 'View all collections →'}),
+    ).toHaveAttribute('href', '/collections');
+    expect(
+      within(dialog).queryByRole('button', {name: 'Accessories'}),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {name: 'Close menu'}));
     await waitFor(() => {
       expect(
         screen.queryByRole('dialog', {name: 'Mobile menu'}),
       ).not.toBeInTheDocument();
-      expect(document.body.style.overflow).toBe('');
     });
   });
 });

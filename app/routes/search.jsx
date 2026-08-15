@@ -1,154 +1,252 @@
-import {useLoaderData} from 'react-router';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
+import {Link, useLoaderData} from 'react-router';
+import {Analytics, getPaginationVariables} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
-import {SearchResults} from '~/components/SearchResults';
-import {getEmptyPredictiveSearchResult} from '~/lib/search';
+import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {ProductCard} from '~/components/ProductCard.jsx';
+import {CatalogFilters} from '~/components/product/CatalogFilters';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {
+  getCatalogFilterOptions,
+  getCollectionFilters,
+  groupCatalogFamilies,
+} from '~/lib/catalog';
+import {
+  getEmptyPredictiveSearchResult,
+  urlWithTrackingParams,
+} from '~/lib/search';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: `Hydrogen | Search`}];
+const SEARCH_SORT_OPTIONS = [
+  {value: 'relevance', label: 'Most relevant'},
+  {value: 'price-asc', label: 'Price: Low to High'},
+  {value: 'price-desc', label: 'Price: High to Low'},
+];
+
+export const meta = ({data}) => {
+  const term = data?.term;
+  return [{title: term ? `Search: ${term} | UniinX` : 'Search | UniinX'}];
 };
 
-/**
- * @param {Route.LoaderArgs}
- */
 export async function loader({request, context}) {
   const url = new URL(request.url);
-  const isPredictive = url.searchParams.has('predictive');
-  const searchPromise = isPredictive
-    ? predictiveSearch({request, context})
-    : regularSearch({request, context});
-
-  searchPromise.catch((error) => {
-    console.error(error);
-    return {term: '', result: null, error: error.message};
-  });
-
-  return await searchPromise;
+  if (url.searchParams.has('predictive')) {
+    return predictiveSearch({request, context});
+  }
+  return regularSearch({request, context});
 }
 
-/**
- * Renders the /search route
- */
 export default function SearchPage() {
-  /** @type {LoaderReturnData} */
-  const {type, term, result, error} = useLoaderData();
+  const {
+    type,
+    term,
+    result,
+    error,
+    products,
+    filterOptions,
+    totalCount,
+    hasMoreResults,
+  } = useLoaderData();
   if (type === 'predictive') return null;
 
+  const pages = result?.items?.pages?.nodes ?? [];
+  const articles = result?.items?.articles?.nodes ?? [];
+  const description = term
+    ? `${totalCount}${hasMoreResults ? '+' : ''} products matching “${term}”, with related stories and pages.`
+    : 'Search the UniinX catalog by garment, collection, color, or language.';
+
   return (
-    <div className="search">
-      <h1>Search</h1>
-      <SearchForm>
-        {({inputRef}) => (
-          <>
-            <input
-              defaultValue={term}
-              name="q"
-              placeholder="Search…"
-              ref={inputRef}
-              type="search"
-            />
-            &nbsp;
-            <button type="submit">Search</button>
-          </>
-        )}
-      </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      {!term || !result?.total ? (
-        <SearchResults.Empty />
-      ) : (
-        <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
-            <div>
-              <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
-            </div>
+    <div className="bg-white">
+      <CollectionThemeHero
+        title="Search Results"
+        artwork="collections"
+        description={description}
+      />
+
+      <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
+        <SearchForm
+          role="search"
+          className="col-span-full flex min-h-14 items-center gap-2 rounded-full border border-border-strong bg-white p-1.5 pl-5 shadow-sm focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2"
+        >
+          {({inputRef}) => (
+            <>
+              <label htmlFor="catalog-search" className="sr-only">
+                Search products
+              </label>
+              <input
+                id="catalog-search"
+                defaultValue={term}
+                name="q"
+                placeholder="Search products, colors, languages…"
+                ref={inputRef}
+                type="search"
+                className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-black/40"
+              />
+              <button
+                type="submit"
+                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+              >
+                Search
+              </button>
+            </>
           )}
-        </SearchResults>
-      )}
+        </SearchForm>
+
+        {term ? (
+          <CatalogFilters
+            totalCount={totalCount}
+            hasMoreResults={hasMoreResults}
+            filterOptions={filterOptions}
+            sortOptions={SEARCH_SORT_OPTIONS}
+            defaultSort="relevance"
+          />
+        ) : null}
+
+        {error ? (
+          <CatalogMessage
+            title="Search is temporarily unavailable"
+            detail="Please try again in a moment."
+          />
+        ) : !term ? (
+          <CatalogMessage
+            title="What are you looking for?"
+            detail="Try a garment, collection, color, or language."
+          />
+        ) : totalCount === 0 ? (
+          <CatalogMessage
+            title={`No products found for “${term}”`}
+            detail="Try a broader term or adjust the catalog filters."
+          />
+        ) : (
+          <PaginatedResourceSection
+            connection={products}
+            className="uniinx-plp-results"
+            resourcesClassName="uniinx-product-grid"
+            autoLoadNext
+            previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+            nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+          >
+            {({node: product, index}) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+                revealDelay={0}
+              />
+            )}
+          </PaginatedResourceSection>
+        )}
+
+        <RelatedSearchResults pages={pages} articles={articles} term={term} />
+      </section>
+
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
   );
 }
 
-/**
- * Regular search query and fragments
- * (adjust as needed)
- */
+function CatalogMessage({title, detail}) {
+  return (
+    <div className="uniinx-plp-results flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-black/15 px-6 py-16 text-center">
+      <h2 className="text-xl font-medium tracking-tight">{title}</h2>
+      <p className="max-w-md text-sm leading-6 text-black/50">{detail}</p>
+    </div>
+  );
+}
+
+function RelatedSearchResults({pages, articles, term}) {
+  if (!pages.length && !articles.length) return null;
+  return (
+    <aside className="col-span-full mt-6 border-t border-black/10 pt-8">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/45">
+        More from UniinX
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {pages.map((page) => (
+          <RelatedLink
+            key={page.id}
+            item={page}
+            to={`/pages/${page.handle}`}
+            term={term}
+            type="Page"
+          />
+        ))}
+        {articles.map((article) => (
+          <RelatedLink
+            key={article.id}
+            item={article}
+            to={`/blogs/${article.handle}`}
+            term={term}
+            type="Journal"
+          />
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function RelatedLink({item, to, term, type}) {
+  const url = urlWithTrackingParams({
+    baseUrl: to,
+    trackingParams: item.trackingParameters,
+    term,
+  });
+  return (
+    <Link
+      to={url}
+      prefetch="intent"
+      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-black/15 bg-white px-4 text-sm transition-colors hover:border-black/40"
+    >
+      <span className="text-[9px] font-semibold uppercase tracking-wider text-black/40">
+        {type}
+      </span>
+      {item.title}
+    </Link>
+  );
+}
+
 const SEARCH_PRODUCT_FRAGMENT = `#graphql
+  fragment MoneySearchProduct on MoneyV2 { amount currencyCode }
+  fragment FamilyMemberSearchProduct on Product {
+    id handle title availableForSale
+    familyValue: metafield(namespace: "custom", key: "family_value") { value }
+    color: metafield(namespace: "custom", key: "color") { value }
+    featuredImage { id altText url width height }
+  }
   fragment SearchProduct on Product {
-    __typename
-    handle
-    id
-    publishedAt
-    title
-    trackingParameters
-    vendor
-    selectedOrFirstAvailableVariant(
-      selectedOptions: []
-      ignoreUnknownOptions: true
-      caseInsensitiveMatch: true
-    ) {
-      id
-      image {
-        url
-        altText
-        width
-        height
-      }
-      price {
-        amount
-        currencyCode
-      }
-      compareAtPrice {
-        amount
-        currencyCode
-      }
-      selectedOptions {
-        name
-        value
-      }
-      product {
-        handle
-        title
-      }
-    }
+    __typename id handle title productType publishedAt tags availableForSale trackingParameters
+    collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+    language: metafield(namespace: "custom", key: "language") { value }
+    familyValue: metafield(namespace: "custom", key: "family_value") { value }
+    color: metafield(namespace: "custom", key: "color") { value }
+    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {
+      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }
+      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberSearchProduct } } }
+    } } }
+    variants(first: 10) { nodes { selectedOptions { name value } } }
+    featuredImage { id altText url width height }
+    collections(first: 2) { nodes { title } }
+    priceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }
+    compareAtPriceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }
   }
 `;
 
 const SEARCH_PAGE_FRAGMENT = `#graphql
   fragment SearchPage on Page {
-     __typename
-     handle
-    id
-    title
-    trackingParameters
+    __typename handle id title trackingParameters
   }
 `;
 
 const SEARCH_ARTICLE_FRAGMENT = `#graphql
   fragment SearchArticle on Article {
-    __typename
-    handle
-    id
-    title
-    trackingParameters
+    __typename handle id title trackingParameters
   }
 `;
 
 const PAGE_INFO_FRAGMENT = `#graphql
   fragment PageInfoFragment on PageInfo {
-    hasNextPage
-    hasPreviousPage
-    startCursor
-    endCursor
+    hasNextPage hasPreviousPage startCursor endCursor
   }
 `;
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/search
 export const SEARCH_QUERY = `#graphql
   query RegularSearch(
     $country: CountryCode
@@ -156,49 +254,32 @@ export const SEARCH_QUERY = `#graphql
     $first: Int
     $language: LanguageCode
     $last: Int
-    $term: String!
+    $productFilters: [ProductFilter!]
+    $reverse: Boolean
+    $sortKey: SearchSortKeys
     $startCursor: String
+    $term: String!
   ) @inContext(country: $country, language: $language) {
-    articles: search(
-      query: $term,
-      types: [ARTICLE],
-      first: $first,
-    ) {
-      nodes {
-        ...on Article {
-          ...SearchArticle
-        }
-      }
+    articles: search(query: $term, types: [ARTICLE], first: 6) {
+      nodes { ...on Article { ...SearchArticle } }
     }
-    pages: search(
-      query: $term,
-      types: [PAGE],
-      first: $first,
-    ) {
-      nodes {
-        ...on Page {
-          ...SearchPage
-        }
-      }
+    pages: search(query: $term, types: [PAGE], first: 6) {
+      nodes { ...on Page { ...SearchPage } }
     }
     products: search(
-      after: $endCursor,
-      before: $startCursor,
-      first: $first,
-      last: $last,
-      query: $term,
-      sortKey: RELEVANCE,
-      types: [PRODUCT],
-      unavailableProducts: HIDE,
+      after: $endCursor
+      before: $startCursor
+      first: $first
+      last: $last
+      productFilters: $productFilters
+      query: $term
+      reverse: $reverse
+      sortKey: $sortKey
+      types: [PRODUCT]
+      unavailableProducts: HIDE
     ) {
-      nodes {
-        ...on Product {
-          ...SearchProduct
-        }
-      }
-      pageInfo {
-        ...PageInfoFragment
-      }
+      nodes { ...on Product { ...SearchProduct } }
+      pageInfo { ...PageInfoFragment }
     }
   }
   ${SEARCH_PRODUCT_FRAGMENT}
@@ -207,128 +288,126 @@ export const SEARCH_QUERY = `#graphql
   ${PAGE_INFO_FRAGMENT}
 `;
 
-/**
- * Regular search fetcher
- * @param {Pick<
- *   Route.LoaderArgs,
- *   'request' | 'context'
- * >}
- * @return {Promise<RegularSearchReturn>}
- */
 async function regularSearch({request, context}) {
   const {storefront} = context;
   const url = new URL(request.url);
-  const variables = getPaginationVariables(request, {pageBy: 8});
-  const term = String(url.searchParams.get('q') || '');
+  const term = String(url.searchParams.get('q') || '').trim();
+  const selected = {
+    type: url.searchParams.get('type'),
+    theme: url.searchParams.get('theme'),
+    language: url.searchParams.get('language'),
+    color: url.searchParams.get('color'),
+    collection: url.searchParams.get('collection'),
+  };
+  const sort = url.searchParams.get('sort') || 'relevance';
+  const sortKey = sort.startsWith('price-') ? 'PRICE' : 'RELEVANCE';
+  const reverse = sort === 'price-desc';
+  const emptyItems = {
+    articles: {nodes: []},
+    pages: {nodes: []},
+    products: {
+      nodes: [],
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        endCursor: null,
+      },
+    },
+  };
 
-  // Search articles, pages, and products for the `q` term
+  if (!term) {
+    return {
+      type: 'regular',
+      term,
+      result: {total: 0, items: emptyItems},
+      products: emptyItems.products,
+      filterOptions: getCatalogFilterOptions(emptyItems.products),
+      totalCount: 0,
+      hasMoreResults: false,
+    };
+  }
+
+  const variables = {
+    ...getPaginationVariables(request, {pageBy: 12}),
+    productFilters: getCollectionFilters(selected),
+    reverse,
+    sortKey,
+    term,
+  };
   const {errors, ...items} = await storefront.query(SEARCH_QUERY, {
-    variables: {...variables, term},
+    variables,
     cache: storefront.CacheShort(),
   });
 
-  if (!items) {
+  if (!items?.products) {
     throw new Error('No search data returned from Shopify API');
   }
 
-  const total = Object.values(items).reduce(
-    (acc, {nodes}) => acc + nodes.length,
-    0,
+  const products = groupCatalogFamilies(items.products);
+  const totalCount = products.nodes.length;
+  const hasMoreResults = Boolean(
+    products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,
   );
-
   const error = errors
     ? errors.map(({message}) => message).join(', ')
     : undefined;
+  const total =
+    totalCount +
+    (items.pages?.nodes.length ?? 0) +
+    (items.articles?.nodes.length ?? 0);
 
-  return {type: 'regular', term, error, result: {total, items}};
+  return {
+    type: 'regular',
+    term,
+    error,
+    result: {total, items: {...items, products}},
+    products,
+    filterOptions: getCatalogFilterOptions(items.products),
+    totalCount,
+    hasMoreResults,
+  };
 }
 
-/**
- * Predictive search query and fragments
- * (adjust as needed)
- */
 const PREDICTIVE_SEARCH_ARTICLE_FRAGMENT = `#graphql
   fragment PredictiveArticle on Article {
-    __typename
-    id
-    title
-    handle
-    blog {
-      handle
-    }
-    image {
-      url
-      altText
-      width
-      height
-    }
+    __typename id title handle blog { handle }
+    image { url altText width height }
     trackingParameters
   }
 `;
 
 const PREDICTIVE_SEARCH_COLLECTION_FRAGMENT = `#graphql
   fragment PredictiveCollection on Collection {
-    __typename
-    id
-    title
-    handle
-    image {
-      url
-      altText
-      width
-      height
-    }
-    trackingParameters
+    __typename id title handle image { url altText width height } trackingParameters
   }
 `;
 
 const PREDICTIVE_SEARCH_PAGE_FRAGMENT = `#graphql
   fragment PredictivePage on Page {
-    __typename
-    id
-    title
-    handle
-    trackingParameters
+    __typename id title handle trackingParameters
   }
 `;
 
 const PREDICTIVE_SEARCH_PRODUCT_FRAGMENT = `#graphql
   fragment PredictiveProduct on Product {
-    __typename
-    id
-    title
-    handle
-    trackingParameters
+    __typename id title handle trackingParameters
     selectedOrFirstAvailableVariant(
       selectedOptions: []
       ignoreUnknownOptions: true
       caseInsensitiveMatch: true
     ) {
-      id
-      image {
-        url
-        altText
-        width
-        height
-      }
-      price {
-        amount
-        currencyCode
-      }
+      id image { url altText width height } price { amount currencyCode }
     }
   }
 `;
 
 const PREDICTIVE_SEARCH_QUERY_FRAGMENT = `#graphql
   fragment PredictiveQuery on SearchQuerySuggestion {
-    __typename
-    text
-    styledText
-    trackingParameters
+    __typename text styledText trackingParameters
   }
 `;
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/predictiveSearch
 const PREDICTIVE_SEARCH_QUERY = `#graphql
   query PredictiveSearch(
     $country: CountryCode
@@ -339,26 +418,16 @@ const PREDICTIVE_SEARCH_QUERY = `#graphql
     $types: [PredictiveSearchType!]
   ) @inContext(country: $country, language: $language) {
     predictiveSearch(
-      limit: $limit,
-      limitScope: $limitScope,
-      query: $term,
-      types: $types,
+      limit: $limit
+      limitScope: $limitScope
+      query: $term
+      types: $types
     ) {
-      articles {
-        ...PredictiveArticle
-      }
-      collections {
-        ...PredictiveCollection
-      }
-      pages {
-        ...PredictivePage
-      }
-      products {
-        ...PredictiveProduct
-      }
-      queries {
-        ...PredictiveQuery
-      }
+      articles { ...PredictiveArticle }
+      collections { ...PredictiveCollection }
+      pages { ...PredictivePage }
+      products { ...PredictiveProduct }
+      queries { ...PredictiveQuery }
     }
   }
   ${PREDICTIVE_SEARCH_ARTICLE_FRAGMENT}
@@ -368,14 +437,6 @@ const PREDICTIVE_SEARCH_QUERY = `#graphql
   ${PREDICTIVE_SEARCH_QUERY_FRAGMENT}
 `;
 
-/**
- * Predictive search fetcher
- * @param {Pick<
- *   Route.ActionArgs,
- *   'request' | 'context'
- * >}
- * @return {Promise<PredictiveSearchReturn>}
- */
 async function predictiveSearch({request, context}) {
   const {storefront} = context;
   const url = new URL(request.url);
@@ -385,17 +446,11 @@ async function predictiveSearch({request, context}) {
 
   if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
 
-  // Predictively search articles, collections, pages, products, and queries (suggestions)
   const {predictiveSearch: items, errors} = await storefront.query(
     PREDICTIVE_SEARCH_QUERY,
     {
       cache: storefront.CacheNone(),
-      variables: {
-        // customize search options as needed
-        limit,
-        limitScope: 'EACH',
-        term,
-      },
+      variables: {limit, limitScope: 'EACH', term},
     },
   );
 
@@ -404,7 +459,6 @@ async function predictiveSearch({request, context}) {
       `Shopify API errors: ${errors.map(({message}) => message).join(', ')}`,
     );
   }
-
   if (!items) {
     throw new Error('No predictive search data returned from Shopify API');
   }
@@ -413,13 +467,8 @@ async function predictiveSearch({request, context}) {
     (acc, item) => acc + item.length,
     0,
   );
-
   return {type, term, result: {items, total}};
 }
 
 /** @typedef {import('./+types/search').Route} Route */
-/** @typedef {import('~/lib/search').RegularSearchReturn} RegularSearchReturn */
-/** @typedef {import('~/lib/search').PredictiveSearchReturn} PredictiveSearchReturn */
-/** @typedef {import('storefrontapi.generated').RegularSearchQuery} RegularSearchQuery */
-/** @typedef {import('storefrontapi.generated').PredictiveSearchQuery} PredictiveSearchQuery */
 /** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

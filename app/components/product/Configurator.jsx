@@ -1,9 +1,15 @@
 import {useState} from 'react';
-import {useNavigate} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {ProductFamilySelector} from '~/components/product/ProductFamilySelector';
 import {orderSizeGuideLines, sortSizes} from '~/lib/sizing.js';
+import {
+  Accordion as AccordionRoot,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '~/components/ui/accordion.jsx';
 
 // Fallback color swatches helper
 const COLOR_MAP = {
@@ -161,7 +167,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         preventScrollReset: true,
                       });
                     }}
-                    className={`relative flex size-10 cursor-pointer items-center justify-center rounded-[10px] border transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
+                    className={`relative flex size-11 cursor-pointer items-center justify-center rounded-[10px] border transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
                       active
                         ? 'ring-2 ring-black dark:ring-white border-transparent'
                         : 'border-black/10 dark:border-white/10'
@@ -197,7 +203,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                 aria-expanded={sizeGuideOpen}
                 aria-controls="product-size-guide"
                 onClick={() => setSizeGuideOpen((open) => !open)}
-                className="text-[10px] tracking-wide text-brand-accent underline underline-offset-4 font-medium cursor-pointer"
+                className="inline-flex min-h-11 cursor-pointer items-center text-[10px] font-medium tracking-wide text-brand-accent underline underline-offset-4"
               >
                 Sizing Guide
               </button>
@@ -263,18 +269,41 @@ export function Configurator({product, selectedVariant, productOptions}) {
 
       {/* Accordions details */}
       <div className="flex flex-col border-t border-black/5 dark:border-white/5 pt-4 mt-6">
-        <Accordion title="Design Story" content={designStory} />
-        <Accordion title="Product Details" content={material} />
-        <Accordion
+        <ProductAccordion title="Design Story" content={designStory} />
+        <ProductAccordion title="Product Details" content={material} />
+        <ProductAccordion
           title="Size & Fit"
           content={orderedSizeGuide}
           preserveLines
         />
-        <Accordion
+        <ProductAccordion
           title="Delivery & Returns"
           content="Delivery estimates and return eligibility are shown at checkout and in the store policies."
         />
       </div>
+      <nav
+        aria-label="Product help"
+        className="flex flex-wrap gap-x-5 gap-y-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-black/50"
+      >
+        <Link
+          to="/pages/size-care"
+          className="underline underline-offset-4 hover:text-black"
+        >
+          Size & care
+        </Link>
+        <Link
+          to="/pages/shipping-returns"
+          className="underline underline-offset-4 hover:text-black"
+        >
+          Shipping & returns
+        </Link>
+        <Link
+          to="/pages/contact"
+          className="underline underline-offset-4 hover:text-black"
+        >
+          Ask the studio
+        </Link>
+      </nav>
     </div>
   );
 }
@@ -332,25 +361,22 @@ function VariantOption({option, navigate}) {
   );
 }
 
-function Accordion({title, content, preserveLines = false}) {
-  const [open, setOpen] = useState(false);
+function ProductAccordion({title, content, preserveLines = false}) {
   return (
-    <div className="border-b border-black/5 dark:border-white/5 py-3">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between font-marcellus text-xs uppercase tracking-wider text-left text-black/75 dark:text-white/70 hover:text-black dark:hover:text-white cursor-pointer"
+    <AccordionRoot type="single" collapsible>
+      <AccordionItem
+        value={title}
+        className="border-black/5 dark:border-white/5"
       >
-        <span>{title}</span>
-        <span className="font-mono text-[10px]">{open ? '−' : '+'}</span>
-      </button>
-      {open && (
-        <div
-          className={`mt-2 text-xs text-black/50 dark:text-white/40 font-work font-light leading-relaxed animate-fade-in ${preserveLines ? 'whitespace-pre-line' : ''}`}
+        <AccordionTrigger className="min-h-0 py-3 font-marcellus text-xs uppercase tracking-wider text-black/75 hover:text-black dark:text-white/70 dark:hover:text-white">
+          {title}
+        </AccordionTrigger>
+        <AccordionContent
+          className={`text-xs font-light leading-relaxed text-black/50 dark:text-white/40 ${preserveLines ? 'whitespace-pre-line' : ''}`}
         >
           {content}
-        </div>
-      )}
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </AccordionRoot>
   );
 }

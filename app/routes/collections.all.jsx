@@ -1,15 +1,10 @@
-import {useLoaderData, useRouteLoaderData} from 'react-router';
+import {useLoaderData} from 'react-router';
 import {CacheShort, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductCard} from '~/components/ds/index.js';
 import {BentoFeaturedGrid} from '~/components/product/BentoFeaturedGrid';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
-import {
-  FALLBACK_COLLECTION_THEMES,
-  getCollectionThemeStyle,
-  uniqueThemeNames,
-} from '~/lib/collectionTheme.js';
 import {
   getCatalogFilterOptions,
   getCatalogSort,
@@ -56,34 +51,15 @@ export async function loader({context, request}) {
 }
 
 export default function Catalog() {
-  const {products, filterOptions, totalCount, hasMoreResults, selectedTheme} =
-    useLoaderData();
-  const rootData = useRouteLoaderData('root');
-  const themes = uniqueThemeNames([
-    ...filterOptions.themes,
-    ...(rootData?.megaMenuProducts ?? []).map(
-      (product) => product.collectionName?.value,
-    ),
-    ...FALLBACK_COLLECTION_THEMES,
-  ]);
-  const visualTheme = selectedTheme || 'Linguistic essentials';
+  const {products, filterOptions, totalCount, hasMoreResults} = useLoaderData();
   return (
-    <div
-      style={getCollectionThemeStyle(visualTheme)}
-      className="bg-[var(--collection-page,#f5f1ea)]"
-    >
+    <div className="bg-white">
       <CollectionThemeHero
-        title="Linguistic essentials"
-        activeTheme={selectedTheme}
-        themes={themes}
-        eyebrow="Shop all themes"
-        description={
-          selectedTheme
-            ? undefined
-            : 'Explore contemporary garments shaped by Indian scripts, language, and culture.'
-        }
+        title="All Products"
+        artwork="collections"
+        description="Explore contemporary garments shaped by Indian scripts, language, and culture."
       />
-      <section className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 pb-24 pt-14 text-black sm:px-8 lg:px-[60px] lg:pt-20">
+      <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
         <CatalogFilters
           totalCount={totalCount}
           hasMoreResults={hasMoreResults}
@@ -91,7 +67,7 @@ export default function Catalog() {
           hideTheme
         />
         {totalCount === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 bg-white/50 py-20 text-center">
+          <div className="uniinx-plp-results flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 py-20 text-center">
             <span className="text-lg text-black/60">
               No products match selected filters
             </span>
@@ -102,6 +78,7 @@ export default function Catalog() {
         ) : (
           <PaginatedResourceSection
             connection={products}
+            className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
             previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"

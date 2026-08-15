@@ -75,13 +75,13 @@ describe('ProductCard', () => {
     expect(card).not.toHaveClass('border', 'shadow', 'rounded-xl');
   });
 
-  it('uses the red fallback while exposing the collection theme hook', () => {
+  it('uses the neutral fallback while exposing the collection theme hook', () => {
     renderCard({collectionName: {value: 'Antariksham'}});
     const card = screen.getByTestId('product-card');
     const image = screen.getByTestId('product-image-motion');
 
     expect(card).toHaveAttribute('data-product-collection', 'antariksham');
-    expect(image).toHaveStyle({'--product-card-color': '#f15353'});
+    expect(image).toHaveStyle({'--product-card-color': '#f0ede7'});
   });
 
   it('server-renders visible card content without an observer-dependent mask', () => {

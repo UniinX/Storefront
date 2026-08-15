@@ -1,8 +1,8 @@
 import {useLoaderData, Link} from 'react-router';
 import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {getCollectionThemeStyle} from '~/lib/collectionTheme.js';
 import {Reveal} from '~/components/motion/Reveal.jsx';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 
 /**
  * @param {Route.LoaderArgs} args
@@ -53,28 +53,15 @@ export default function Collections() {
   const {collections} = useLoaderData();
 
   return (
-    <div className="bg-[#eee9e0] pb-24 pt-[92px] text-black">
-      <header className="uniinx-home-gutter border-b border-black/10 py-16 sm:py-20 lg:py-28">
-        <Reveal>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/45">
-            UniinX theme directory
-          </span>
-          <div className="mt-7 grid items-end gap-8 lg:grid-cols-[1.35fr_0.65fr]">
-            <h1 className="text-[clamp(62px,10vw,148px)] font-normal leading-[0.76] tracking-[-0.075em]">
-              Every theme, its own world.
-            </h1>
-            <p className="max-w-md border-l border-black/20 pl-5 text-sm leading-7 text-black/60">
-              Move between palettes, scripts, and cultural references. Each
-              collection carries a distinct atmosphere while remaining part of
-              one UniinX wardrobe.
-            </p>
-          </div>
-        </Reveal>
-      </header>
-      <section className="mx-auto max-w-[1440px] px-5 pt-12 sm:px-8 lg:px-[60px] lg:pt-16">
+    <div className="bg-white pb-24 text-black">
+      <CollectionThemeHero title="Collections" directory />
+      <section className="mx-auto max-w-[1440px] px-3 pt-2 sm:px-5 lg:px-[60px]">
         <PaginatedResourceSection
           connection={collections}
-          resourcesClassName="grid gap-5 md:grid-cols-2"
+          ariaLabel="Collections"
+          resourcesClassName="uniinx-collection-mosaic"
+          previousClassName="uniinx-plp-pagination-link"
+          nextClassName="uniinx-plp-pagination-link"
         >
           {({node: collection, index}) => (
             <CollectionItem
@@ -96,44 +83,36 @@ export default function Collections() {
  * }}
  */
 function CollectionItem({collection, index}) {
-  const style = getCollectionThemeStyle(collection.title);
+  const image = collection.image || collection.products?.nodes?.[0]?.featuredImage;
+  const featureCopy = index === 0
+    ? `Say it with ${collection.title}`
+    : index === 1
+      ? `The ${collection.title}`
+      : collection.title;
+
   return (
     <Reveal as="article" variant="card" delay={(index % 4) * 70}>
       <Link
-        style={style}
-        className="group relative flex min-h-[440px] overflow-hidden rounded-[22px] bg-[var(--collection-hero)] p-6 text-[var(--collection-ink)] sm:min-h-[520px] sm:p-8"
+        className="group relative flex h-full min-h-[240px] overflow-hidden rounded-[20px] bg-[#d9d9d9] p-5 text-white sm:rounded-[30px] sm:p-7"
         to={`/collections/${collection.handle}`}
         prefetch="intent"
       >
-        {collection?.image ? (
+        {image ? (
           <Image
-            alt={collection.image.altText || collection.title}
-            data={collection.image}
+            alt={image.altText || collection.title}
+            data={image}
             loading={index < 3 ? 'eager' : undefined}
-            sizes="(min-width: 900px) 50vw, 100vw"
-            className="absolute inset-0 size-full object-cover opacity-55 transition-transform duration-700 group-hover:scale-[1.025]"
+            sizes="(min-width: 1100px) 66vw, (min-width: 720px) 50vw, 100vw"
+            className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-[1.025] motion-reduce:transition-none"
           />
         ) : null}
-        <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
-        <span aria-hidden="true" className="absolute right-7 top-2 select-none text-[180px] leading-none text-[var(--collection-pattern)] opacity-20 sm:text-[260px]">
-          అ
-        </span>
-        <span className="relative mt-auto flex w-full items-end justify-between gap-6">
-          <span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
-              Enter theme
-            </span>
-            <span className="mt-3 block text-[clamp(40px,5vw,74px)] font-normal leading-[0.82] tracking-[-0.06em] text-white">
-              {collection.title}
-            </span>
-            {collection.description ? (
-              <span className="mt-5 block max-w-md text-sm leading-6 text-white/65">
-                {collection.description}
-              </span>
-            ) : null}
+        <span className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+        <span className="relative mt-auto flex w-full items-end justify-between gap-4">
+          <span className="max-w-[80%] text-[clamp(28px,4.5vw,78px)] font-normal leading-[0.9] tracking-[-0.065em]">
+            {featureCopy}
           </span>
-          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white text-xl text-black transition-transform group-hover:translate-x-1">
-            →
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-2xl text-black transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 sm:size-14">
+            ↗
           </span>
         </span>
       </Link>
@@ -153,6 +132,17 @@ const COLLECTIONS_QUERY = `#graphql
       altText
       width
       height
+    }
+    products(first: 1) {
+      nodes {
+        featuredImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+      }
     }
   }
   query StoreCollections(

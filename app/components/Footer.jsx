@@ -1,5 +1,5 @@
 import {Await, Link} from 'react-router';
-import {Suspense} from 'react';
+import {Suspense, useState} from 'react';
 import {LocalizedLogo} from './LocalizedLogo.jsx';
 import {Reveal} from '~/components/motion/Reveal.jsx';
 
@@ -14,15 +14,21 @@ const FOOTER_LINKS = [
     ],
   },
   {
+    title: 'Explore',
+    links: [
+      {label: 'About', to: '/pages/about'},
+      {label: 'Journal', to: '/blogs'},
+      {label: 'FAQ', to: '/pages/faq'},
+      {label: 'Size & Care', to: '/pages/size-care'},
+    ],
+  },
+  {
     title: 'Help',
     links: [
-      {label: 'Support', to: '/account/support'},
-      {
-        label: 'Returns & refunds',
-        to: '/account/support?category=Refund%20or%20Cancellation',
-      },
+      {label: 'Contact', to: '/pages/contact'},
+      {label: 'Shipping & Returns', to: '/pages/shipping-returns'},
+      {label: 'Account support', to: '/account/support'},
       {label: 'Orders', to: '/account/orders'},
-      {label: 'Cart', to: '/cart'},
     ],
   },
   {
@@ -50,33 +56,12 @@ export function Footer({language, isLoggedIn = false}) {
             <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.16em] text-white/55">
               Clothes in your Language
             </p>
-            <form
-              className="mt-8 flex max-w-sm border-b border-white/45"
-              action="#"
-              onSubmit={(event) => event.preventDefault()}
-            >
-              <label htmlFor="footer-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="footer-email"
-                type="email"
-                placeholder="Enter your email"
-                className="h-12 min-w-0 flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
-              />
-              <button
-                type="submit"
-                aria-label="Subscribe"
-                className="grid size-12 place-items-center rounded-full text-lg"
-              >
-                →
-              </button>
-            </form>
+            <NewsletterForm />
           </Reveal>
 
           <nav
             aria-label="Footer"
-            className="grid grid-cols-2 gap-8 sm:grid-cols-3"
+            className="grid grid-cols-2 gap-8 sm:grid-cols-4"
           >
             {FOOTER_LINKS.map((group, index) => (
               <Reveal
@@ -91,7 +76,7 @@ export function Footer({language, isLoggedIn = false}) {
                 >
                   {group.title}
                 </h2>
-                <ul className="space-y-2.5">
+                <ul className="space-y-1">
                   {group.links.map((link) => (
                     <li key={link.to}>
                       <AccountAwareFooterLink
@@ -132,7 +117,7 @@ function AccountAwareFooterLink({link, isLoggedIn}) {
       <Link
         to={destination}
         prefetch="intent"
-        className="inline-flex min-h-6 items-center text-xs text-white/60 hover:text-white"
+        className="inline-flex min-h-11 items-center text-xs text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       >
         {link.label}
       </Link>
@@ -151,7 +136,7 @@ function FooterAccountLink({loggedIn}) {
     return (
       <Link
         to="/account"
-        className="font-medium uppercase tracking-[0.1em] text-white"
+        className="inline-flex min-h-11 items-center font-medium uppercase tracking-[0.1em] text-white"
       >
         My account
       </Link>
@@ -159,7 +144,7 @@ function FooterAccountLink({loggedIn}) {
   return (
     <Link
       to="/account/login?return_to=%2Faccount"
-      className="font-medium uppercase tracking-[0.1em] text-white"
+      className="inline-flex min-h-11 items-center font-medium uppercase tracking-[0.1em] text-white"
     >
       Sign in / Sign up
     </Link>
@@ -167,3 +152,72 @@ function FooterAccountLink({loggedIn}) {
 }
 
 export default Footer;
+
+function NewsletterForm() {
+  const [status, setStatus] = useState('idle');
+  const [message, setMessage] = useState('');
+
+  async function subscribe(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    setStatus('submitting');
+    setMessage('');
+    try {
+      const response = await fetch('/newsletter', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error);
+      form.reset();
+      setStatus('success');
+      setMessage('You’re on the list.');
+    } catch (error) {
+      setStatus('error');
+      setMessage(error?.message || 'Signup failed. Please try again.');
+    }
+  }
+
+  return (
+    <form
+      className="mt-8 max-w-sm"
+      action="/newsletter"
+      method="post"
+      onSubmit={subscribe}
+    >
+      <div className="flex border-b border-white/45">
+        <label htmlFor="footer-email" className="sr-only">
+          Email address
+        </label>
+        <input
+          id="footer-email"
+          name="email"
+          type="email"
+          required
+          placeholder="Enter your email"
+          className="h-12 min-w-0 flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+        />
+        <label className="sr-only">
+          Website
+          <input name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+        <button
+          type="submit"
+          disabled={status === 'submitting'}
+          aria-label="Subscribe"
+          className="grid size-12 place-items-center rounded-full text-lg disabled:opacity-50"
+        >
+          {status === 'submitting' ? '…' : '→'}
+        </button>
+      </div>
+      {message ? (
+        <p
+          role={status === 'error' ? 'alert' : 'status'}
+          className={`mt-3 text-xs ${status === 'error' ? 'text-red-300' : 'text-white/65'}`}
+        >
+          {message}
+        </p>
+      ) : null}
+    </form>
+  );
+}

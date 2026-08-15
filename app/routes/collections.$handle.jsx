@@ -1,15 +1,10 @@
-import {useLoaderData, useRouteLoaderData} from 'react-router';
+import {useLoaderData} from 'react-router';
 import {Analytics, CacheShort, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductCard} from '~/components/ds/index.js';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
-import {
-  FALLBACK_COLLECTION_THEMES,
-  getCollectionThemeStyle,
-  uniqueThemeNames,
-} from '~/lib/collectionTheme.js';
 import {
   getCatalogFilterOptions,
   getCatalogSort,
@@ -97,7 +92,6 @@ export async function loader({context, params, request}) {
     collection,
     products,
     filterOptions: getCatalogFilterOptions(collection.products),
-    selectedTheme: url.searchParams.get('theme') || '',
     totalCount: products.nodes.length,
     hasMoreResults: Boolean(
       products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,
@@ -112,29 +106,15 @@ export default function Collection() {
     filterOptions,
     totalCount,
     hasMoreResults,
-    selectedTheme,
   } = useLoaderData();
-  const rootData = useRouteLoaderData('root');
-  const themes = uniqueThemeNames([
-    ...filterOptions.themes,
-    ...(rootData?.megaMenuProducts ?? []).map(
-      (product) => product.collectionName?.value,
-    ),
-    ...FALLBACK_COLLECTION_THEMES,
-  ]);
-  const visualTheme = selectedTheme || collection.title;
   return (
-    <div
-      style={getCollectionThemeStyle(visualTheme)}
-      className="bg-[var(--collection-page,#f5f1ea)]"
-    >
+    <div className="bg-white">
       <CollectionThemeHero
         title={collection.title}
-        activeTheme={selectedTheme}
-        themes={themes}
         description={collection.description || undefined}
+        image={collection.image}
       />
-      <section className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 pb-24 pt-14 text-black sm:px-8 lg:px-[60px] lg:pt-20">
+      <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
         <CatalogFilters
           totalCount={totalCount}
           hasMoreResults={hasMoreResults}
@@ -143,7 +123,7 @@ export default function Collection() {
           hideTheme
         />
         {totalCount === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 bg-white/50 py-20 text-center">
+          <div className="uniinx-plp-results flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 py-20 text-center">
             <span className="text-lg text-black/60">
               No products match this theme and filter combination
             </span>
@@ -154,6 +134,7 @@ export default function Collection() {
         ) : (
           <PaginatedResourceSection
             connection={products}
+            className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
             previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
@@ -206,7 +187,7 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
   query Collection($handle: String!, $country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $filters: [ProductFilter!], $sortKey: ProductCollectionSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {
-    collection(handle: $handle) { id handle title description products(first: $first, last: $last, before: $startCursor, after: $endCursor, filters: $filters, sortKey: $sortKey, reverse: $reverse) {
+    collection(handle: $handle) { id handle title description image { id url altText width height } products(first: $first, last: $last, before: $startCursor, after: $endCursor, filters: $filters, sortKey: $sortKey, reverse: $reverse) {
       nodes { ...ProductItem } filters { id label type values { id label count input } } pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
     } }
   }

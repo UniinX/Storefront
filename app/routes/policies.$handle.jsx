@@ -4,7 +4,7 @@ import {Link, useLoaderData} from 'react-router';
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.policy.title ?? ''}`}];
+  return [{title: `${data?.policy.title ?? 'Policy'} | UniinX`}];
 };
 
 /**
@@ -45,15 +45,22 @@ export default function Policy() {
   const {policy} = useLoaderData();
 
   return (
-    <div className="policy">
-      <br />
-      <br />
-      <div>
-        <Link to="/policies">← Back to Policies</Link>
-      </div>
-      <br />
-      <h1>{policy.title}</h1>
-      <div dangerouslySetInnerHTML={{__html: policy.body}} />
+    <div className="bg-surface-subtle text-foreground">
+      <header className="uniinx-home-gutter border-b border-black/10 pb-14 pt-20 sm:pt-28 lg:pb-20 lg:pt-36">
+        <Link
+          to="/policies"
+          className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45"
+        >
+          ← All policies
+        </Link>
+        <h1 className="mt-8 max-w-6xl text-[clamp(48px,8vw,116px)] font-normal leading-[0.82] tracking-[-0.07em]">
+          {policy.title}
+        </h1>
+      </header>
+      <article
+        className="uniinx-rich-text mx-auto max-w-3xl px-5 py-16 text-sm leading-7 text-black/70 sm:px-8 lg:py-24"
+        dangerouslySetInnerHTML={{__html: policy.body}}
+      />
     </div>
   );
 }

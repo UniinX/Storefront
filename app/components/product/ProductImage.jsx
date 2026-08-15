@@ -6,7 +6,7 @@
 import {useState} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {CrossFade} from '~/components/motion/CrossFade.jsx';
-import {FontVar} from '~/components/ds/index.js';
+import {fontVariable} from '~/lib/languages.js';
 import {LanguagePrintOverlay} from './LanguagePrintOverlay.jsx';
 
 export function ProductImage({image, language}) {
@@ -19,7 +19,9 @@ export function ProductImage({image, language}) {
         onMouseLeave={() => setZoomed(false)}
         className="relative overflow-hidden cursor-zoom-in"
         style={{
-          aspectRatio: '7 / 9', maxWidth: 480, borderRadius: 'var(--radius-lg)',
+          aspectRatio: '7 / 9',
+          maxWidth: 480,
+          borderRadius: 'var(--radius-lg)',
           backgroundColor: 'var(--paper-warm)',
         }}
       >
@@ -28,9 +30,13 @@ export function ProductImage({image, language}) {
             className={image ? undefined : 'uniinx-fabric'}
             data-tone={image ? undefined : 'maroon'}
             style={{
-              width: '100%', aspectRatio: '7 / 9',
-              display: image ? 'block' : 'flex', alignItems: 'flex-end',
-              padding: image ? 0 : 24, boxSizing: 'border-box', position: 'relative',
+              width: '100%',
+              aspectRatio: '7 / 9',
+              display: image ? 'block' : 'flex',
+              alignItems: 'flex-end',
+              padding: image ? 0 : 24,
+              boxSizing: 'border-box',
+              position: 'relative',
             }}
           >
             {image ? (
@@ -40,10 +46,24 @@ export function ProductImage({image, language}) {
                 aspectRatio="7/9"
                 sizes="(min-width: 45em) 480px, 100vw"
                 className="transition-transform duration-500 ease-out"
-                style={{width: '100%', height: '100%', objectFit: 'cover', transform: zoomed ? 'scale(1.08)' : 'scale(1)'}}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transform: zoomed ? 'scale(1.08)' : 'scale(1)',
+                }}
               />
             ) : (
-              <span style={{position: 'relative', zIndex: 1, opacity: 0.85, fontFamily: 'var(--font-work-sans)', fontSize: 13, color: 'var(--ink)'}}>
+              <span
+                style={{
+                  position: 'relative',
+                  zIndex: 1,
+                  opacity: 0.85,
+                  fontFamily: 'var(--font-work-sans)',
+                  fontSize: 13,
+                  color: 'var(--ink)',
+                }}
+              >
                 Garment photography placeholder
               </span>
             )}
@@ -52,8 +72,15 @@ export function ProductImage({image, language}) {
         <LanguagePrintOverlay language={language} />
       </div>
       <CrossFade keyId={language?.id}>
-        <p dir={language?.rtl ? 'rtl' : 'ltr'}
-          style={{marginTop: 16, fontFamily: FontVar(language?.font ?? 'marcellus'), fontSize: 15, color: 'var(--accent-primary)'}}>
+        <p
+          dir={language?.rtl ? 'rtl' : 'ltr'}
+          style={{
+            marginTop: 16,
+            fontFamily: fontVariable(language?.font ?? 'marcellus'),
+            fontSize: 15,
+            color: 'var(--accent-primary)',
+          }}
+        >
           Printed in {language?.label} · {language?.native}
         </p>
       </CrossFade>

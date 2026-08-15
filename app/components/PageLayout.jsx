@@ -11,7 +11,6 @@ export function PageLayout({
   cart,
   children = null,
   language,
-  onLanguageChange,
   isLoggedIn,
   megaMenuProducts,
 }) {
@@ -23,7 +22,6 @@ export function PageLayout({
       <Header
         cart={cart}
         language={language}
-        onLanguageChange={onLanguageChange}
         isLoggedIn={isLoggedIn}
         megaMenuProducts={megaMenuProducts}
       />
@@ -32,14 +30,11 @@ export function PageLayout({
         initial={{opacity: 0, y: reduceMotion ? 0 : 8}}
         animate={{opacity: 1, y: 0}}
         transition={{duration: reduceMotion ? 0.15 : 0.42}}
-        style={{paddingTop: pathname === '/' ? 0 : 80}}
+        style={{paddingTop: pathname === '/' ? 0 : 'var(--header-clearance)'}}
       >
         {children}
       </motion.main>
-      <Footer
-        language={language}
-        isLoggedIn={isLoggedIn}
-      />
+      <Footer language={language} isLoggedIn={isLoggedIn} />
     </Aside.Provider>
   );
 }

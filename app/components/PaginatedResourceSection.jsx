@@ -13,6 +13,7 @@ export function PaginatedResourceSection({
   previousClassName,
   nextClassName,
   autoLoadNext = false,
+  className,
 }) {
   return (
     <Pagination connection={connection}>
@@ -22,7 +23,7 @@ export function PaginatedResourceSection({
         );
 
         return (
-          <div>
+          <div className={className}>
             {resourcesClassName ? (
               <div
                 aria-label={ariaLabel}

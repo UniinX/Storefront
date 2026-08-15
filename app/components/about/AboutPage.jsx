@@ -6,9 +6,21 @@ import heroImage from '~/assets/home/hero-section.jpg';
 import studioImage from '~/assets/home/antariksham-back.webp';
 
 const PRINCIPLES = [
-  ['01', 'Language is structure', 'We begin with the balance, cadence, and geometry of Indian scripts—not decoration added at the end.'],
-  ['02', 'Clothing stays wearable', 'The silhouette remains calm and contemporary so language can carry the identity without becoming costume.'],
-  ['03', 'India is plural', 'Every edition belongs to a wider family of states, sounds, and writing systems. No single script stands in for the whole.'],
+  [
+    '01',
+    'Language is structure',
+    'We begin with the balance, cadence, and geometry of Indian scripts—not decoration added at the end.',
+  ],
+  [
+    '02',
+    'Clothing stays wearable',
+    'The silhouette remains calm and contemporary so language can carry the identity without becoming costume.',
+  ],
+  [
+    '03',
+    'India is plural',
+    'Every edition belongs to a wider family of states, sounds, and writing systems. No single script stands in for the whole.',
+  ],
 ];
 
 export function AboutPage({page, language = 'english'}) {
@@ -26,7 +38,10 @@ export function AboutPage({page, language = 'english'}) {
           className="absolute inset-0 size-full object-cover object-center mix-blend-luminosity"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/25 to-black/85" />
-        <div aria-hidden="true" className="absolute inset-5 border border-white/20 sm:inset-8 lg:inset-[60px]" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-5 border border-white/20 sm:inset-8 lg:inset-[60px]"
+        />
         <div className="relative z-10 flex min-h-[668px] flex-col justify-between px-5 pb-12 pt-16 sm:px-8 lg:min-h-[768px] lg:px-[clamp(60px,6vw,112px)] lg:pb-20 lg:pt-24">
           <Reveal>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
@@ -35,11 +50,14 @@ export function AboutPage({page, language = 'english'}) {
           </Reveal>
           <div className="grid items-end gap-10 lg:grid-cols-[1.45fr_0.55fr]">
             <Reveal>
-              <h1 className="max-w-6xl text-[clamp(68px,10.5vw,164px)] font-normal leading-[0.75] tracking-[-0.075em]">
+              <h1 className="max-w-6xl text-[clamp(52px,10.5vw,164px)] font-normal leading-[0.82] tracking-[-0.065em] sm:leading-[0.75] sm:tracking-[-0.075em]">
                 Clothes in your language.
               </h1>
             </Reveal>
-            <Reveal className="max-w-sm border-l border-white/30 pl-5" delay={120}>
+            <Reveal
+              className="max-w-sm border-l border-white/30 pl-5"
+              delay={120}
+            >
               <p className="text-sm leading-6 text-white/70 sm:text-base sm:leading-7">
                 A contemporary clothing label that treats India&apos;s scripts,
                 sounds, and regional identities as design material.
@@ -76,8 +94,12 @@ export function AboutPage({page, language = 'english'}) {
                 className="grid gap-5 border-b border-black/15 py-7 sm:grid-cols-[60px_0.7fr_1fr] sm:items-start"
               >
                 <span className="text-xs text-black/40">{number}</span>
-                <h3 className="text-xl font-medium tracking-[-0.025em]">{title}</h3>
-                <p className="max-w-lg text-sm leading-6 text-black/60">{body}</p>
+                <h3 className="text-xl font-medium tracking-[-0.025em]">
+                  {title}
+                </h3>
+                <p className="max-w-lg text-sm leading-6 text-black/60">
+                  {body}
+                </p>
               </Reveal>
             ))}
           </div>
@@ -100,7 +122,10 @@ export function AboutPage({page, language = 'english'}) {
             </p>
           </div>
         </Reveal>
-        <Reveal variant="scale" className="min-h-[420px] overflow-hidden lg:min-h-[680px]">
+        <Reveal
+          variant="scale"
+          className="min-h-[420px] overflow-hidden lg:min-h-[680px]"
+        >
           <img
             src={studioImage}
             alt="Detail from the UniinX Antariksham collection"
