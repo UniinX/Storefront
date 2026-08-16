@@ -1,6 +1,6 @@
 /** @file Tests for the categorizeOptions helper that drives the PDP configurator steps. */
 import { describe, it, expect } from 'vitest';
-import { categorizeOptions } from './ProductInfo.jsx';
+import { categorizeOptions, NAMED_COLOR_FALLBACKS } from './ProductInfo.jsx';
 
 function option(name, valueCount = 2) {
   return {
@@ -42,5 +42,11 @@ describe('categorizeOptions', () => {
     expect(typeOptions).toEqual([]);
     expect(colorOption).toBeNull();
     expect(sizeOption).toBeNull();
+  });
+});
+
+describe('NAMED_COLOR_FALLBACKS', () => {
+  it('renders the "white" fallback swatch as true white, not off-white', () => {
+    expect(NAMED_COLOR_FALLBACKS.white).toBe('#ffffff');
   });
 });

@@ -7,6 +7,7 @@ import {DepartmentBand} from '~/components/home/DepartmentBand.jsx';
 import {BrandStory} from '~/components/home/BrandStory.jsx';
 import {LanguageShowcase} from '~/components/home/LanguageShowcase.jsx';
 import {CategoryBento} from '~/components/home/CategoryBento.jsx';
+import {ProductGridSkeleton} from '~/components/ds/index.js';
 
 /**
  * @type {Route.MetaFunction}
@@ -69,6 +70,7 @@ export default function Homepage() {
           <MockShopNotice />
         </div>
       )}
+
       <Suspense fallback={null}>
         <Await resolve={data.featuredCollections}>
           {(response) => (
@@ -76,7 +78,7 @@ export default function Homepage() {
           )}
         </Await>
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<ProductGridSkeleton count={8} />}>
         <Await resolve={data.recommendedProducts}>
           {(response) => (
             <ProductGrid
@@ -145,8 +147,11 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
       }
     }
     collectionName: metafield(namespace: "custom", key: "collection_name") { value }
-    collections(first: 1) {
+    category { id name }
+    collections(first: 10) {
       nodes {
+        id
+        handle
         title
       }
     }

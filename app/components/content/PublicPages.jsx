@@ -284,7 +284,7 @@ function SizeCarePage() {
             <Reveal
               key={title}
               delay={index * 60}
-              className="min-h-56 bg-[#faf9f6] p-7"
+              className="min-h-56 bg-white p-7"
             >
               <span className="text-xs text-black/35">0{index + 1}</span>
               <h3 className="mt-12 text-xl font-medium">{title}</h3>

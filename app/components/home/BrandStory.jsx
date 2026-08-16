@@ -235,14 +235,6 @@ export function BrandStory({
                         aria-label={`Select ${item.label}`}
                         onClick={() => selectLanguage(item.id)}
                         onMouseEnter={() => setPreviewLanguage(item.id)}
-                        initial={{opacity: 0, scale: 0.82}}
-                        whileInView={{opacity: 1, scale: 1}}
-                        viewport={{once: true, amount: 0.5}}
-                        transition={{
-                          duration: 0.45,
-                          delay: index * 0.04,
-                          ease: MOTION_EASE,
-                        }}
                         whileHover={
                           reduceMotion ? undefined : {scale: 1.08, y: -2}
                         }

@@ -29,6 +29,7 @@ export async function loader({context, params, request}) {
     theme: url.searchParams.get('theme'),
     language: url.searchParams.get('language'),
     color: url.searchParams.get('color'),
+    size: url.searchParams.get('size'),
     collection: url.searchParams.get('collection'),
   };
   const variables = {
@@ -137,7 +138,6 @@ export default function Collection() {
             className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
-            previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
             nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
           >
             {({node: product, index}) => (
@@ -178,7 +178,8 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     } } }
     variants(first: 10) { nodes { selectedOptions { name value } } }
     featuredImage { id altText url width height }
-    collections(first: 2) { nodes { title } }
+    category { id name }
+    collections(first: 10) { nodes { id handle title } }
     priceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }
     compareAtPriceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }
   }

@@ -176,7 +176,7 @@ function ColorSwatches({option}) {
 // null for every product — without a fallback, every color option renders
 // as the same flat gray circle. This best-effort name→color map only kicks
 // in when the real swatch data is absent.
-const NAMED_COLOR_FALLBACKS = {
+export const NAMED_COLOR_FALLBACKS = {
   green: '#3f6b4a',
   olive: '#6b6b47',
   ocean: '#3f6b82',
@@ -184,7 +184,7 @@ const NAMED_COLOR_FALLBACKS = {
   red: '#a8433a',
   blue: '#3f5a8a',
   black: '#1a1a1a',
-  white: '#f2f0ea',
+  white: '#ffffff',
   gray: '#8a8a86',
   grey: '#8a8a86',
   navy: '#1f2d4a',

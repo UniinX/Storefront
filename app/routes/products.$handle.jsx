@@ -1,4 +1,4 @@
-import {Suspense, useEffect, useRef, useState} from 'react';
+import {Suspense} from 'react';
 import {Await, useLoaderData, useNavigate} from 'react-router';
 import {
   CacheShort,
@@ -140,37 +140,6 @@ export default function Product() {
     imagesList.push(selectedVariant.image);
   }
 
-  const [activeImageIdx, setActiveImageIdx] = useState(0);
-  const [zoomed, setZoomed] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
-  const fullscreenCloseRef = useRef(null);
-  const fullscreenTriggerRef = useRef(null);
-
-  useEffect(() => {
-    setActiveImageIdx(0);
-  }, [selectedVariant?.id]);
-
-  useEffect(() => {
-    if (!fullscreen) return undefined;
-
-    const fullscreenTrigger = fullscreenTriggerRef.current;
-    fullscreenCloseRef.current?.focus();
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setFullscreen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      fullscreenTrigger?.focus();
-    };
-  }, [fullscreen]);
-
-  const activeImage = imagesList[activeImageIdx];
-
   const familyProducts =
     product.productFamily?.reference?.products?.references?.nodes?.filter(
       (candidate) => candidate.id !== product.id,
@@ -187,111 +156,37 @@ export default function Product() {
           ← Back to catalog
         </button>
 
-        {/* 2D Split Layout Configurator */}
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] xl:gap-16">
-          {/* Left 2D Preview Pane (70% width) */}
-          <div className="flex w-full min-w-0 flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
-            <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-[18px] border border-black/[0.06] bg-[#ececec] lg:aspect-auto lg:h-[calc(100vh-10rem)]">
-              {activeImage ? (
-                <Image
-                  data={activeImage}
-                  alt={activeImage.altText || product.title}
-                  aspectRatio="4/5"
-                  sizes="(min-width: 45em) 720px, 100vw"
-                  className={`h-full w-full object-contain transition-transform duration-500 ease-out ${
-                    zoomed
-                      ? 'scale-[1.18] cursor-zoom-out'
-                      : 'scale-100 cursor-zoom-in'
-                  }`}
-                  onClick={() => setZoomed(!zoomed)}
-                />
-              ) : (
-                <div className="uniinx-fabric w-full h-full flex items-center justify-center">
-                  <span className="font-work text-xs opacity-40">
-                    Garment Preview Template
-                  </span>
-                </div>
-              )}
-
-              {/* Floating Zoom & View Controls */}
-              <div className="absolute bottom-6 right-6 flex items-center gap-2 z-30">
-                <button
-                  type="button"
-                  onClick={() => setZoomed(!zoomed)}
-                  className="flex size-11 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-white/95 font-work text-xs text-black shadow-md transition-all hover:scale-105 active:scale-[0.98] dark:border-white/5 dark:bg-black/95 dark:text-white"
-                  title={zoomed ? 'Zoom Out' : 'Zoom In'}
+        {/* PDP Layout: Vertical Photos on Left, Sticky Details on Right */}
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-12 xl:gap-16">
+          {/* Left: Scrollable Photos (Horizontal Carousel on Mobile, Vertical Stack on Desktop) */}
+          <div className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 scrollbar-none sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-hidden lg:px-0 lg:pb-0 rounded-[16px] border border-black/[0.06] bg-[#f4f2ee]">
+            {imagesList.length > 0 ? (
+              imagesList.map((img, idx) => (
+                <div
+                  key={img.id || idx}
+                  className="group relative aspect-square w-[86vw] max-w-[420px] shrink-0 snap-center overflow-hidden bg-[#f4f2ee] sm:w-[75vw] lg:w-full lg:max-w-none"
                 >
-                  🔍
-                </button>
-                <button
-                  ref={fullscreenTriggerRef}
-                  type="button"
-                  onClick={() => setFullscreen(true)}
-                  className="flex size-11 cursor-pointer items-center justify-center rounded-full border border-black/5 bg-white/95 font-work text-xs text-black shadow-md transition-all hover:scale-105 active:scale-[0.98] dark:border-white/5 dark:bg-black/95 dark:text-white"
-                  title="Fullscreen Preview"
-                >
-                  ⛶
-                </button>
-              </div>
-
-              {/* Front / Back selection buttons */}
-              {imagesList.length > 1 && (
-                <div className="absolute bottom-6 left-6 flex items-center gap-1.5 z-30 bg-white/90 dark:bg-black/90 p-1.5 rounded-full border border-black/5 dark:border-white/5">
-                  <button
-                    type="button"
-                    onClick={() => setActiveImageIdx(0)}
-                    className={`min-h-11 rounded-full px-4 py-2 font-work text-[9px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                      activeImageIdx === 0
-                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                        : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    Front
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveImageIdx(1)}
-                    className={`min-h-11 rounded-full px-4 py-2 font-work text-[9px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                      activeImageIdx === 1
-                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                        : 'text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    Back
-                  </button>
+                  <Image
+                    data={img}
+                    alt={img.altText || `${product.title} view ${idx + 1}`}
+                    sizes="(min-width: 1024px) 55vw, 90vw"
+                    loading={idx === 0 ? 'eager' : 'lazy'}
+                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* Swipeable Thumbnails Row */}
-            {imagesList.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto py-1 scrollbar-none">
-                {imagesList.map((img, idx) => (
-                  <button
-                    key={img.id || idx}
-                    type="button"
-                    onClick={() => setActiveImageIdx(idx)}
-                    className={`w-16 h-16 rounded-xl overflow-hidden border flex-shrink-0 relative transition-all cursor-pointer ${
-                      activeImageIdx === idx
-                        ? 'border-brand-accent dark:border-brand-accent-light scale-[1.02] shadow-sm'
-                        : 'border-black/10 dark:border-white/10 hover:border-black/25'
-                    }`}
-                  >
-                    <Image
-                      data={img}
-                      alt={`Preview thumb ${idx}`}
-                      className="w-full h-full object-cover"
-                      sizes="64px"
-                    />
-                  </button>
-                ))}
+              ))
+            ) : (
+              <div className="flex aspect-square w-full items-center justify-center bg-[#f4f2ee]">
+                <span className="font-work text-xs opacity-40">
+                  Garment Preview Template
+                </span>
               </div>
             )}
           </div>
 
-          {/* Right Configuration Panel (30% width) */}
-          <div className="w-full min-w-0">
-            <Reveal delay={120}>
+          {/* Right: Sticky Details & Configuration Panel */}
+          <div className="w-full min-w-0 lg:sticky lg:top-24 lg:self-start">
+            <Reveal delay={80}>
               <Configurator
                 product={product}
                 selectedVariant={selectedVariant}
@@ -300,37 +195,6 @@ export default function Product() {
             </Reveal>
           </div>
         </div>
-
-        {/* Fullscreen Modal Overlay */}
-        {fullscreen && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${product.title} fullscreen preview`}
-            className="fixed inset-0 bg-black/95 dark:bg-black/98 z-50 flex items-center justify-center p-6 animate-fade-in text-white"
-          >
-            <button
-              ref={fullscreenCloseRef}
-              type="button"
-              onClick={() => setFullscreen(false)}
-              aria-label="Close fullscreen preview"
-              className="absolute top-8 right-8 w-12 h-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:bg-white/15 cursor-pointer transition-all text-lg font-mono font-light"
-            >
-              ✕
-            </button>
-
-            <div className="relative max-w-2xl max-h-[85vh] aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-900 flex items-center justify-center">
-              {activeImage && (
-                <Image
-                  data={activeImage}
-                  alt={activeImage.altText || product.title}
-                  className="w-full h-full object-cover"
-                  sizes="(min-width: 45em) 1024px, 100vw"
-                />
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Analytics integration */}
         <Analytics.ProductView
@@ -356,6 +220,20 @@ export default function Product() {
         />
       </section>
 
+      {/* Row 1: VARIANTS Section (if available) */}
+      {familyProducts.length > 0 && (
+        <ProductGrid
+          title="VARIANTS"
+          eyebrow="Available styles & colors"
+          products={familyProducts}
+          maxProducts={8}
+          ariaLabel="Product variants"
+          ctaHref="/collections/all"
+          ctaLabel="View all"
+        />
+      )}
+
+      {/* Row 2: MORE LIKE THIS Section */}
       <Suspense fallback={null}>
         <Await resolve={recommendedProducts}>
           {(response) => {
@@ -363,15 +241,14 @@ export default function Product() {
               response?.productRecommendations?.filter(
                 (candidate) => candidate.id !== product.id,
               ) ?? [];
-            const products = recommendations.length
-              ? recommendations
-              : familyProducts;
+
+            if (!recommendations.length) return null;
 
             return (
               <ProductGrid
                 title="MORE LIKE THIS"
                 eyebrow="Continue exploring"
-                products={products}
+                products={recommendations}
                 maxProducts={8}
                 ariaLabel="More like this"
                 ctaHref="/collections/all"
@@ -588,8 +465,11 @@ const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
     availableForSale
     productType
     collectionName: metafield(namespace: "custom", key: "collection_name") { value }
-    collections(first: 1) {
+    category { id name }
+    collections(first: 10) {
       nodes {
+        id
+        handle
         title
       }
     }

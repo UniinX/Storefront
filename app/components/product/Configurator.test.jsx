@@ -2,7 +2,7 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {Configurator} from './Configurator';
+import {Configurator, COLOR_MAP} from './Configurator';
 
 // Mock AddToCartButton to prevent useFetcher rendering requirements in tests
 vi.mock('~/components/AddToCartButton', () => ({
@@ -100,17 +100,21 @@ const mockLanguage = {
   font: 'work-sans',
 };
 
+import {WishlistProvider} from '~/context/WishlistContext.jsx';
+
 function renderConfigurator() {
   return render(
-    <MemoryRouter>
-      <Configurator
-        product={mockProduct}
-        selectedVariant={mockVariant}
-        productOptions={mockOptions}
-        activeLanguage={mockLanguage}
-        setLanguageId={vi.fn()}
-      />
-    </MemoryRouter>,
+    <WishlistProvider>
+      <MemoryRouter>
+        <Configurator
+          product={mockProduct}
+          selectedVariant={mockVariant}
+          productOptions={mockOptions}
+          activeLanguage={mockLanguage}
+          setLanguageId={vi.fn()}
+        />
+      </MemoryRouter>
+    </WishlistProvider>,
   );
 }
 
@@ -155,5 +159,11 @@ describe('2D Configurator Panel', () => {
       .filter((label) => ['S', 'M', 'L', 'XL'].includes(label));
 
     expect(sizeButtons).toEqual(['S', 'M', 'L', 'XL']);
+  });
+});
+
+describe('COLOR_MAP', () => {
+  it('renders the "white" fallback swatch as true white, not off-white', () => {
+    expect(COLOR_MAP.white).toBe('#ffffff');
   });
 });

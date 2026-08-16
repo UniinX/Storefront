@@ -3,16 +3,16 @@ import {Reveal} from '~/components/motion/Reveal.jsx';
 export function AccountPageHeader({eyebrow = 'Member account', title, description, action}) {
   return (
     <Reveal>
-      <header className="flex flex-col gap-5 border-b border-black/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#a13a2d]">
+      <header className="flex flex-col gap-4 border-b border-black/10 pb-6 min-w-0 w-full overflow-hidden sm:flex-row sm:items-end sm:justify-between sm:pb-7">
+        <div className="max-w-2xl min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/45">
             {eyebrow}
           </p>
-          <h2 className="mt-3 text-[clamp(32px,4vw,48px)] font-medium leading-[0.98] tracking-[-0.045em] text-black">
+          <h2 className="mt-2 text-[clamp(26px,3.5vw,44px)] font-medium leading-[1.05] tracking-[-0.04em] text-black sm:mt-3">
             {title}
           </h2>
           {description ? (
-            <p className="mt-4 max-w-xl text-sm leading-6 text-black/52">
+            <p className="mt-3 max-w-xl text-xs leading-5 text-black/55 sm:mt-4 sm:text-sm sm:leading-6">
               {description}
             </p>
           ) : null}
@@ -26,7 +26,7 @@ export function AccountPageHeader({eyebrow = 'Member account', title, descriptio
 export function AccountPanel({children, as: Tag = 'section', className = ''}) {
   return (
     <Tag
-      className={`rounded-[22px] border border-black/10 bg-[#faf9f6] p-5 sm:p-6 ${className}`.trim()}
+      className={`w-full max-w-full overflow-hidden rounded-[18px] border border-black/10 bg-black/[0.02] p-4 sm:rounded-[22px] sm:p-6 ${className}`.trim()}
     >
       {children}
     </Tag>
@@ -35,7 +35,7 @@ export function AccountPanel({children, as: Tag = 'section', className = ''}) {
 
 export function AccountPanelLabel({children}) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/42">
+    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45">
       {children}
     </p>
   );
@@ -43,30 +43,30 @@ export function AccountPanelLabel({children}) {
 
 export function AccountEmptyState({title, description, action}) {
   return (
-    <div className="rounded-[22px] border border-dashed border-black/15 bg-[#faf9f6] px-6 py-12 text-center">
-      <span aria-hidden="true" className="mx-auto grid size-11 place-items-center rounded-full bg-black text-lg text-white">
+    <div className="w-full max-w-full overflow-hidden rounded-[18px] border border-dashed border-black/15 bg-white px-4 py-8 text-center sm:rounded-[22px] sm:px-6 sm:py-12">
+      <span aria-hidden="true" className="mx-auto grid size-10 place-items-center rounded-full bg-black text-base text-white sm:size-11 sm:text-lg">
         ↗
       </span>
-      <h3 className="mt-5 text-xl font-medium tracking-[-0.025em]">{title}</h3>
+      <h3 className="mt-4 text-lg font-medium tracking-[-0.025em] sm:mt-5 sm:text-xl">{title}</h3>
       {description ? (
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-black/50">{description}</p>
+        <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-black/50 sm:text-sm sm:leading-6">{description}</p>
       ) : null}
-      {action ? <div className="mt-6 flex justify-center">{action}</div> : null}
+      {action ? <div className="mt-5 flex justify-center sm:mt-6">{action}</div> : null}
     </div>
   );
 }
 
 export function AccountStatus({tone = 'neutral', children}) {
   const tones = {
-    success: 'border-[#2f6d4c]/20 bg-[#2f6d4c]/8 text-[#25583e]',
-    warning: 'border-[#a13a2d]/20 bg-[#a13a2d]/8 text-[#7f2e24]',
+    success: 'border-black/15 bg-black/5 text-black font-medium',
+    warning: 'border-black/20 bg-black/[0.04] text-black font-medium',
     neutral: 'border-black/10 bg-black/[0.035] text-black/60',
   };
 
   return (
     <div
       role="status"
-      className={`rounded-[16px] border px-4 py-3 text-sm leading-5 ${tones[tone] ?? tones.neutral}`}
+      className={`w-full rounded-[14px] border px-3.5 py-2.5 text-xs leading-5 sm:rounded-[16px] sm:px-4 sm:py-3 sm:text-sm ${tones[tone] ?? tones.neutral}`}
     >
       {children}
     </div>

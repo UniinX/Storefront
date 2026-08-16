@@ -22,7 +22,7 @@ export function CollectionThemeHero({
   const useShopifyImage = image && !isSolids;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#ebe8e4]">
+    <section className="relative isolate overflow-hidden bg-background">
       <div className="relative aspect-[16/10] min-h-[420px] max-h-[820px] w-full sm:min-h-[560px] lg:min-h-[700px]">
         {useShopifyImage ? (
           <Image
@@ -48,7 +48,7 @@ export function CollectionThemeHero({
 
         <nav
           aria-label="Breadcrumb"
-          className="absolute left-5 top-2.5 z-10 flex min-h-11 items-center text-[11px] tracking-[-0.02em] text-black/70 sm:left-8 lg:left-[60px]"
+          className="absolute left-5 top-18 sm:top-20 lg:top-22 z-10 flex min-h-11 items-center text-[11px] tracking-[-0.02em] text-black/70 sm:left-8 lg:left-[60px]"
         >
           <Link
             to="/"

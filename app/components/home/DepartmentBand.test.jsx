@@ -7,6 +7,12 @@ vi.mock('~/components/motion/Reveal.jsx', () => ({
   Reveal: ({as: Element = 'div', children, ...props}) => (
     <Element {...props}>{children}</Element>
   ),
+  StaggerContainer: ({as: Element = 'div', children, ...props}) => (
+    <Element {...props}>{children}</Element>
+  ),
+  StaggerItem: ({as: Element = 'div', children, ...props}) => (
+    <Element {...props}>{children}</Element>
+  ),
   MOTION_EASE: [0.16, 0.84, 0.32, 1],
 }));
 

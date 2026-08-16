@@ -1,6 +1,6 @@
 import {Link} from 'react-router';
 import {CollectionTile} from './DepartmentBand.jsx';
-import {Reveal} from '~/components/motion/Reveal.jsx';
+import {Reveal, StaggerContainer} from '~/components/motion/Reveal.jsx';
 import categoryTshirt from '~/assets/home/category-tshirt.webp';
 import hoodieImage from '~/assets/home/hoodie.webp';
 import joggersImage from '~/assets/home/joggers.webp';
@@ -71,7 +71,7 @@ export function CategoryBento({collections = []}) {
       className="uniinx-home-gutter bg-white py-10 sm:py-12 lg:py-12"
       aria-labelledby="shop-categories-title"
     >
-      <div className="grid w-full grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-12 lg:gap-8">
+      <StaggerContainer className="grid w-full grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-12 lg:gap-8">
         <Reveal className="col-span-2 flex flex-col items-start justify-center pb-4 sm:py-5 lg:col-span-3 lg:py-0 lg:pr-7">
           <h2
             id="shop-categories-title"
@@ -98,11 +98,10 @@ export function CategoryBento({collections = []}) {
           <CollectionTile
             key={collection.id}
             collection={collection}
-            delay={index * 75}
             className={cardClasses[index]}
           />
         ))}
-      </div>
+      </StaggerContainer>
     </section>
   );
 }

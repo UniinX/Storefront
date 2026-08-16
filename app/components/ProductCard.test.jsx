@@ -3,6 +3,7 @@ import {describe, it, expect} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {renderToString} from 'react-dom/server';
 import {MemoryRouter} from 'react-router';
+import {WishlistProvider} from '~/context/WishlistContext.jsx';
 import {ProductCard} from './ProductCard.jsx';
 
 const product = {
@@ -16,9 +17,11 @@ const product = {
 
 function renderCard(overrides = {}) {
   return render(
-    <MemoryRouter>
-      <ProductCard product={{...product, ...overrides}} />
-    </MemoryRouter>,
+    <WishlistProvider>
+      <MemoryRouter>
+        <ProductCard product={{...product, ...overrides}} />
+      </MemoryRouter>
+    </WishlistProvider>,
   );
 }
 
@@ -35,20 +38,22 @@ describe('ProductCard', () => {
 
   it('keeps eager first-row images visible before hydration load events', () => {
     render(
-      <MemoryRouter>
-        <ProductCard
-          loading="eager"
-          product={{
-            ...product,
-            featuredImage: {
-              url: 'https://cdn.shopify.com/test-product.jpg',
-              width: 800,
-              height: 1000,
-              altText: 'Test product',
-            },
-          }}
-        />
-      </MemoryRouter>,
+      <WishlistProvider>
+        <MemoryRouter>
+          <ProductCard
+            loading="eager"
+            product={{
+              ...product,
+              featuredImage: {
+                url: 'https://cdn.shopify.com/test-product.jpg',
+                width: 800,
+                height: 1000,
+                altText: 'Test product',
+              },
+            }}
+          />
+        </MemoryRouter>
+      </WishlistProvider>,
     );
 
     const image = screen.getByRole('img', {name: 'Test product'});
@@ -62,7 +67,7 @@ describe('ProductCard', () => {
 
   it('links to the product page', () => {
     renderCard();
-    expect(screen.getByRole('link')).toHaveAttribute(
+    expect(screen.getByRole('link', {name: /View Tshirt/i})).toHaveAttribute(
       'href',
       '/products/test-tshirt',
     );
@@ -86,9 +91,11 @@ describe('ProductCard', () => {
 
   it('server-renders visible card content without an observer-dependent mask', () => {
     const html = renderToString(
-      <MemoryRouter>
-        <ProductCard product={product} />
-      </MemoryRouter>,
+      <WishlistProvider>
+        <MemoryRouter>
+          <ProductCard product={product} />
+        </MemoryRouter>
+      </WishlistProvider>,
     );
 
     expect(html).toContain('Tshirt');

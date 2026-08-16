@@ -60,7 +60,6 @@ export default function Collections() {
           connection={collections}
           ariaLabel="Collections"
           resourcesClassName="uniinx-collection-mosaic"
-          previousClassName="uniinx-plp-pagination-link"
           nextClassName="uniinx-plp-pagination-link"
         >
           {({node: collection, index}) => (

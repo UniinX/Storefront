@@ -36,9 +36,6 @@ export function PaginatedResourceSection({
               resourcesMarkup
             )}
             <nav aria-label={ariaLabel ? `${ariaLabel} pagination` : 'Pagination'} className="mt-8 flex items-center justify-center gap-3">
-              <PreviousLink className={previousClassName}>
-                {isLoading ? 'Loading...' : <span><span aria-hidden="true">↑</span> Previous</span>}
-              </PreviousLink>
               {autoLoadNext ? (
                 <AutoLoadNext NextLink={NextLink} isLoading={isLoading} />
               ) : (

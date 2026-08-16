@@ -169,7 +169,7 @@ function OrderSearchForm({currentFilters}) {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="uniinx-account-form flex flex-col gap-4 rounded-[22px] border border-black/10 bg-[#faf9f6] p-5"
+      className="uniinx-account-form flex flex-col gap-4 rounded-[22px] border border-black/10 bg-white p-5"
       aria-label="Search orders"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

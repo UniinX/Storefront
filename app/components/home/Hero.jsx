@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import {useNavigate} from 'react-router';
 import {motion, useReducedMotion, useScroll, useTransform} from 'framer-motion';
-import heroBackground from '~/assets/home/hero-section.jpg';
+import heroBackground from '~/assets/home/HeroSectionBg01JPGWithText.jpg';
 import {MOTION_EASE} from '~/components/motion/Reveal.jsx';
 
 const HERO_COPY = {
@@ -39,9 +39,9 @@ export function Hero() {
       ref={heroRef}
       data-testid="home-hero"
       data-figma-grid="1440/1320/60"
-      className="relative min-h-[max(680px,100svh)] overflow-hidden bg-[#eeeae5] sm:min-h-[844px] lg:min-h-[992px]"
+      className="relative min-h-[max(680px,100svh)] overflow-hidden bg-background sm:min-h-[844px] lg:min-h-[992px]"
     >
-      <div className="absolute inset-0 overflow-hidden sm:top-auto sm:h-[760px] lg:h-[900px]">
+      <div className="absolute inset-0 overflow-hidden">
         <div className="relative h-full w-full overflow-hidden">
           <motion.img
             data-testid="hero-parallax-media"

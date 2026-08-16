@@ -255,7 +255,7 @@ export default function Addresses() {
 
       {/* New Address Card Form */}
       {showCreate && (
-        <div className="animate-fade-in rounded-[22px] border border-black/10 bg-[#faf9f6] p-6">
+        <div className="animate-fade-in rounded-[22px] border border-black/10 bg-white p-6">
           <h4 className="font-marcellus text-xs uppercase tracking-wider text-black dark:text-white mb-6">
             Add Shipping Address
           </h4>

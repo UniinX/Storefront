@@ -4,13 +4,29 @@
  */
 import {motion, useReducedMotion} from 'framer-motion';
 
-const EASE_OUT = [0.16, 0.84, 0.32, 1];
+export const MOTION_EASE = [0.21, 0.47, 0.32, 0.98];
 
-const HIDDEN_STATES = {
-  default: {opacity: 0, y: 24, filter: 'blur(5px)'},
-  card: {opacity: 0, y: 30, scale: 0.985, filter: 'blur(4px)'},
-  scale: {opacity: 0, scale: 0.96, filter: 'blur(4px)'},
+const SINGLE_VARIANTS = {
+  default: {
+    hidden: {opacity: 0, y: 16},
+    visible: {opacity: 1, y: 0},
+  },
+  card: {
+    hidden: {opacity: 0, y: 20, scale: 0.985},
+    visible: {opacity: 1, y: 0, scale: 1},
+  },
+  scale: {
+    hidden: {opacity: 0, scale: 0.97},
+    visible: {opacity: 1, scale: 1},
+  },
 };
+
+function getMotionComponent(Tag) {
+  if (typeof Tag === 'string') {
+    return motion[Tag] ?? motion.div;
+  }
+  return motion.create(Tag);
+}
 
 export function Reveal({
   children,
@@ -22,27 +38,26 @@ export function Reveal({
   ...rest
 }) {
   const reduceMotion = useReducedMotion();
-  const MotionTag = motion[Tag] ?? motion.div;
-  const hidden = reduceMotion
-    ? {opacity: 0}
-    : (HIDDEN_STATES[variant] ?? HIDDEN_STATES.default);
+  const MotionTag = getMotionComponent(Tag);
+  const variants = SINGLE_VARIANTS[variant] ?? SINGLE_VARIANTS.default;
 
   return (
     <MotionTag
-      initial="hidden"
+      initial={reduceMotion ? false : 'hidden'}
       whileInView="visible"
-      viewport={{once: true, amount: 0.14, margin: '0px 0px -40px 0px'}}
-      variants={{
-        hidden,
-        visible: {opacity: 1, y: 0, scale: 1, filter: 'blur(0px)'},
-      }}
+      viewport={{once: true, amount: 0.01, margin: '100px 0px 100px 0px'}}
+      variants={
+        reduceMotion
+          ? {hidden: {opacity: 1}, visible: {opacity: 1}}
+          : variants
+      }
       transition={{
-        duration: reduceMotion ? 0.2 : 0.68,
+        duration: 0.42,
         delay: delay / 1000,
-        ease: EASE_OUT,
+        ease: MOTION_EASE,
       }}
       className={`reveal ${className}`.trim()}
-      style={{transitionDelay: `${delay}ms`, ...style}}
+      style={{...(delay ? {transitionDelay: `${delay}ms`} : {}), ...style}}
       {...rest}
     >
       {children}
@@ -50,4 +65,69 @@ export function Reveal({
   );
 }
 
-export const MOTION_EASE = EASE_OUT;
+export function StaggerContainer({
+  children,
+  as: Tag = 'div',
+  stagger = 0.06,
+  delay = 0,
+  className = '',
+  style,
+  ...rest
+}) {
+  const reduceMotion = useReducedMotion();
+  const MotionTag = getMotionComponent(Tag);
+
+  return (
+    <MotionTag
+      initial={reduceMotion ? false : 'hidden'}
+      whileInView="visible"
+      viewport={{once: true, amount: 0.01, margin: '100px 0px 100px 0px'}}
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: reduceMotion ? 0 : stagger,
+            delayChildren: delay / 1000,
+          },
+        },
+      }}
+      className={className}
+      style={style}
+      {...rest}
+    >
+      {children}
+    </MotionTag>
+  );
+}
+
+export function StaggerItem({
+  children,
+  as: Tag = 'div',
+  variant = 'default',
+  className = '',
+  style,
+  ...rest
+}) {
+  const reduceMotion = useReducedMotion();
+  const MotionTag = getMotionComponent(Tag);
+  const variants = SINGLE_VARIANTS[variant] ?? SINGLE_VARIANTS.default;
+
+  return (
+    <MotionTag
+      variants={
+        reduceMotion
+          ? {hidden: {opacity: 1}, visible: {opacity: 1}}
+          : variants
+      }
+      transition={{
+        duration: 0.42,
+        ease: MOTION_EASE,
+      }}
+      className={className}
+      style={style}
+      {...rest}
+    >
+      {children}
+    </MotionTag>
+  );
+}

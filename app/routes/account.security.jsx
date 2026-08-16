@@ -21,86 +21,90 @@ export default function AccountSecurity() {
   const returnTo = encodeURIComponent('/account/security');
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-full overflow-hidden">
       <AccountPageHeader
-        eyebrow="Sign-in & security"
-        title="Passwordless by design"
-        description="Your UniinX account uses Shopify Customer Accounts. You verify your identity with a one-time code instead of maintaining another password."
+        eyebrow="Security & Privacy"
+        title="Sign-in & Account Protection"
+        description="Manage your account access methods, data privacy choices, active sessions, and verification settings."
       />
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 min-w-0 w-full">
         <Reveal variant="card">
           <AccountPanel className="h-full">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <AccountPanelLabel>Verified identity</AccountPanelLabel>
-                <p className="mt-5 break-words text-xl font-medium tracking-[-0.025em]">{email}</p>
-                <p className="mt-3 text-sm leading-6 text-black/50">
-                  Verification codes and account notices are sent to this address.
-                </p>
+            <AccountPanelLabel>Primary Sign-in Method</AccountPanelLabel>
+            <div className="mt-5 space-y-4">
+              <div className="flex flex-col gap-3 rounded-[16px] border border-black/10 bg-white p-4 min-w-0 overflow-hidden sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-black/45">
+                    One-Time Verification Code
+                  </p>
+                  <p className="mt-1 truncate text-xs font-medium text-black sm:text-sm">{email}</p>
+                </div>
+                <span className="self-start rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 sm:self-center">
+                  Active
+                </span>
               </div>
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2f6d4c] text-sm text-white" aria-label="Verified">
-                ✓
-              </span>
+              <p className="text-xs text-black/50 leading-5">
+                You log in securely using instant one-time security passcodes delivered directly to your verified email address.
+              </p>
             </div>
           </AccountPanel>
         </Reveal>
 
         <Reveal variant="card" delay={80}>
           <AccountPanel className="h-full">
-            <AccountPanelLabel>Authentication method</AccountPanelLabel>
-            <p className="mt-5 text-xl font-medium tracking-[-0.025em]">One-time verification code</p>
-            <p className="mt-3 text-sm leading-6 text-black/50">
-              Shop recognition and social sign-in may also appear when enabled in Shopify.
-            </p>
+            <AccountPanelLabel>Data & Privacy Rights</AccountPanelLabel>
+            <div className="mt-5 space-y-3.5 text-xs text-black/65 min-w-0">
+              <div className="rounded-[16px] border border-black/10 bg-white p-4 min-w-0">
+                <p className="font-semibold text-black">Private Account Storage</p>
+                <p className="mt-1 text-black/50 leading-5">
+                  Your personal data, saved addresses, and order records are stored with encryption and never shared with third parties.
+                </p>
+              </div>
+              <div className="rounded-[16px] border border-black/10 bg-white p-4 min-w-0">
+                <p className="font-semibold text-black">Data Removal Request</p>
+                <p className="mt-1 text-black/50 leading-5">
+                  Need to export or delete your account records? Contact our Privacy Officer through Studio Support.
+                </p>
+              </div>
+            </div>
           </AccountPanel>
         </Reveal>
       </div>
 
       <Reveal>
-        <AccountPanel className="bg-[#151515] text-white">
-          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">Session controls</p>
-              <h3 className="mt-3 text-2xl font-medium tracking-[-0.035em]">Need to verify again?</h3>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/52">
-                Start a fresh verification flow or securely sign out of this browser. We never display invented device or IP-session data.
+        <AccountPanel className="bg-black text-white">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between min-w-0">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                Active Session Management
+              </p>
+              <h3 className="mt-2 text-lg font-medium tracking-tight sm:text-xl">
+                Secure Session & Sign Out
+              </h3>
+              <p className="mt-1 max-w-lg text-xs leading-5 text-white/55">
+                End your active storefront session on this browser or request a re-verification code.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 to={`/account/login?return_to=${returnTo}`}
-                className={`${accountSecondaryButton} border-white/20 bg-white text-black hover:border-white hover:bg-transparent hover:text-white`}
+                className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/25 bg-white/10 px-4 text-xs font-semibold text-white transition-colors hover:bg-white hover:text-black sm:min-h-11 sm:px-5"
               >
-                Verify again
+                Re-verify Session
               </Link>
               <Form method="POST" action="/account/logout">
-                <button type="submit" className={`${accountPrimaryButton} bg-[#a13a2d]`}>
-                  Sign out
+                <button
+                  type="submit"
+                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-white/30 bg-white px-4 text-xs font-semibold text-black transition-colors hover:bg-white/80 sm:min-h-11 sm:px-5"
+                >
+                  Sign Out
                 </button>
               </Form>
             </div>
           </div>
         </AccountPanel>
       </Reveal>
-
-      <Reveal>
-        <section className="grid gap-4 border-t border-black/10 pt-7 sm:grid-cols-3">
-          <SecurityNote number="01" title="No password database" text="UniinX does not collect or store customer passwords." />
-          <SecurityNote number="02" title="Private account data" text="Customer responses are explicitly marked private and never storefront-cached." />
-          <SecurityNote number="03" title="Secure checkout handoff" text="Your authenticated customer context follows you securely into Shopify checkout." />
-        </section>
-      </Reveal>
-    </div>
-  );
-}
-
-function SecurityNote({number, title, text}) {
-  return (
-    <div className="rounded-[18px] bg-[#f3f0ea] p-5">
-      <span className="text-[9px] tracking-[0.18em] text-black/30">{number}</span>
-      <h3 className="mt-5 text-sm font-semibold">{title}</h3>
-      <p className="mt-2 text-xs leading-5 text-black/48">{text}</p>
     </div>
   );
 }

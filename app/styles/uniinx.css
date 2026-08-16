@@ -309,46 +309,67 @@ body {
 .uniinx-plp-shell > * {
   min-width: 0;
 }
+.uniinx-plp-sticky-header {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: var(--surface-bg, rgba(255, 255, 255, 0.94));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border, rgb(0 0 0 / 0.1));
+  margin-bottom: 24px;
+}
 .uniinx-plp-toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  grid-column: 1 / -1;
-  padding-block: 4px 20px;
-  border-bottom: 1px solid rgb(0 0 0 / 0.1);
+  padding-block: 14px;
+}
+.uniinx-plp-active-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-block: 10px 12px;
+  border-top: 1px solid var(--border, rgb(0 0 0 / 0.06));
 }
 .uniinx-plp-results {
   min-width: 0;
 }
 @media (max-width: 767px) {
   .uniinx-plp-toolbar {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
   }
   .uniinx-plp-count {
-    justify-self: end;
-    text-align: right;
+    font-size: 13px;
   }
   .uniinx-plp-sort {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin-left: 0;
+    margin-left: auto;
+    width: auto;
   }
 }
 @media (min-width: 1024px) {
   .uniinx-plp-shell {
-    grid-template-columns: 306px minmax(0, 1fr);
-    column-gap: 32px;
+    grid-template-columns: 280px minmax(0, 1fr);
+    column-gap: 40px;
+    row-gap: 24px;
   }
   .uniinx-plp-results .uniinx-product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px 20px;
+    gap: 32px 24px;
   }
 }
-@media (min-width: 1180px) {
+@media (min-width: 1280px) {
   .uniinx-plp-shell {
-    column-gap: 32px;
+    grid-template-columns: 280px minmax(0, 1fr);
+    column-gap: 48px;
+    row-gap: 28px;
   }
   .uniinx-plp-results .uniinx-product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -359,7 +380,11 @@ body {
 /* PLP sticky filter sidebar */
 .uniinx-plp-sidebar {
   position: sticky;
-  top: 120px;
+  top: 76px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 4px;
 }
 
 /* PLP load more/previous pagination links */

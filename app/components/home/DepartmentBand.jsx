@@ -1,13 +1,9 @@
 import {Image} from '@shopify/hydrogen';
 import {Link} from 'react-router';
-import {motion} from 'framer-motion';
-import {MOTION_EASE, Reveal} from '~/components/motion/Reveal.jsx';
+import {Reveal, StaggerContainer, StaggerItem} from '~/components/motion/Reveal.jsx';
 import solidsTeeDetail from '~/assets/home/solids-tee-detail.webp';
 import antarikshamFront from '~/assets/home/antariksham-front.webp';
 import antarikshamBack from '~/assets/home/antariksham-back.webp';
-
-const MotionLink = motion.create(Link);
-
 const COLLECTION_PLACEHOLDERS = [
   {
     id: 'collection-placeholder-1',
@@ -19,9 +15,10 @@ const COLLECTION_PLACEHOLDERS = [
     matches: (title) => /solids?/i.test(title),
   },
   {
-    id: 'collection-placeholder-2',
+    id: 'editorial-antariksham',
+    handle: 'antariksham',
     title: 'Shop Antariksham',
-    handle: 'all',
+    eyebrow: 'Cosmic Series',
     description: 'Washed black layers inspired by language, space, and movement.',
     fallbackImages: [antarikshamFront, antarikshamBack],
     fallbackAlt: 'Front and back views of the Antariksham hoodie',
@@ -68,36 +65,32 @@ export function DepartmentBand({collections = []}) {
               Browse Collections
             </Link>
           </Reveal>
-          <div className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:contents">
-            {featured.map((collection, index) => (
+          <StaggerContainer className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:col-span-8 lg:grid lg:grid-cols-8 lg:gap-8">
+            {featured.map((collection) => (
               <CollectionTile
                 key={collection.id}
                 collection={collection}
-                delay={index * 80}
                 className="h-[340px] w-[82vw] max-w-[340px] shrink-0 snap-center sm:h-auto sm:w-auto sm:max-w-none sm:min-h-[340px] lg:col-span-4 lg:min-h-[306px]"
               />
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </div>
     </section>
   );
 }
 
-export function CollectionTile({collection, className = '', delay = 0}) {
+export function CollectionTile({collection, className = ''}) {
   const image =
     collection.image ?? collection.products?.nodes?.[0]?.featuredImage;
   const fallbackImages = collection.fallbackImages ?? [];
   return (
-    <MotionLink
+    <StaggerItem
+      as={Link}
       to={`/collections/${collection.handle}`}
       prefetch="intent"
       aria-label={`${collection.title} collection`}
-      initial={{opacity: 0, y: 28, scale: 0.985}}
-      whileInView={{opacity: 1, y: 0, scale: 1}}
-      viewport={{once: true, amount: 0.16}}
-      transition={{duration: 0.68, delay: delay / 1000, ease: MOTION_EASE}}
-      whileHover={{y: -6}}
+      variant="card"
       className={`group relative flex overflow-hidden rounded-[20px] bg-[#e9e7e3] p-5 lg:p-4 ${className}`}
     >
       {image ? (
@@ -149,7 +142,7 @@ export function CollectionTile({collection, className = '', delay = 0}) {
           ↗
         </span>
       </span>
-    </MotionLink>
+    </StaggerItem>
   );
 }
 

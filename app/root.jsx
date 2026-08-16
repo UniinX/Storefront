@@ -16,6 +16,7 @@ import uniinxStyles from '~/styles/uniinx.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 import {useLanguage} from '~/hooks/useLanguage.js';
+import {WishlistProvider} from '~/context/WishlistContext.jsx';
 import {getLanguagePreference} from '~/hooks/useLanguage.js';
 
 /**
@@ -113,7 +114,11 @@ async function loadCriticalData({context}) {
     }),
   ]);
 
-  return {header, megaMenuProducts: megaMenu.products?.nodes ?? []};
+  return {
+    header,
+    megaMenuProducts: megaMenu.products?.nodes ?? [],
+    megaMenuCollections: megaMenu.collections?.nodes ?? [],
+  };
 }
 
 /**
@@ -185,24 +190,31 @@ export default function App() {
   );
 
   if (!data) {
-    return <Outlet context={{language, changeLanguage}} />;
+    return (
+      <WishlistProvider>
+        <Outlet context={{language, changeLanguage}} />
+      </WishlistProvider>
+    );
   }
 
   return (
-    <Analytics.Provider
-      cart={data.cart}
-      shop={data.shop}
-      consent={data.consent}
-    >
-      <PageLayout
+    <WishlistProvider>
+      <Analytics.Provider
         cart={data.cart}
-        language={language}
-        isLoggedIn={data.isLoggedIn}
-        megaMenuProducts={data.megaMenuProducts}
+        shop={data.shop}
+        consent={data.consent}
       >
-        <Outlet context={{language, changeLanguage}} />
-      </PageLayout>
-    </Analytics.Provider>
+        <PageLayout
+          cart={data.cart}
+          language={language}
+          isLoggedIn={data.isLoggedIn}
+          megaMenuProducts={data.megaMenuProducts}
+          megaMenuCollections={data.megaMenuCollections}
+        >
+          <Outlet context={{language, changeLanguage}} />
+        </PageLayout>
+      </Analytics.Provider>
+    </WishlistProvider>
   );
 }
 
@@ -220,7 +232,25 @@ const HTML_LANGUAGE_CODES = {
 const MEGA_MENU_QUERY = `#graphql
   query MegaMenuProducts($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 24, sortKey: BEST_SELLING) {
+    collections(first: 50) {
+      nodes {
+        id
+        handle
+        title
+        description
+        products(first: 5) {
+          nodes {
+            id
+            handle
+            title
+            productType
+            tags
+            category { id name }
+          }
+        }
+      }
+    }
+    products(first: 50, sortKey: BEST_SELLING) {
       nodes {
         id
         handle
@@ -229,6 +259,10 @@ const MEGA_MENU_QUERY = `#graphql
         tags
         publishedAt
         collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+        category { id name }
+        collections(first: 5) {
+          nodes { id handle title }
+        }
         featuredImage { id url altText width height }
       }
     }

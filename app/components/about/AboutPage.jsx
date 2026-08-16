@@ -27,7 +27,7 @@ export function AboutPage({page, language = 'english'}) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="bg-[#f4f0e9] text-black">
+    <div className="bg-background text-foreground">
       <section className="relative min-h-[760px] overflow-hidden bg-[#171717] pt-[92px] text-white lg:min-h-[860px]">
         <motion.img
           src={heroImage}

@@ -4,9 +4,10 @@
 import {Suspense, useEffect, useState} from 'react';
 import {Await, Link, useLocation} from 'react-router';
 import {Image, useOptimisticCart} from '@shopify/hydrogen';
-import {AnimatePresence, motion, useReducedMotion} from 'framer-motion';
+import {AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll} from 'framer-motion';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import {LocalizedLogo} from './LocalizedLogo.jsx';
+import {useWishlist} from '~/context/WishlistContext.jsx';
 import {PUBLIC_PAGE_LINKS} from '~/components/content/PublicPages.jsx';
 import {
   Sheet,
@@ -21,7 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '~/components/ui/accordion.jsx';
-import {categoryLabel} from '~/lib/catalog.js';
+import {categoryLabel, getProductCategory} from '~/lib/catalog.js';
 
 const MotionLink = motion.create(Link);
 
@@ -30,20 +31,15 @@ const SHOP_DEPARTMENTS = [
     key: 'men',
     label: 'Men',
     description: 'Everyday silhouettes made for movement.',
-    to: '/collections/men',
+    to: '/collections/all?collection=men',
   },
   {
     key: 'women',
     label: 'Women',
     description: 'Contemporary essentials with a relaxed shape.',
-    to: '/collections/women',
+    to: '/collections/all?collection=women',
   },
 ];
-
-const CATEGORY_FALLBACKS = {
-  men: ['Oversized', 'T-Shirts', 'Shirts', 'Joggers', 'Hoodies'],
-  women: ['Oversized', 'T-Shirts', 'Shirts', 'Joggers', 'Hoodies'],
-};
 
 const FALLBACK_THEMES = [
   'Solids',
@@ -57,22 +53,56 @@ export function Header({
   language = 'english',
   isLoggedIn,
   megaMenuProducts = [],
+  megaMenuCollections = [],
 }) {
   const [desktopMenu, setDesktopMenu] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const {pathname} = useLocation();
   const reduceMotion = useReducedMotion();
+  const {scrollY} = useScroll();
+
+  useMotionValueEvent(scrollY, 'change', (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    const diff = latest - previous;
+
+    if (latest < 60 || desktopMenu || mobileOpen || isHovered) {
+      setHidden(false);
+    } else if (diff > 5 && latest > 80) {
+      setHidden(true);
+    } else if (diff < -5) {
+      setHidden(false);
+    }
+  });
+
   const themes = deriveMenuThemes(megaMenuProducts);
   const promo = megaMenuProducts.find((product) => product.featuredImage);
-  const departmentCategories = deriveDepartmentCategories(megaMenuProducts);
+  const departmentCategories = deriveDepartmentCategories(
+    megaMenuProducts,
+    megaMenuCollections,
+  );
 
   useEffect(() => {
     setDesktopMenu('');
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (desktopMenu || mobileOpen || isHovered) {
+      setHidden(false);
+    }
+  }, [desktopMenu, mobileOpen, isHovered]);
+
   return (
     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      {/* Top viewport hover trigger zone to reveal header when hidden */}
+      <div
+        className="fixed inset-x-0 top-0 z-[69] h-6 pointer-events-auto"
+        onMouseEnter={() => setIsHovered(true)}
+        aria-hidden="true"
+      />
+
       <AnimatePresence>
         {desktopMenu && (
           <motion.button
@@ -90,11 +120,18 @@ export function Header({
 
       <motion.div
         layout
+        initial={false}
+        animate={{
+          y: hidden && !isHovered && !desktopMenu && !mobileOpen ? '-120%' : '0%',
+          opacity: hidden && !isHovered && !desktopMenu && !mobileOpen ? 0 : 1,
+        }}
         transition={
           reduceMotion
             ? {duration: 0}
-            : {type: 'spring', stiffness: 320, damping: 34, mass: 0.8}
+            : {type: 'spring', stiffness: 350, damping: 32, mass: 0.6}
         }
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-[var(--header-inset)] pt-[max(var(--header-inset),env(safe-area-inset-top))]"
       >
         <motion.header
@@ -128,13 +165,15 @@ export function Header({
                         {department.label}
                         <ChevronDown />
                       </NavigationMenu.Trigger>
-                      <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[calc(var(--header-inset)+80px)] hidden w-[calc(100vw-2*var(--header-inset))] max-w-[var(--content-max)] -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-[var(--shadow-overlay)] lg:grid lg:grid-cols-[0.8fr_1.4fr_1fr]">
-                        <DepartmentMenu
-                          department={department}
-                          categories={departmentCategories[department.key]}
-                          promo={promo}
-                          onClose={() => setDesktopMenu('')}
-                        />
+                      <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[58px] hidden w-[calc(100vw-2*var(--header-inset))] max-w-[var(--content-max)] -translate-x-1/2 pt-9 lg:block">
+                        <div className="overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-[var(--shadow-overlay)] lg:grid lg:grid-cols-[0.8fr_1.4fr_1fr]">
+                          <DepartmentMenu
+                            department={department}
+                            categories={departmentCategories[department.key]}
+                            promo={promo}
+                            onClose={() => setDesktopMenu('')}
+                          />
+                        </div>
                       </NavigationMenu.Content>
                     </NavigationMenu.Item>
                   ))}
@@ -146,20 +185,24 @@ export function Header({
                     >
                       Collections <ChevronDown />
                     </NavigationMenu.Trigger>
-                    <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[calc(var(--header-inset)+80px)] hidden w-[calc(100vw-2*var(--header-inset))] max-w-[var(--content-max)] -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-[var(--shadow-overlay)] lg:grid lg:grid-cols-[0.8fr_1.4fr_1fr]">
-                      <CollectionsMenu
-                        themes={themes}
-                        promo={promo}
-                        onClose={() => setDesktopMenu('')}
-                      />
+                    <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[58px] hidden w-[calc(100vw-2*var(--header-inset))] max-w-[var(--content-max)] -translate-x-1/2 pt-9 lg:block">
+                      <div className="overflow-hidden rounded-xl border border-border bg-surface text-foreground shadow-[var(--shadow-overlay)] lg:grid lg:grid-cols-[0.8fr_1.4fr_1fr]">
+                        <CollectionsMenu
+                          themes={themes}
+                          promo={promo}
+                          onClose={() => setDesktopMenu('')}
+                        />
+                      </div>
                     </NavigationMenu.Content>
                   </NavigationMenu.Item>
                   <NavigationMenu.Item value="more">
                     <NavigationMenu.Trigger className="group inline-flex min-h-11 items-center gap-1 rounded-full px-3 text-xs font-medium text-foreground outline-none hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-focus-ring data-[state=open]:bg-primary data-[state=open]:text-primary-foreground xl:gap-2 xl:text-sm">
                       More <ChevronDown />
                     </NavigationMenu.Trigger>
-                    <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[calc(var(--header-inset)+80px)] hidden w-[min(680px,calc(100vw-2*var(--header-inset)))] -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-border shadow-[var(--shadow-overlay)] lg:block">
-                      <PagesMenu onClose={() => setDesktopMenu('')} />
+                    <NavigationMenu.Content className="radix-navigation-content fixed left-1/2 top-[58px] hidden w-[min(680px,calc(100vw-2*var(--header-inset)))] -translate-x-1/2 pt-9 lg:block">
+                      <div className="overflow-hidden rounded-xl border border-border bg-border shadow-[var(--shadow-overlay)]">
+                        <PagesMenu onClose={() => setDesktopMenu('')} />
+                      </div>
                     </NavigationMenu.Content>
                   </NavigationMenu.Item>
                 </NavigationMenu.List>
@@ -220,6 +263,7 @@ export function Header({
               >
                 <SearchIcon />
               </Link>
+              <WishlistHeaderLink />
               <Suspense fallback={<SignedOutAccount pathname={pathname} />}>
                 <Await resolve={isLoggedIn}>
                   {(loggedIn) =>
@@ -227,7 +271,7 @@ export function Header({
                       <Link
                         to="/account"
                         aria-label="Account dashboard"
-                        className="hidden size-11 place-items-center sm:grid"
+                        className="grid size-10 sm:size-11 place-items-center rounded-full transition-colors hover:bg-surface-subtle"
                       >
                         <AccountIcon />
                       </Link>
@@ -298,29 +342,36 @@ function DepartmentMenu({department, categories, promo, onClose}) {
         <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Categories
         </p>
-        <div className="grid grid-cols-2 gap-3">
-          {categories.map((category, index) => (
-            <Link
-              key={category.value}
-              to={categoryHref(department, category)}
-              onClick={onClose}
-              className="group flex min-h-16 items-center justify-between rounded-lg border border-border bg-surface-subtle px-5 text-base font-semibold outline-none transition-colors hover:border-border-strong hover:bg-surface focus-visible:ring-2 focus-visible:ring-focus-ring"
-            >
-              <span>
-                <span className="mr-3 text-[10px] font-medium text-muted-foreground">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                {category.label}
-              </span>
-              <span
-                aria-hidden="true"
-                className="transition-transform group-hover:translate-x-1"
+        {categories.length ? (
+          <div className="grid grid-cols-2 gap-3">
+            {categories.map((category, index) => (
+              <Link
+                key={category.label}
+                to={category.to}
+                onClick={onClose}
+                className="group flex min-h-16 items-center justify-between rounded-lg border border-border bg-surface-subtle px-5 text-base font-semibold outline-none transition-colors hover:border-border-strong hover:bg-surface focus-visible:ring-2 focus-visible:ring-focus-ring"
               >
-                →
-              </span>
-            </Link>
-          ))}
-        </div>
+                <span>
+                  <span className="mr-3 text-[10px] font-medium text-muted-foreground">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  {category.label}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="transition-transform group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-muted-foreground">
+            Category collections will appear here when they are published in
+            Shopify.
+          </p>
+        )}
       </nav>
 
       <PromoTile product={promo} className="m-7 ml-0" />
@@ -484,8 +535,8 @@ function MobileNavigation({
                 <div className="grid grid-cols-2 gap-2">
                   {departmentCategories[department.key].map((category) => (
                     <Link
-                      key={category.value}
-                      to={categoryHref(department, category)}
+                      key={category.label}
+                      to={category.to}
                       onClick={onClose}
                       className="flex min-h-12 items-center rounded-md border border-border bg-surface-subtle px-3 text-sm font-semibold"
                     >
@@ -544,13 +595,23 @@ function MobileNavigation({
       </section>
 
       <PromoTile product={promo} compact />
-      <Link
-        to={`/account/login?return_to=${encodeURIComponent(pathname)}`}
-        onClick={onClose}
-        className="mt-5 flex min-h-12 items-center justify-center rounded-full border border-border-strong text-sm font-semibold"
-      >
-        Sign in / Account
-      </Link>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <Link
+          to="/account/wishlist"
+          onClick={onClose}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong text-xs font-semibold uppercase tracking-wider text-foreground"
+        >
+          <HeartIcon className="size-4" />
+          Wishlist
+        </Link>
+        <Link
+          to="/account"
+          onClick={onClose}
+          className="flex min-h-12 items-center justify-center gap-1.5 rounded-full bg-black text-xs font-semibold uppercase tracking-wider text-white"
+        >
+          Account →
+        </Link>
+      </div>
     </>
   );
 }
@@ -588,57 +649,113 @@ function PromoTile({product, className = '', compact = false}) {
 }
 
 function categoryHref(department, category) {
-  const params = new URLSearchParams();
-  params.set('type', category.value);
-  return `${department.to}?${params}`;
+  const params = new URLSearchParams({type: category, collection: department});
+  return `/collections/all?${params.toString()}`;
 }
 
-function deriveDepartmentCategories(products) {
+const FALLBACK_CATEGORIES = [
+  'T-Shirts',
+  'Hoodies',
+  'Oversized',
+  'Sweatshirts',
+  'Joggers',
+  'Accessories',
+];
+
+function getProductCategories(product) {
+  const set = new Set();
+
+  const primaryCat = getProductCategory(product);
+  if (primaryCat) {
+    const label = categoryLabel(primaryCat);
+    if (label) set.add(label);
+  }
+
+  if (product?.productType) {
+    const label = categoryLabel(product.productType);
+    if (label) set.add(label);
+  }
+
+  for (const tag of product?.tags ?? []) {
+    const lower = tag.toLowerCase();
+    if (
+      lower === 'men' ||
+      lower === 'women' ||
+      lower === 'unisex' ||
+      lower === 'solid' ||
+      lower === 'solids'
+    ) {
+      continue;
+    }
+    const label = categoryLabel(tag);
+    if (label) set.add(label);
+  }
+
+  return [...set];
+}
+
+function deriveDepartmentCategories(products = [], collections = []) {
   return Object.fromEntries(
     SHOP_DEPARTMENTS.map((department) => {
-      const labels = new Set();
+      const categories = new Map();
+
+      // 1. Process Shopify Collections first (merchant collections in store)
+      for (const col of collections) {
+        if (!col || col.handle === 'frontpage' || col.handle === 'solids') {
+          continue;
+        }
+
+        const isDepCollection = belongsToDepartment(col, department.key);
+        const hasMatchingProducts = col.products?.nodes?.some((p) =>
+          belongsToDepartment(p, department.key),
+        );
+
+        if (!isDepCollection && !hasMatchingProducts) continue;
+
+        const rawName = col.title;
+        const categoryName = categoryLabel(rawName) || rawName;
+        if (categoryName && !categories.has(categoryName)) {
+          categories.set(categoryName, {
+            label: categoryName,
+            to: categoryHref(department.key, categoryName),
+          });
+        }
+      }
+
+      // 2. Process individual Products to ensure no product categories are missed
       for (const product of products) {
         if (!belongsToDepartment(product, department.key)) continue;
-        for (const label of inferCategoryLabels(product)) labels.add(label);
+        const catList = getProductCategories(product);
+        for (const cat of catList) {
+          if (!categories.has(cat)) {
+            categories.set(cat, {
+              label: cat,
+              to: categoryHref(department.key, cat),
+            });
+          }
+        }
       }
-      for (const fallback of CATEGORY_FALLBACKS[department.key]) {
-        labels.add(fallback);
-      }
-      return [
-        department.key,
-        [...labels].slice(0, 6).map((label) => ({
-          label,
-          value: label,
-        })),
-      ];
+
+      return [department.key, [...categories.values()].slice(0, 8)];
     }),
   );
 }
 
 function belongsToDepartment(product, department) {
   const tags = (product.tags ?? []).map((tag) => tag.toLowerCase());
-  return tags.includes(department) || tags.includes('unisex');
-}
+  const type = (product.productType ?? '').toLowerCase();
+  const title = (product.title ?? '').toLowerCase();
 
-function inferCategoryLabels(product) {
-  const labels = new Set();
-  const values = [product.productType, ...(product.tags ?? [])].filter(Boolean);
-  for (const value of values) {
-    const label = categoryLabel(value);
-    if (label) labels.add(label);
+  // Unisex products (explicitly tagged/typed or untagged by gender) belong to both Men and Women
+  if (
+    tags.includes('unisex') ||
+    type.includes('unisex') ||
+    title.includes('unisex')
+  ) {
+    return true;
   }
-
-  const title = product.title?.toLowerCase() ?? '';
-  if (title.includes('oversized')) labels.add('Oversized');
-  if (title.includes('t-shirt') || title.includes('tee'))
-    labels.add('T-Shirts');
-  else if (title.includes('shirt')) labels.add('Shirts');
-  if (title.includes('jogger')) labels.add('Joggers');
-  if (title.includes('hoodie')) labels.add('Hoodies');
-  if (title.includes('cap')) labels.add('Caps');
-  if (title.includes('tote')) labels.add('Tote Bags');
-  else if (title.includes('bag')) labels.add('Bags');
-  return labels;
+  if (tags.includes(department)) return true;
+  return !tags.includes('men') && !tags.includes('women');
 }
 
 function deriveMenuThemes(products) {
@@ -757,6 +874,39 @@ function CartIcon() {
       <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.7L21 8H7" />
       <circle cx="10" cy="20" r="1" />
       <circle cx="18" cy="20" r="1" />
+    </svg>
+  );
+}
+
+function WishlistHeaderLink() {
+  const {count} = useWishlist();
+  return (
+    <Link
+      to="/account/wishlist"
+      aria-label={`Wishlist (${count} items)`}
+      title="Saved Wishlist Items"
+      className="relative grid size-10 sm:size-11 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-subtle"
+    >
+      <HeartIcon />
+      {count > 0 && (
+        <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-black px-1 text-[9px] font-bold leading-none text-white">
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function HeartIcon({filled = false, className = "size-5"}) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.7"
+    >
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
     </svg>
   );
 }

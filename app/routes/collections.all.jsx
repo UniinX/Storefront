@@ -22,6 +22,7 @@ export async function loader({context, request}) {
     theme: url.searchParams.get('theme'),
     language: url.searchParams.get('language'),
     color: url.searchParams.get('color'),
+    size: url.searchParams.get('size'),
     collection: url.searchParams.get('collection'),
     q: url.searchParams.get('q'),
   });
@@ -81,7 +82,6 @@ export default function Catalog() {
             className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
-            previousClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
             nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
           >
             {({node: product, index}) => (
@@ -121,7 +121,8 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
     }
     variants(first: 10) { nodes { selectedOptions { name value } } }
     featuredImage { id altText url width height }
-    collections(first: 2) { nodes { title } }
+    category { id name }
+    collections(first: 10) { nodes { id handle title } }
     priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }
     compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }
   }
@@ -134,6 +135,16 @@ const CATALOG_QUERY = `#graphql
       nodes { ...CollectionItem }
       filters { id label type values { id label count input } }
       pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
+    }
+  }
+`;
+
+const ALL_FACETS_QUERY = `#graphql
+  ${COLLECTION_ITEM_FRAGMENT}
+  query AllCatalogFacets($country: CountryCode, $language: LanguageCode, $first: Int) @inContext(country: $country, language: $language) {
+    products(first: $first) {
+      nodes { ...CollectionItem }
+      filters { id label type values { id label count input } }
     }
   }
 `;

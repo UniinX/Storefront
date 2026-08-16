@@ -1,6 +1,6 @@
 import {Link} from 'react-router';
 import {ProductCard} from '~/components/ds/index.js';
-import {Reveal} from '~/components/motion/Reveal.jsx';
+import {Reveal, StaggerContainer, StaggerItem} from '~/components/motion/Reveal.jsx';
 
 function isTamilPriority(product) {
   const title = product?.title?.toLowerCase() ?? '';
@@ -66,16 +66,16 @@ export function ProductGrid({
           </Link>
         </Reveal>
 
-        <div
+        <StaggerContainer
+          stagger={0.05}
           className={`uniinx-product-grid ${homeLayout ? 'uniinx-home-product-grid uniinx-horizontal-scroll' : ''}`}
           role="grid"
           aria-label={`${ariaLabel} products`}
         >
           {displayedProducts.map((product, index) => (
-            <Reveal
+            <StaggerItem
               key={product.id}
               variant="card"
-              delay={index * 55}
               className="h-full"
             >
               <ProductCard
@@ -83,9 +83,9 @@ export function ProductGrid({
                 loading={index < 4 ? 'eager' : 'lazy'}
                 revealDelay={0}
               />
-            </Reveal>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         <Link
           to={ctaHref}

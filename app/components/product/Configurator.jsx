@@ -4,6 +4,7 @@ import {Money} from '@shopify/hydrogen';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {ProductFamilySelector} from '~/components/product/ProductFamilySelector';
 import {orderSizeGuideLines, sortSizes} from '~/lib/sizing.js';
+import {useWishlist} from '~/context/WishlistContext.jsx';
 import {
   Accordion as AccordionRoot,
   AccordionContent,
@@ -12,9 +13,9 @@ import {
 } from '~/components/ui/accordion.jsx';
 
 // Fallback color swatches helper
-const COLOR_MAP = {
+export const COLOR_MAP = {
   black: '#1a1a1a',
-  white: '#f7f4ed',
+  white: '#ffffff',
   gray: '#8a8a86',
   grey: '#8a8a86',
   navy: '#1f2d4a',
@@ -44,6 +45,8 @@ function getColorSwatchStyle(optionValue) {
 export function Configurator({product, selectedVariant, productOptions}) {
   const navigate = useNavigate();
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const {isInWishlist, toggleWishlist} = useWishlist();
+  const isSaved = isInWishlist(product?.id);
 
   // 1. Extract current product metafield values
   const currentMetafields = {};
@@ -98,19 +101,42 @@ export function Configurator({product, selectedVariant, productOptions}) {
 
   return (
     <div className="flex w-full flex-col gap-7 bg-white py-2 text-black sm:py-4 lg:p-0">
-      {/* Product Title and Price */}
+      {/* Product Title, Price, and Wishlist */}
       <div>
         <span className="mb-3 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#233c6b]">
           {currentFit} · {currentType}
         </span>
-        <h1 className="text-[clamp(36px,4vw,58px)] font-normal leading-[0.98] tracking-[-0.05em]">
-          {product.title}
-        </h1>
-        {product.description ? (
-          <p className="mt-4 line-clamp-3 text-sm leading-6 text-black/55">
-            {product.description}
-          </p>
-        ) : null}
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-[clamp(36px,4vw,58px)] font-normal leading-[0.98] tracking-[-0.05em]">
+            {product.title}
+          </h1>
+          <button
+            type="button"
+            onClick={() => toggleWishlist(product)}
+            aria-label={
+              isSaved
+                ? `Remove ${product.title} from wishlist`
+                : `Add ${product.title} to wishlist`
+            }
+            title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
+            className={`grid size-11 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${
+              isSaved
+                ? 'border-black bg-black text-white'
+                : 'border-black/15 bg-white text-black hover:border-black'
+            }`}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill={isSaved ? 'currentColor' : 'none'}
+              stroke="currentColor"
+              strokeWidth="1.7"
+            >
+              <path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 00-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 00-.1-7.8z" />
+            </svg>
+          </button>
+        </div>
         <div className="flex items-end justify-between gap-4 mt-5">
           <div className="flex items-baseline gap-3 text-lg font-medium">
             {onSale && (

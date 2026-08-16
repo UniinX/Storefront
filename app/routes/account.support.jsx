@@ -126,7 +126,7 @@ export default function AccountSupport() {
       )}
 
       {/* Support Form */}
-      <Form method="POST" className="uniinx-account-form flex max-w-2xl flex-col gap-5 rounded-[22px] border border-black/10 bg-[#faf9f6] p-5 sm:p-7">
+      <Form method="POST" className="uniinx-account-form flex max-w-2xl flex-col gap-5 rounded-[22px] border border-black/10 bg-white p-5 sm:p-7">
         
         {/* Customer Email (Read-only) */}
         <div className="flex flex-col gap-1 w-full">

@@ -1,19 +1,30 @@
 const CATEGORY_LABELS = new Map([
   ['tshirt', 'T-Shirts'],
+  ['tshirts', 'T-Shirts'],
   ['tee', 'T-Shirts'],
+  ['classictshirt', 'T-Shirts'],
+  ['mensclassictshirt', 'T-Shirts'],
+  ['womensclassictshirt', 'T-Shirts'],
   ['hoodie', 'Hoodies'],
+  ['hoodies', 'Hoodies'],
   ['sweatshirt', 'Sweatshirts'],
+  ['sweatshirts', 'Sweatshirts'],
   ['sweatpant', 'Sweatpants'],
+  ['sweatpants', 'Sweatpants'],
   ['jogger', 'Joggers'],
+  ['joggers', 'Joggers'],
   ['oversized', 'Oversized'],
-  ['shirt', 'Shirts'],
+  ['polo', 'Polos'],
+  ['polos', 'Polos'],
   ['cap', 'Caps'],
   ['bag', 'Bags'],
   ['totebag', 'Tote Bags'],
   ['phonecase', 'Phone Cases'],
   ['terryshort', 'Terry Shorts'],
+  ['terryshorts', 'Terry Shorts'],
   ['accessory', 'Accessories'],
   ['accessorie', 'Accessories'],
+  ['accessories', 'Accessories'],
 ]);
 
 export function normalizeCatalogValue(value = '') {
@@ -24,7 +35,67 @@ export function normalizeCatalogValue(value = '') {
 }
 
 export function categoryLabel(value) {
-  return CATEGORY_LABELS.get(normalizeCatalogValue(value)) ?? null;
+  const normalized = normalizeCatalogValue(value);
+  const exact = CATEGORY_LABELS.get(normalized);
+  if (exact) return exact;
+
+  const collectionTitleMatches = [
+    ['oversized', 'Oversized'],
+    ['tshirt', 'T-Shirts'],
+    ['tee', 'T-Shirts'],
+    ['hoodie', 'Hoodies'],
+    ['sweatshirt', 'Sweatshirts'],
+    ['sweatpant', 'Sweatpants'],
+    ['jogger', 'Joggers'],
+    ['terryshort', 'Terry Shorts'],
+    ['totebag', 'Tote Bags'],
+    ['phonecase', 'Phone Cases'],
+    ['cap', 'Caps'],
+    ['bag', 'Bags'],
+    ['accessorie', 'Accessories'],
+    ['accessory', 'Accessories'],
+  ];
+  return (
+    collectionTitleMatches.find(([key]) => normalized.includes(key))?.[1] ??
+    null
+  );
+}
+
+export function getProductCollection(product) {
+  return product?.collectionName?.value ?? null;
+}
+
+export function getProductCategory(product) {
+  return product?.category?.name ?? null;
+}
+
+export function getProductCollectionMemberships(product) {
+  return (product?.collections?.nodes ?? [])
+    .map((node) => node?.title)
+    .filter(Boolean);
+}
+
+export function normalizeProductTaxonomy(product) {
+  return {
+    collection: getProductCollection(product),
+    category: getProductCategory(product),
+    collections: getProductCollectionMemberships(product),
+  };
+}
+
+export function getProductCategoryCollections(product) {
+  const theme = normalizeCatalogValue(product?.collectionName?.value);
+  const seen = new Set();
+
+  return (product?.collections?.nodes ?? []).flatMap((collection) => {
+    if (!collection?.handle || !collection?.title) return [];
+    if (theme && normalizeCatalogValue(collection.title) === theme) return [];
+
+    const label = categoryLabel(collection.title);
+    if (!label || seen.has(label)) return [];
+    seen.add(label);
+    return [{...collection, label}];
+  });
 }
 
 function quoteSearchValue(value) {
@@ -36,46 +107,57 @@ export function getProductSearchQuery({
   theme,
   language,
   color,
+  size,
   collection,
   q,
 }) {
   const clauses = [];
-  const normalizedType = normalizeCatalogValue(type);
+  const mappedLabel = categoryLabel(type) || type;
+  const normalizedType = normalizeCatalogValue(mappedLabel);
 
   if (normalizedType && normalizedType !== 'all') {
     const categoryQueries = {
-      tshirt: '(tag:tshirt OR tag:"t-shirt" OR product_type:"T-Shirts")',
-      hoodie: '(tag:hoodie OR tag:hoodies OR product_type:Hoodie)',
-      sweatshirt: '(tag:sweatshirt OR product_type:Sweatshirt)',
-      sweatpant: '(tag:sweatpant OR tag:sweatpants OR product_type:Sweatpants)',
-      jogger: '(tag:jogger OR tag:joggers OR product_type:Joggers)',
-      oversized: '(tag:oversized OR title:oversized)',
-      shirt: '(tag:shirt OR tag:shirts OR product_type:Shirt OR title:shirt)',
-      cap: '(tag:cap OR tag:caps OR product_type:Cap)',
-      bag: '(tag:bag OR tag:bags OR product_type:Bag)',
-      totebag: '(tag:tote OR tag:"tote bag" OR product_type:"Tote Bag")',
-      phonecase:
-        '(tag:"phone case" OR tag:phonecase OR product_type:"Phone Case")',
+      tshirt:
+        '(tag:tshirt OR tag:"t-shirt" OR tag:"T-shirt" OR tag:t-shirts OR product_type:"T-Shirts" OR product_type:"T-Shirt" OR category:"T-Shirts")',
+      hoodie:
+        '(tag:hoodie OR tag:hoodies OR product_type:Hoodie OR product_type:Hoodies OR category:Hoodies)',
+      sweatshirt:
+        '(tag:sweatshirt OR tag:sweatshirts OR product_type:Sweatshirt OR product_type:Sweatshirts OR category:Sweatshirts)',
+      sweatpant:
+        '(tag:sweatpant OR tag:sweatpants OR product_type:Sweatpants OR category:Sweatpants)',
+      jogger:
+        '(tag:jogger OR tag:joggers OR product_type:Joggers OR category:Joggers)',
+      oversized: '(tag:oversized OR title:oversized OR product_type:Oversized)',
       terryshort:
-        '(tag:"terry short" OR tag:terryshort OR product_type:"Terry Shorts")',
+        '(tag:"terry short" OR tag:terryshort OR tag:terry-shorts OR product_type:"Terry Shorts" OR category:Shorts)',
+      polo: '(tag:polo OR tag:"polo t-shirt" OR tag:"men polo t-shirt" OR product_type:Polos OR category:Polos)',
       accessory:
         '(tag:accessories OR tag:accessory OR product_type:Accessories)',
     };
     clauses.push(
-      categoryQueries[normalizedType] ?? `tag:${quoteSearchValue(type)}`,
+      categoryQueries[normalizedType] ??
+        `(tag:${quoteSearchValue(type)} OR product_type:${quoteSearchValue(type)})`,
     );
   }
 
   if (theme)
     clauses.push(
-      `metafields.custom.collection_name:${quoteSearchValue(theme)}`,
+      `(metafields.custom.collection_name:${quoteSearchValue(theme)} OR tag:${quoteSearchValue(theme)})`,
     );
   if (language)
-    clauses.push(`metafields.custom.language:${quoteSearchValue(language)}`);
+    clauses.push(
+      `(metafields.custom.language:${quoteSearchValue(language)} OR tag:${quoteSearchValue(language)})`,
+    );
   if (color) {
     const value = quoteSearchValue(color);
     clauses.push(
-      `(metafields.custom.family_value:${value} OR metafields.custom.color:${value} OR variant_option:${quoteSearchValue(`Color:${color}`)})`,
+      `(metafields.custom.family_value:${value} OR metafields.custom.color:${value} OR variant_option:${quoteSearchValue(`Color:${color}`)} OR tag:${value} OR title:${value})`,
+    );
+  }
+  if (size) {
+    const val = quoteSearchValue(size);
+    clauses.push(
+      `(variants.title:${val} OR variant_option:${val} OR variant_option:${quoteSearchValue(`size:${size}`)} OR variant_option:${quoteSearchValue(`Size:${size}`)} OR tag:${val} OR ${val})`,
     );
   }
   if (collection) {
@@ -117,6 +199,7 @@ export function getCollectionFilters({
   theme,
   language,
   color,
+  size,
   collection,
 }) {
   const filters = [];
@@ -141,6 +224,13 @@ export function getCollectionFilters({
         value: color,
       },
     });
+  if (size)
+    filters.push({
+      variantOption: {
+        name: 'Size',
+        value: size,
+      },
+    });
   if (collection) filters.push({tag: collection});
   return filters;
 }
@@ -149,11 +239,40 @@ function add(set, value) {
   if (value) set.add(value);
 }
 
+function getProductCategories(product) {
+  const set = new Set();
+  const primaryCat = getProductCategory(product);
+  if (primaryCat) {
+    const label = categoryLabel(primaryCat);
+    if (label) set.add(label);
+  }
+  if (product?.productType) {
+    const label = categoryLabel(product.productType);
+    if (label) set.add(label);
+  }
+  for (const tag of product?.tags ?? []) {
+    const lower = tag.toLowerCase();
+    if (
+      lower === 'men' ||
+      lower === 'women' ||
+      lower === 'unisex' ||
+      lower === 'solid' ||
+      lower === 'solids'
+    ) {
+      continue;
+    }
+    const label = categoryLabel(tag);
+    if (label) set.add(label);
+  }
+  return [...set];
+}
+
 export function getCatalogFilterOptions(connection) {
-  const categories = new Set();
+  const categoriesMap = new Map();
   const themes = new Set();
   const languages = new Set();
   const colors = new Set();
+  const sizes = new Set();
 
   for (const filter of connection?.filters ?? []) {
     const id = filter.id.toLowerCase();
@@ -167,14 +286,30 @@ export function getCatalogFilterOptions(connection) {
         id.includes('option.color')
       )
         add(colors, value.label);
-      else if (id.includes('product_type') || id.includes('tag'))
-        add(categories, categoryLabel(value.label));
+      else if (id.includes('option.size')) add(sizes, value.label);
     }
   }
 
   for (const product of connection?.nodes ?? []) {
-    add(categories, categoryLabel(product.productType));
-    for (const tag of product.tags ?? []) add(categories, categoryLabel(tag));
+    for (const collection of getProductCategoryCollections(product)) {
+      if (!categoriesMap.has(collection.label)) {
+        categoriesMap.set(collection.label, {
+          label: collection.label,
+          value: collection.handle,
+        });
+      }
+    }
+
+    const catList = getProductCategories(product);
+    for (const cat of catList) {
+      if (!categoriesMap.has(cat)) {
+        categoriesMap.set(cat, {
+          label: cat,
+          value: cat,
+        });
+      }
+    }
+
     add(themes, product.collectionName?.value);
     add(languages, product.language?.value);
     add(colors, product.familyValue?.value ?? product.color?.value);
@@ -182,21 +317,87 @@ export function getCatalogFilterOptions(connection) {
       add(colors, member.familyValue?.value ?? member.color?.value);
     }
     for (const variant of product.variants?.nodes ?? []) {
-      add(
-        colors,
-        variant.selectedOptions?.find(
-          ({name}) => name.toLowerCase() === 'color',
-        )?.value,
-      );
+      for (const opt of variant.selectedOptions ?? []) {
+        const nameLower = opt.name?.toLowerCase();
+        if (nameLower === 'color') add(colors, opt.value);
+        if (nameLower === 'size') add(sizes, opt.value);
+      }
     }
   }
 
+  if (categoriesMap.size === 0) {
+    const DEFAULT_CATEGORIES = [
+      {label: 'T-Shirts', value: 'T-Shirts'},
+      {label: 'Hoodies', value: 'Hoodies'},
+      {label: 'Sweatshirts', value: 'Sweatshirts'},
+      {label: 'Sweatpants', value: 'Sweatpants'},
+      {label: 'Joggers', value: 'Joggers'},
+      {label: 'Terry Shorts', value: 'Terry Shorts'},
+      {label: 'Oversized', value: 'Oversized'},
+      {label: 'Polos', value: 'Polos'},
+    ];
+
+    for (const cat of DEFAULT_CATEGORIES) {
+      if (!categoriesMap.has(cat.label)) {
+        categoriesMap.set(cat.label, {
+          label: cat.label,
+          value: cat.value,
+        });
+      }
+    }
+  }
+
+  if (languages.size === 0) {
+    [
+      'English',
+      'Hindi',
+      'Telugu',
+      'Tamil',
+      'Malayalam',
+      'Kannada',
+      'Odia',
+      'Bengali',
+    ].forEach((l) => languages.add(l));
+  }
+
+  if (colors.size === 0) {
+    [
+      'Black',
+      'White',
+      'Off White',
+      'Beige',
+      'Grey Melange',
+      'Navy Blue',
+      'Maroon',
+      'Lavender',
+      'Light Pink',
+      'Bottle Green',
+    ].forEach((c) => colors.add(c));
+  }
+
+  if (sizes.size === 0) {
+    ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].forEach((s) => sizes.add(s));
+  }
+
+  const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'XXL', '3XL'];
   const sorted = (values) => [...values].sort((a, b) => a.localeCompare(b));
+  const sortedSizes = [...sizes].sort((a, b) => {
+    const idxA = SIZE_ORDER.indexOf(a.toUpperCase());
+    const idxB = SIZE_ORDER.indexOf(b.toUpperCase());
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   return {
-    categories: ['All', ...sorted(categories)],
+    categories: [...categoriesMap.values()].sort((a, b) =>
+      a.label.localeCompare(b.label),
+    ),
     themes: sorted(themes),
     languages: sorted(languages),
     colors: sorted(colors),
+    sizes: sortedSizes,
   };
 }
 
@@ -229,4 +430,68 @@ export function matchesDepartment(product, department) {
   return department === 'men' || department === 'women'
     ? tags.has(department) || tags.has('unisex')
     : tags.has(department);
+}
+
+export function mergeCatalogFilterOptions(accumulated = {}, incoming = {}) {
+  const categoriesMap = new Map();
+
+  const addCategory = (item) => {
+    if (!item) return;
+    const label = typeof item === 'object' && item !== null ? item.label : item;
+    const value = typeof item === 'object' && item !== null ? item.value : item;
+    if (label && !categoriesMap.has(String(label).toLowerCase())) {
+      categoriesMap.set(String(label).toLowerCase(), {
+        label,
+        value: value || label,
+      });
+    }
+  };
+
+  for (const item of accumulated.categories || []) addCategory(item);
+  for (const item of incoming.categories || []) addCategory(item);
+
+  const mergeUniqueList = (accList = [], incList = []) => {
+    const map = new Map();
+    for (const item of [...accList, ...incList]) {
+      if (!item) continue;
+      const val =
+        typeof item === 'object' && item !== null ? item.value || item.label : item;
+      const key = String(val).toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    }
+    return Array.from(map.values());
+  };
+
+  const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'XXL', '3XL'];
+  const sortedSizes = mergeUniqueList(
+    accumulated.sizes,
+    incoming.sizes,
+  ).sort((a, b) => {
+    const valA = typeof a === 'object' && a !== null ? a.value || a.label : a;
+    const valB = typeof b === 'object' && b !== null ? b.value || b.label : b;
+    const idxA = SIZE_ORDER.indexOf(String(valA).toUpperCase());
+    const idxB = SIZE_ORDER.indexOf(String(valB).toUpperCase());
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return String(valA).localeCompare(String(valB));
+  });
+
+  return {
+    categories: Array.from(categoriesMap.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    ),
+    themes: mergeUniqueList(accumulated.themes, incoming.themes).sort((a, b) =>
+      String(a).localeCompare(String(b)),
+    ),
+    languages: mergeUniqueList(accumulated.languages, incoming.languages).sort((a, b) =>
+      String(a).localeCompare(String(b)),
+    ),
+    colors: mergeUniqueList(accumulated.colors, incoming.colors).sort((a, b) =>
+      String(a).localeCompare(String(b)),
+    ),
+    sizes: sortedSizes,
+  };
 }

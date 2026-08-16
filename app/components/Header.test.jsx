@@ -8,15 +8,30 @@ import {
   within,
 } from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
+import {WishlistProvider} from '~/context/WishlistContext.jsx';
 import {Header} from './Header.jsx';
 
 const pendingCart = new Promise(() => {});
+const menuProducts = [
+  {
+    id: 'product-1',
+    handle: 'orbit-tee',
+    title: 'Orbit Tee',
+    productType: 'T-Shirt',
+    tags: ['men', 'unisex'],
+    collectionName: {value: 'Antariksham'},
+    category: {id: 'gid://shopify/TaxonomyCategory/aa-2-1', name: 'T-Shirts'},
+    featuredImage: null,
+  },
+];
 
 function renderHeader(props = {}) {
   return render(
-    <MemoryRouter initialEntries={['/collections/all']}>
-      <Header cart={pendingCart} language="english" {...props} />
-    </MemoryRouter>,
+    <WishlistProvider>
+      <MemoryRouter initialEntries={['/collections/all']}>
+        <Header cart={pendingCart} language="english" {...props} />
+      </MemoryRouter>
+    </WishlistProvider>,
   );
 }
 
@@ -69,18 +84,100 @@ describe('Header', () => {
   });
 
   it('opens a department mega menu with category shortcuts', () => {
-    renderHeader();
+    renderHeader({megaMenuProducts: menuProducts});
     fireEvent.click(screen.getByRole('button', {name: 'Men'}));
 
     expect(
       screen.getByRole('navigation', {name: 'Men categories'}),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: /Oversized/})).toHaveAttribute(
+    expect(screen.getByRole('link', {name: /T-Shirts/})).toHaveAttribute(
       'href',
-      '/collections/men?type=Oversized',
+      '/collections/all?type=T-Shirts&collection=men',
     );
-    expect(screen.getByRole('link', {name: /T-Shirts/})).toBeInTheDocument();
+    expect(screen.queryByRole('link', {name: /Antariksham/})).toBeNull();
     expect(screen.getByText('Campaign placeholder')).toBeInTheDocument();
+  });
+
+  it('does not derive department categories from collection membership', () => {
+    renderHeader({
+      megaMenuProducts: [
+        {
+          id: 'product-2',
+          handle: 'no-taxonomy-tee',
+          title: 'No Taxonomy Tee',
+          tags: ['men'],
+          collectionName: {value: 'Solids'},
+          collections: {
+            nodes: [{id: 'x', handle: 'solids', title: 'Solids'}],
+          },
+          category: null,
+          featuredImage: null,
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', {name: 'Men'}));
+
+    expect(
+      screen.getByText(
+        'Category collections will appear here when they are published in Shopify.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('shows categories from gender-neutral products in both department menus', () => {
+    renderHeader({
+      megaMenuProducts: [
+        {
+          id: 'product-3',
+          handle: 'classic-hoodie',
+          title: 'Classic Hoodie',
+          tags: [],
+          collectionName: {value: 'Essentials'},
+          category: {name: 'Hoodies'},
+          featuredImage: null,
+        },
+      ],
+    });
+
+    fireEvent.click(screen.getByRole('button', {name: 'Men'}));
+    expect(screen.getByRole('link', {name: /Hoodies/})).toHaveAttribute(
+      'href',
+      '/collections/all?type=Hoodies&collection=men',
+    );
+
+    fireEvent.click(screen.getByRole('button', {name: 'Women'}));
+    expect(screen.getByRole('link', {name: /Hoodies/})).toHaveAttribute(
+      'href',
+      '/collections/all?type=Hoodies&collection=women',
+    );
+  });
+
+  it('shows categories from explicitly unisex-tagged products in both department menus', () => {
+    renderHeader({
+      megaMenuProducts: [
+        {
+          id: 'product-4',
+          handle: 'travel-cap',
+          title: 'Travel Cap',
+          tags: ['unisex'],
+          collectionName: {value: 'Essentials'},
+          category: {name: 'Caps'},
+          featuredImage: null,
+        },
+      ],
+    });
+
+    fireEvent.click(screen.getByRole('button', {name: 'Men'}));
+    expect(screen.getByRole('link', {name: /Caps/})).toHaveAttribute(
+      'href',
+      '/collections/all?type=Caps&collection=men',
+    );
+
+    fireEvent.click(screen.getByRole('button', {name: 'Women'}));
+    expect(screen.getByRole('link', {name: /Caps/})).toHaveAttribute(
+      'href',
+      '/collections/all?type=Caps&collection=women',
+    );
   });
 
   it('opens department categories on pointer hover', () => {
@@ -94,17 +191,7 @@ describe('Header', () => {
 
   it('opens live Shopify collections from the primary navigation', () => {
     renderHeader({
-      megaMenuProducts: [
-        {
-          id: 'product-1',
-          handle: 'orbit-tee',
-          title: 'Orbit Tee',
-          productType: 'T-Shirt',
-          tags: ['men'],
-          collectionName: {value: 'Antariksham'},
-          featuredImage: null,
-        },
-      ],
+      megaMenuProducts: menuProducts,
     });
     fireEvent.click(screen.getByRole('button', {name: 'Collections'}));
 
@@ -119,23 +206,13 @@ describe('Header', () => {
 
   it('derives department categories from live product data', () => {
     renderHeader({
-      megaMenuProducts: [
-        {
-          id: 'product-1',
-          handle: 'orbit-tee',
-          title: 'Orbit Tee',
-          productType: 'T-Shirt',
-          tags: ['men'],
-          collectionName: {value: 'Antariksham'},
-          featuredImage: null,
-        },
-      ],
+      megaMenuProducts: menuProducts,
     });
     fireEvent.click(screen.getByRole('button', {name: 'Men'}));
 
     expect(screen.getByRole('link', {name: /T-Shirts/})).toHaveAttribute(
       'href',
-      '/collections/men?type=T-Shirts',
+      '/collections/all?type=T-Shirts&collection=men',
     );
   });
 
@@ -158,7 +235,7 @@ describe('Header', () => {
   });
 
   it('opens a viewport-sized mobile menu with search and two-column navigation', async () => {
-    renderHeader();
+    renderHeader({megaMenuProducts: menuProducts});
     const menuButton = screen.getByRole('button', {name: 'Open menu'});
 
     expect(menuButton).toHaveAttribute('aria-controls', 'mobile-navigation');
@@ -176,8 +253,8 @@ describe('Header', () => {
 
     fireEvent.click(within(dialog).getByRole('button', {name: 'Men'}));
     expect(
-      within(dialog).getByRole('link', {name: 'Oversized'}),
-    ).toHaveAttribute('href', '/collections/men?type=Oversized');
+      within(dialog).getByRole('link', {name: 'T-Shirts'}),
+    ).toHaveAttribute('href', '/collections/all?type=T-Shirts&collection=men');
 
     fireEvent.click(within(dialog).getByRole('button', {name: 'Collections'}));
     expect(

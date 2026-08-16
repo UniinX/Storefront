@@ -13,7 +13,7 @@ describe('Hero', () => {
 
     expect(screen.getByTestId('hero-parallax-media')).toHaveAttribute(
       'src',
-      expect.stringContaining('hero-section.jpg'),
+      expect.stringContaining('HeroSectionBg01JPGWithText.jpg'),
     );
     expect(screen.getByTestId('hero-parallax-copy')).toBeInTheDocument();
     expect(screen.getByTestId('home-hero')).toHaveAttribute(

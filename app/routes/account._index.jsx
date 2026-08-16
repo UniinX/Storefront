@@ -25,7 +25,7 @@ export default function AccountOverview() {
   const defaultAddress = customer?.defaultAddress;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-full overflow-hidden min-w-0">
       <AccountPageHeader
         eyebrow="Account overview"
         title={`Hello, ${firstName}.`}
@@ -149,11 +149,13 @@ export default function AccountOverview() {
       <Reveal>
         <section>
           <AccountPanelLabel>Quick access</AccountPanelLabel>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <QuickLink to="/account/orders" number="01" label="Order history" />
-            <QuickLink to="/account/profile" number="02" label="Profile details" />
-            <QuickLink to="/account/addresses" number="03" label="Saved addresses" />
-            <QuickLink to="/account/support" number="04" label="Studio support" />
+          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <QuickLink to="/account/orders" number="01" label="Orders & tracking" />
+            <QuickLink to="/account/profile" number="02" label="Profile & addresses" />
+            <QuickLink to="/account/security" number="03" label="Security & sign-in" />
+            <QuickLink to="/account/policies" number="04" label="Store policies" />
+            <QuickLink to="/account/support" number="05" label="Returns & support" />
+            <QuickLink to="/account/wishlist" number="06" label="Saved wishlist" />
           </div>
         </section>
       </Reveal>
@@ -176,11 +178,11 @@ function QuickLink({to, number, label}) {
   return (
     <Link
       to={to}
-      className="group flex min-h-24 flex-col justify-between rounded-[18px] border border-black/10 bg-[#faf9f6] p-5 transition-[transform,background-color,color] hover:-translate-y-1 hover:bg-black hover:text-white"
+      className="group flex min-h-20 sm:min-h-24 flex-col justify-between rounded-[16px] border border-black/10 bg-white p-4 text-left transition-[transform,background-color,color] hover:-translate-y-0.5 hover:bg-black hover:text-white sm:rounded-[18px] sm:p-5"
     >
       <span className="text-[9px] tracking-[0.18em] text-current opacity-40">{number}</span>
-      <span className="flex items-end justify-between gap-4 text-sm font-semibold">
-        {label} <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+      <span className="mt-2 flex items-end justify-between gap-2 text-xs font-semibold sm:text-sm">
+        <span>{label}</span> <span className="text-base transition-transform group-hover:translate-x-1">→</span>
       </span>
     </Link>
   );
