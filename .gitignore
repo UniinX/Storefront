@@ -2,8 +2,17 @@ node_modules
 /.cache
 /build
 /dist
+/coverage
 /public/build
 /.mf
 .env
+.env.local
+.env.*.local
 .shopify
 .react-router
+.cursor/
+.agents/
+.vscode/
+.idea/
+.DS_Store
+*.log

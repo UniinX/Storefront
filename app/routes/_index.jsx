@@ -1,10 +1,13 @@
-import {Await, useLoaderData} from 'react-router';
+import {Await, useLoaderData, useOutletContext} from 'react-router';
 import {Suspense} from 'react';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import {Hero} from '~/components/home/Hero.jsx';
 import {ProductGrid} from '~/components/home/ProductGrid.jsx';
 import {DepartmentBand} from '~/components/home/DepartmentBand.jsx';
 import {BrandStory} from '~/components/home/BrandStory.jsx';
+import {LanguageShowcase} from '~/components/home/LanguageShowcase.jsx';
+import {CategoryBento} from '~/components/home/CategoryBento.jsx';
+import {ProductGridSkeleton} from '~/components/ds/index.js';
 
 /**
  * @type {Route.MetaFunction}
@@ -36,35 +39,64 @@ async function loadCriticalData({context}) {
  */
 function loadDeferredData({context}) {
   const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .query(RECOMMENDED_PRODUCTS_QUERY, {cache: context.storefront.CacheShort()})
     .catch((error) => {
       console.error(error);
       return null;
     });
 
-  return {recommendedProducts};
+  const featuredCollections = context.storefront
+    .query(HOME_COLLECTIONS_QUERY, {cache: context.storefront.CacheLong()})
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
+  return {recommendedProducts, featuredCollections};
 }
 
 export default function Homepage() {
   /** @type {LoaderReturnData} */
   const data = useLoaderData();
+  const {language, changeLanguage} = useOutletContext() || {
+    language: 'english',
+  };
   return (
     <>
       <Hero />
+      <LanguageShowcase language={language} onLanguageChange={changeLanguage} />
       {data.isShopLinked ? null : (
         <div className="px-6 md:px-14">
           <MockShopNotice />
         </div>
       )}
+
       <Suspense fallback={null}>
-        <Await resolve={data.recommendedProducts}>
+        <Await resolve={data.featuredCollections}>
           {(response) => (
-            <ProductGrid products={response?.products?.nodes ?? []} />
+            <DepartmentBand collections={response?.collections?.nodes ?? []} />
           )}
         </Await>
       </Suspense>
-      <DepartmentBand />
-      <BrandStory />
+      <Suspense fallback={<ProductGridSkeleton count={8} />}>
+        <Await resolve={data.recommendedProducts}>
+          {(response) => (
+            <ProductGrid
+              homeLayout
+              language={language}
+              products={response?.products?.nodes ?? []}
+            />
+          )}
+        </Await>
+      </Suspense>
+      <Suspense fallback={null}>
+        <Await resolve={data.featuredCollections}>
+          {(response) => (
+            <CategoryBento collections={response?.collections?.nodes ?? []} />
+          )}
+        </Await>
+      </Suspense>
+      <BrandStory language={language} onLanguageChange={changeLanguage} />
     </>
   );
 }
@@ -74,6 +106,55 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     id
     title
     handle
+    availableForSale
+    familyValue: metafield(namespace: "custom", key: "family_value") {
+      value
+    }
+    color: metafield(namespace: "custom", key: "color") {
+      value
+    }
+    productFamily: metafield(namespace: "custom", key: "product_family") {
+      reference {
+        __typename
+        ... on Metaobject {
+          id
+          handle
+          type
+          name: field(key: "name") { value }
+          slug: field(key: "slug") { value }
+          products: field(key: "products") {
+            references(first: 20) {
+              nodes {
+                ... on Product {
+                  id
+                  handle
+                  title
+                  availableForSale
+                  familyValue: metafield(namespace: "custom", key: "family_value") { value }
+                  color: metafield(namespace: "custom", key: "color") { value }
+                  featuredImage {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+    category { id name }
+    collections(first: 10) {
+      nodes {
+        id
+        handle
+        title
+      }
+    }
     priceRange {
       minVariantPrice {
         amount
@@ -96,9 +177,41 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 8, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 8, sortKey: CREATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+`;
+
+const HOME_COLLECTIONS_QUERY = `#graphql
+  query HomeCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 12, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        id
+        title
+        handle
+        description
+        image {
+          id
+          url
+          altText
+          width
+          height
+        }
+        products(first: 1) {
+          nodes {
+            featuredImage {
+              id
+              url
+              altText
+              width
+              height
+            }
+          }
+        }
       }
     }
   }

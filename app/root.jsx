@@ -1,4 +1,5 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {MotionConfig} from 'framer-motion';
 import {
   Outlet,
   useRouteError,
@@ -14,6 +15,9 @@ import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import uniinxStyles from '~/styles/uniinx.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
+import {useLanguage} from '~/hooks/useLanguage.js';
+import {WishlistProvider} from '~/context/WishlistContext.jsx';
+import {getLanguagePreference} from '~/hooks/useLanguage.js';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -79,13 +83,14 @@ export async function loader(args) {
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
     }),
     consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN || env.PUBLIC_STORE_DOMAIN,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-      withPrivacyBanner: false,
+      withPrivacyBanner: true,
       // localize the privacy banner
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
+    languagePreference: getLanguagePreference(args.request),
   };
 }
 
@@ -97,17 +102,23 @@ export async function loader(args) {
 async function loadCriticalData({context}) {
   const {storefront} = context;
 
-  const [header] = await Promise.all([
+  const [header, megaMenu] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    // Add other queries here, so that they are loaded in parallel
+    storefront.query(MEGA_MENU_QUERY, {
+      cache: storefront.CacheShort(),
+    }),
   ]);
 
-  return {header};
+  return {
+    header,
+    megaMenuProducts: megaMenu.products?.nodes ?? [],
+    megaMenuCollections: megaMenu.collections?.nodes ?? [],
+  };
 }
 
 /**
@@ -144,9 +155,10 @@ function loadDeferredData({context}) {
  */
 export function Layout({children}) {
   const nonce = useNonce();
+  const data = useRouteLoaderData('root');
 
   return (
-    <html lang="en">
+    <html lang={HTML_LANGUAGE_CODES[data?.languagePreference] ?? 'en'}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -155,8 +167,14 @@ export function Layout({children}) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-brand-bg-light dark:bg-brand-bg-dark text-black dark:text-white transition-colors duration-200">
-        {children}
+      <body className="bg-background text-foreground">
+        <MotionConfig
+          reducedMotion="user"
+          transition={{duration: 0.6, ease: [0.16, 0.84, 0.32, 1]}}
+          nonce={nonce}
+        >
+          {children}
+        </MotionConfig>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>
@@ -167,23 +185,89 @@ export function Layout({children}) {
 export default function App() {
   /** @type {RootLoader} */
   const data = useRouteLoaderData('root');
+  const {language, changeLanguage} = useLanguage(
+    data?.languagePreference ?? 'english',
+  );
 
   if (!data) {
-    return <Outlet />;
+    return (
+      <WishlistProvider>
+        <Outlet context={{language, changeLanguage}} />
+      </WishlistProvider>
+    );
   }
 
   return (
-    <Analytics.Provider
-      cart={data.cart}
-      shop={data.shop}
-      consent={data.consent}
-    >
-      <PageLayout {...data}>
-        <Outlet />
-      </PageLayout>
-    </Analytics.Provider>
+    <WishlistProvider>
+      <Analytics.Provider
+        cart={data.cart}
+        shop={data.shop}
+        consent={data.consent}
+      >
+        <PageLayout
+          cart={data.cart}
+          language={language}
+          isLoggedIn={data.isLoggedIn}
+          megaMenuProducts={data.megaMenuProducts}
+          megaMenuCollections={data.megaMenuCollections}
+        >
+          <Outlet context={{language, changeLanguage}} />
+        </PageLayout>
+      </Analytics.Provider>
+    </WishlistProvider>
   );
 }
+
+const HTML_LANGUAGE_CODES = {
+  english: 'en',
+  hindi: 'hi',
+  telugu: 'te',
+  tamil: 'ta',
+  malayalam: 'ml',
+  kannada: 'kn',
+  bengali: 'bn',
+  odia: 'or',
+};
+
+const MEGA_MENU_QUERY = `#graphql
+  query MegaMenuProducts($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 50) {
+      nodes {
+        id
+        handle
+        title
+        description
+        products(first: 5) {
+          nodes {
+            id
+            handle
+            title
+            productType
+            tags
+            category { id name }
+          }
+        }
+      }
+    }
+    products(first: 50, sortKey: BEST_SELLING) {
+      nodes {
+        id
+        handle
+        title
+        productType
+        tags
+        publishedAt
+        collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+        category { id name }
+        collections(first: 5) {
+          nodes { id handle title }
+        }
+        featuredImage { id url altText width height }
+      }
+    }
+  }
+`;
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -191,10 +275,15 @@ export function ErrorBoundary() {
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
     errorStatus = error.status;
+    errorMessage =
+      errorStatus >= 500 && !import.meta.env.DEV
+        ? 'An unexpected error occurred.'
+        : (error?.data?.message ?? error.data);
   } else if (error instanceof Error) {
-    errorMessage = error.message;
+    errorMessage = import.meta.env.DEV
+      ? error.message
+      : 'An unexpected error occurred.';
   }
 
   return (

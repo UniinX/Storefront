@@ -1,12 +1,41 @@
-import {useLoaderData} from 'react-router';
+import {data, useLoaderData, useRouteLoaderData} from 'react-router';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {AboutPage} from '~/components/about/AboutPage.jsx';
+import {
+  getPublicPageMeta,
+  PublicContentPage,
+} from '~/components/content/PublicPages.jsx';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.page.title ?? ''}`}];
+  const page = data?.page;
+  const fallback = getPublicPageMeta(data?.handle);
+  return [
+    {
+      title:
+        page?.seo?.title ||
+        `${page?.title ?? fallback?.title ?? 'Page'} | UniinX`,
+    },
+    ...(page?.seo?.description || fallback?.description
+      ? [
+          {
+            name: 'description',
+            content: page?.seo?.description || fallback.description,
+          },
+        ]
+      : []),
+  ];
 };
+
+const BUILT_IN_HANDLES = new Set([
+  'about',
+  'faq',
+  'size-care',
+  'shipping-returns',
+  'contact',
+]);
 
 /**
  * @param {Route.LoaderArgs} args
@@ -31,24 +60,97 @@ async function loadCriticalData({context, request, params}) {
     throw new Error('Missing page handle');
   }
 
-  const [{page}] = await Promise.all([
-    context.storefront.query(PAGE_QUERY, {
-      variables: {
-        handle: params.handle,
-      },
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const {page, shop} = await context.storefront.query(PAGE_QUERY, {
+    cache: context.storefront.CacheLong(),
+    variables: {handle: params.handle},
+  });
 
-  if (!page) {
+  if (!page && !BUILT_IN_HANDLES.has(params.handle)) {
     throw new Response('Not Found', {status: 404});
   }
 
-  redirectIfHandleIsLocalized(request, {handle: params.handle, data: page});
+  if (page) {
+    redirectIfHandleIsLocalized(request, {handle: params.handle, data: page});
+  }
 
   return {
+    handle: params.handle,
     page,
+    policies: [shop?.shippingPolicy, shop?.refundPolicy].filter(Boolean),
   };
+}
+
+/**
+ * Send public contact requests to the configured studio webhook.
+ * @param {Route.ActionArgs}
+ */
+export async function action({request, context, params}) {
+  if (params.handle !== 'contact') {
+    throw new Response('Method not allowed', {status: 405});
+  }
+  const form = await request.formData();
+  if (form.get('website')) return {success: true};
+
+  const name = form.get('name')?.toString().trim();
+  const email = form.get('email')?.toString().trim();
+  const topic = form.get('topic')?.toString().trim();
+  const orderNumber = form.get('orderNumber')?.toString().trim();
+  const message = form.get('message')?.toString().trim();
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
+
+  if (
+    !name ||
+    name.length > 120 ||
+    !validEmail ||
+    !message ||
+    message.length > 5000
+  ) {
+    return data(
+      {success: false, error: 'Enter a valid name, email, and message.'},
+      {status: 400},
+    );
+  }
+
+  const webhook =
+    context.env.CONTACT_WEBHOOK_URL || context.env.SUPPORT_WEBHOOK_URL;
+  if (!webhook) {
+    return data(
+      {success: false, error: 'Studio messaging is temporarily unavailable.'},
+      {status: 503},
+    );
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(webhook, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      signal: controller.signal,
+      body: JSON.stringify({
+        requestId: crypto.randomUUID(),
+        source: 'public-contact',
+        name,
+        email,
+        topic,
+        orderNumber,
+        message,
+      }),
+    });
+    if (!response.ok) throw new Error('Webhook rejected request');
+  } catch {
+    return data(
+      {
+        success: false,
+        error: 'Your message could not be sent. Please try again.',
+      },
+      {status: 502},
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return {success: true};
 }
 
 /**
@@ -63,16 +165,19 @@ function loadDeferredData({context}) {
 
 export default function Page() {
   /** @type {LoaderReturnData} */
-  const {page} = useLoaderData();
+  const {handle, page, policies} = useLoaderData();
+  const rootData = useRouteLoaderData('root');
 
-  return (
-    <div className="page">
-      <header>
-        <h1>{page.title}</h1>
-      </header>
-      <main dangerouslySetInnerHTML={{__html: page.body}} />
-    </div>
-  );
+  if (handle === 'about') {
+    return (
+      <AboutPage
+        page={page ?? {body: ''}}
+        language={rootData?.languagePreference ?? 'english'}
+      />
+    );
+  }
+
+  return <PublicContentPage handle={handle} page={page} policies={policies} />;
 }
 
 const PAGE_QUERY = `#graphql
@@ -91,6 +196,10 @@ const PAGE_QUERY = `#graphql
         description
         title
       }
+    }
+    shop {
+      shippingPolicy { id title handle }
+      refundPolicy { id title handle }
     }
   }
 `;

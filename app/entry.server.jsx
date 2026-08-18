@@ -19,13 +19,13 @@ export default async function handleRequest(
 ) {
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
     shop: {
-      checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
+      checkoutDomain:
+        context.env.PUBLIC_CHECKOUT_DOMAIN || context.env.PUBLIC_STORE_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
-    // Uniinx's brand typography (Marcellus, Work Sans, and the Indic display
-    // faces) loads from Google Fonts — without these, the stylesheet and
-    // font files are silently CSP-blocked and every page falls back to
-    // system fonts.
+    // Uniinx's brand typography (Anton, Stack Sans Text, and the Indic display faces) loads
+    // from Google Fonts — without these, the stylesheet and font files are
+    // silently CSP-blocked and every page falls back to system fonts.
     styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     fontSrc: ["'self'", 'https://fonts.gstatic.com'],
   });
@@ -49,7 +49,10 @@ export default async function handleRequest(
   );
 
   if (isbot(request.headers.get('user-agent'))) {
-    await body.allReady;
+    await Promise.race([
+      body.allReady,
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]);
   }
 
   responseHeaders.set('Content-Type', 'text/html');

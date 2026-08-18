@@ -1,44 +1,148 @@
+import {Image} from '@shopify/hydrogen';
 import {Link} from 'react-router';
-import {Reveal} from '~/components/motion/Reveal.jsx';
-
-const DEPTS = [
-  {key: 'men', title: 'MEN', sub: 'Explore the edit', to: '/collections/men'},
-  {key: 'women', title: 'WOMEN', sub: 'Explore the edit', to: '/collections/women'},
-  {key: 'acc', title: 'ACCESSORIES', sub: 'Complete the look', to: '/collections/accessories'},
+import {Reveal, StaggerContainer, StaggerItem} from '~/components/motion/Reveal.jsx';
+import solidsTeeDetail from '~/assets/home/solids-tee-detail.webp';
+import antarikshamFront from '~/assets/home/antariksham-front.webp';
+import antarikshamBack from '~/assets/home/antariksham-back.webp';
+const COLLECTION_PLACEHOLDERS = [
+  {
+    id: 'collection-placeholder-1',
+    title: 'Shop Solids',
+    handle: 'all',
+    description: 'Quiet essentials designed as a canvas for everyday expression.',
+    fallbackImages: [solidsTeeDetail],
+    fallbackAlt: 'Close-up of a solid white T-shirt',
+    matches: (title) => /solids?/i.test(title),
+  },
+  {
+    id: 'editorial-antariksham',
+    handle: 'antariksham',
+    title: 'Shop Antariksham',
+    eyebrow: 'Cosmic Series',
+    description: 'Washed black layers inspired by language, space, and movement.',
+    fallbackImages: [antarikshamFront, antarikshamBack],
+    fallbackAlt: 'Front and back views of the Antariksham hoodie',
+    matches: (title) => /antariksham/i.test(title),
+  },
 ];
 
-export function DepartmentBand() {
+export function DepartmentBand({collections = []}) {
+  const featured = COLLECTION_PLACEHOLDERS.map((editorialCollection) => {
+    const linkedCollection = collections.find((collection) =>
+      editorialCollection.matches(collection.title),
+    );
+    return {
+      ...editorialCollection,
+      id: linkedCollection?.id ?? editorialCollection.id,
+      handle: linkedCollection?.handle ?? editorialCollection.handle,
+    };
+  });
+
   return (
-    <section className="px-6 md:px-14 py-16 bg-brand-bg-light dark:bg-brand-bg-dark transition-colors duration-200">
-      <Reveal style={{fontFamily: 'var(--font-work-sans)', fontSize: 11, letterSpacing: 'var(--uniinx-tracking-wide)', textTransform: 'uppercase', color: 'var(--stone)', marginBottom: 24}}>
-        Shop by Collection
-      </Reveal>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[380px]">
-        {DEPTS.map((dept, i) => (
-          <Reveal
-            key={dept.key}
-            delay={i * 80}
-            as={Link}
-            to={dept.to}
-            className="relative flex flex-col justify-end p-8 cursor-pointer overflow-hidden rounded-lg bg-brand-surface-light dark:bg-brand-surface-dark group transition-colors duration-200 border border-black/5 dark:border-white/5"
-            style={{minHeight: '340px'}}
-          >
-            {/* Subtle background zoom effect on hover */}
-            <div className="absolute inset-0 bg-black/[0.02] dark:bg-white/[0.02] group-hover:bg-brand-accent/[0.04] dark:group-hover:bg-brand-accent-light/[0.04] transition-all duration-300 pointer-events-none" />
-
-            <div className="relative z-10">
-              <span className="font-marcellus text-3xl md:text-4xl letter-spacing-wide text-black dark:text-white block group-hover:translate-x-1 transition-transform duration-300">
-                {dept.title}
-              </span>
-              <span className="font-work text-[10px] tracking-wide text-black/50 dark:text-white/40 uppercase block mt-2">
-                {dept.sub} →
-              </span>
-            </div>
+    <section
+      className="uniinx-home-gutter bg-white pb-10 pt-3 sm:pb-12 sm:pt-4 lg:pb-0 lg:pt-0"
+      aria-labelledby="new-collections-title"
+    >
+      <div className="w-full">
+        <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+          <Reveal className="flex flex-col items-start justify-center lg:col-span-4 lg:pr-8">
+            <h2
+              id="new-collections-title"
+              className="text-[clamp(34px,10vw,44px)] font-normal leading-[0.95] tracking-[-0.06em] sm:text-[clamp(36px,4.5vw,65px)]"
+            >
+              New
+              <br />
+              Collections
+            </h2>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-black/65 sm:mt-5 sm:text-base lg:text-lg lg:leading-[26px]">
+              Explore current UniinX themes, language-led graphics, and everyday
+              silhouettes.
+            </p>
+            <Link
+              to="/collections"
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-black px-6 text-sm font-medium sm:mt-6 lg:min-h-[50px] lg:w-[306px] lg:justify-center lg:text-lg"
+            >
+              Browse Collections
+            </Link>
           </Reveal>
-        ))}
+          <StaggerContainer className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:col-span-8 lg:grid lg:grid-cols-8 lg:gap-8">
+            {featured.map((collection) => (
+              <CollectionTile
+                key={collection.id}
+                collection={collection}
+                className="h-[340px] w-[82vw] max-w-[340px] shrink-0 snap-center sm:h-auto sm:w-auto sm:max-w-none sm:min-h-[340px] lg:col-span-4 lg:min-h-[306px]"
+              />
+            ))}
+          </StaggerContainer>
+        </div>
       </div>
     </section>
+  );
+}
+
+export function CollectionTile({collection, className = ''}) {
+  const image =
+    collection.image ?? collection.products?.nodes?.[0]?.featuredImage;
+  const fallbackImages = collection.fallbackImages ?? [];
+  return (
+    <StaggerItem
+      as={Link}
+      to={`/collections/${collection.handle}`}
+      prefetch="intent"
+      aria-label={`${collection.title} collection`}
+      variant="card"
+      className={`group relative flex overflow-hidden rounded-[20px] bg-[#e9e7e3] p-5 lg:p-4 ${className}`}
+    >
+      {image ? (
+        <Image
+          data={image}
+          alt={image.altText || collection.title}
+          sizes="(min-width:1024px) 34vw, 90vw"
+          className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+        />
+      ) : fallbackImages.length ? (
+        <span
+          className={`absolute inset-0 grid ${fallbackImages.length > 1 ? 'grid-cols-2 gap-px bg-white' : ''}`}
+        >
+          {fallbackImages.map((fallbackImage, index) => (
+            <img
+              key={fallbackImage}
+              src={fallbackImage}
+              alt={index === 0 ? collection.fallbackAlt || collection.title : ''}
+              className="size-full min-w-0 object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+            />
+          ))}
+        </span>
+      ) : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 grid place-items-center text-[clamp(48px,8vw,92px)] font-semibold tracking-[-0.07em] text-black/[0.06]"
+        >
+          UNIINX
+        </span>
+      )}
+      <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+      <span className="relative mt-auto flex w-full items-end justify-between gap-4 text-white">
+        <span>
+          {collection.eyebrow ? (
+            <span className="block text-[clamp(22px,3vw,40px)] font-medium leading-none tracking-[-0.055em]">
+              {collection.eyebrow}
+            </span>
+          ) : null}
+          <span className="block text-[clamp(22px,3vw,40px)] font-medium leading-none tracking-[-0.055em]">
+            {collection.title}
+          </span>
+          {collection.description ? (
+            <span className="mt-3 block max-w-sm text-xs leading-5 text-white/80">
+              {collection.description}
+            </span>
+          ) : null}
+        </span>
+        <span aria-hidden="true" className="text-3xl">
+          ↗
+        </span>
+      </span>
+    </StaggerItem>
   );
 }
 

@@ -28,4 +28,10 @@ describe('CartSummary', () => {
     render(<CartSummary cart={{...cart, checkoutUrl: undefined}} />);
     expect(screen.queryByText('Checkout →')).not.toBeInTheDocument();
   });
+
+  it('labels Shopify test checkout without changing the hosted checkout URL', () => {
+    render(<CartSummary cart={cart} testMode />);
+    expect(screen.getByRole('status')).toHaveTextContent('Do not enter a real card');
+    expect(screen.getByText('Test checkout →')).toHaveAttribute('href', cart.checkoutUrl);
+  });
 });

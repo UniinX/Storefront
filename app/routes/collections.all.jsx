@@ -1,133 +1,152 @@
 import {useLoaderData} from 'react-router';
-import {getPaginationVariables} from '@shopify/hydrogen';
+import {CacheShort, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {ProductItem} from '~/components/ProductItem';
+import {ProductCard} from '~/components/ds/index.js';
+import {BentoFeaturedGrid} from '~/components/product/BentoFeaturedGrid';
+import {CatalogFilters} from '~/components/product/CatalogFilters';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {
+  getCatalogFilterOptions,
+  getCatalogSort,
+  getProductSearchQuery,
+  groupCatalogFamilies,
+} from '~/lib/catalog';
 
-/**
- * @type {Route.MetaFunction}
- */
-export const meta = () => {
-  return [{title: `Hydrogen | Products`}];
-};
+export const meta = () => [{title: 'UniinX | Products Catalog'}];
 
-/**
- * @param {Route.LoaderArgs} args
- */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, request}) {
-  const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+export async function loader({context, request}) {
+  const url = new URL(request.url);
+  const sort = url.searchParams.get('sort') || 'featured';
+  const query = getProductSearchQuery({
+    type: url.searchParams.get('type'),
+    theme: url.searchParams.get('theme'),
+    language: url.searchParams.get('language'),
+    color: url.searchParams.get('color'),
+    size: url.searchParams.get('size'),
+    collection: url.searchParams.get('collection'),
+    q: url.searchParams.get('q'),
   });
+  const variables = {
+    ...getPaginationVariables(request, {pageBy: 12}),
+    ...getCatalogSort(sort),
+    query,
+  };
+  const {products: rawProducts} = await context.storefront.query(
+    CATALOG_QUERY,
+    {
+      variables,
+      cache: CacheShort(),
+    },
+  );
+  const products = groupCatalogFamilies(rawProducts);
 
-  const [{products}] = await Promise.all([
-    storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables},
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
-  return {products};
+  return {
+    products,
+    filterOptions: getCatalogFilterOptions(rawProducts),
+    selectedTheme: url.searchParams.get('theme') || '',
+    totalCount: products.nodes.length,
+    hasMoreResults: Boolean(
+      products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,
+    ),
+  };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  return {};
-}
-
-export default function Collection() {
-  /** @type {LoaderReturnData} */
-  const {products} = useLoaderData();
-
+export default function Catalog() {
+  const {products, filterOptions, totalCount, hasMoreResults} = useLoaderData();
   return (
-    <div className="collection">
-      <h1>Products</h1>
-      <PaginatedResourceSection
-        connection={products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
+    <div className="bg-white">
+      <CollectionThemeHero
+        title="All Products"
+        artwork="collections"
+        description="Explore contemporary garments shaped by Indian scripts, language, and culture."
+      />
+      <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
+        <CatalogFilters
+          totalCount={totalCount}
+          hasMoreResults={hasMoreResults}
+          filterOptions={filterOptions}
+          hideTheme
+        />
+        {totalCount === 0 ? (
+          <div className="uniinx-plp-results flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-black/15 py-20 text-center">
+            <span className="text-lg text-black/60">
+              No products match selected filters
+            </span>
+            <span className="text-xs text-black/45">
+              Try another theme, script, color, or category.
+            </span>
+          </div>
+        ) : (
+          <PaginatedResourceSection
+            connection={products}
+            className="uniinx-plp-results"
+            resourcesClassName="uniinx-product-grid"
+            autoLoadNext
+            nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
+          >
+            {({node: product, index}) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+                revealDelay={0}
+              />
+            )}
+          </PaginatedResourceSection>
         )}
-      </PaginatedResourceSection>
+      </section>
     </div>
   );
 }
 
 const COLLECTION_ITEM_FRAGMENT = `#graphql
-  fragment MoneyCollectionItem on MoneyV2 {
-    amount
-    currencyCode
+  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }
+  fragment FamilyMemberCollectionItem on Product {
+    id handle title availableForSale
+    familyValue: metafield(namespace: "custom", key: "family_value") { value }
+    color: metafield(namespace: "custom", key: "color") { value }
+    featuredImage { id altText url width height }
   }
   fragment CollectionItem on Product {
-    id
-    handle
-    title
-    featuredImage {
-      id
-      altText
-      url
-      width
-      height
+    id handle title productType publishedAt tags availableForSale
+    collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+    language: metafield(namespace: "custom", key: "language") { value }
+    familyValue: metafield(namespace: "custom", key: "family_value") { value }
+    color: metafield(namespace: "custom", key: "color") { value }
+    productFamily: metafield(namespace: "custom", key: "product_family") {
+      reference { __typename ... on Metaobject {
+        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }
+        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }
+      } }
     }
-    priceRange {
-      minVariantPrice {
-        ...MoneyCollectionItem
-      }
-      maxVariantPrice {
-        ...MoneyCollectionItem
-      }
+    variants(first: 10) { nodes { selectedOptions { name value } } }
+    featuredImage { id altText url width height }
+    category { id name }
+    collections(first: 10) { nodes { id handle title } }
+    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }
+    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }
+  }
+`;
+
+const CATALOG_QUERY = `#graphql
+  ${COLLECTION_ITEM_FRAGMENT}
+  query Catalog($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {
+    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) {
+      nodes { ...CollectionItem }
+      filters { id label type values { id label count input } }
+      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }
     }
   }
 `;
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/objects/product
-const CATALOG_QUERY = `#graphql
-  query Catalog(
-    $country: CountryCode
-    $language: LanguageCode
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-  ) @inContext(country: $country, language: $language) {
-    products(first: $first, last: $last, before: $startCursor, after: $endCursor) {
-      nodes {
-        ...CollectionItem
-      }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        startCursor
-        endCursor
-      }
+const ALL_FACETS_QUERY = `#graphql
+  ${COLLECTION_ITEM_FRAGMENT}
+  query AllCatalogFacets($country: CountryCode, $language: LanguageCode, $first: Int) @inContext(country: $country, language: $language) {
+    products(first: $first) {
+      nodes { ...CollectionItem }
+      filters { id label type values { id label count input } }
     }
   }
-  ${COLLECTION_ITEM_FRAGMENT}
 `;
 
 /** @typedef {import('./+types/collections.all').Route} Route */
-/** @typedef {import('storefrontapi.generated').CollectionItemFragment} CollectionItemFragment */
-/** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */

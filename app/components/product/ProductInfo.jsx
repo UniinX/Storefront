@@ -7,24 +7,52 @@
 import {useState} from 'react';
 import {Link, useNavigate} from 'react-router';
 import {Money} from '@shopify/hydrogen';
-import {LanguageChipSelector, BottomSheet} from '~/components/ds/index.js';
+import {LanguageChipSelector} from '~/components/product/LanguageChipSelector.jsx';
+import {BottomSheet} from '~/components/ui/bottom-sheet.jsx';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {DescriptionExpandable} from './DescriptionExpandable.jsx';
 
 const buyButtonStyle = {
-  border: 'none', cursor: 'pointer', padding: '14px 24px', lineHeight: 1, width: '100%', minHeight: 44,
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  transition: 'opacity 0.15s ease', background: 'var(--accent-cta)', color: 'var(--paper)',
-  borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-marcellus)',
-  fontSize: 'var(--uniinx-cta-size)', letterSpacing: 'var(--uniinx-tracking-wide)',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '14px 24px',
+  lineHeight: 1,
+  width: '100%',
+  minHeight: 44,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'opacity 0.15s ease',
+  background: 'var(--accent-cta)',
+  color: 'var(--paper)',
+  borderRadius: 'var(--radius-md)',
+  fontFamily: 'var(--font-marcellus)',
+  fontSize: 'var(--uniinx-cta-size)',
+  letterSpacing: 'var(--uniinx-tracking-wide)',
 };
 
-const stepEyebrow = {display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-work-sans)', fontSize: 'var(--uniinx-cta-size)', letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)', marginBottom: 14};
+const stepEyebrow = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  fontFamily: 'var(--font-work-sans)',
+  fontSize: 'var(--uniinx-cta-size)',
+  letterSpacing: 'var(--uniinx-tracking-tight)',
+  color: 'var(--ink)',
+  marginBottom: 14,
+};
 
 const stepNumberStyle = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  width: 22, height: 22, borderRadius: '50%', border: '1px solid var(--mist)',
-  fontSize: 11, color: 'var(--stone)', flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 22,
+  height: 22,
+  borderRadius: '50%',
+  border: '1px solid var(--mist)',
+  fontSize: 11,
+  color: 'var(--stone)',
+  flexShrink: 0,
 };
 
 /**
@@ -56,7 +84,11 @@ function StepHeading({number, label}) {
 
 function OptionChips({option}) {
   return (
-    <div role="radiogroup" aria-label={option.name} style={{display: 'flex', gap: 10, flexWrap: 'wrap'}}>
+    <div
+      role="radiogroup"
+      aria-label={option.name}
+      style={{display: 'flex', gap: 10, flexWrap: 'wrap'}}
+    >
       {option.optionValues.map((value) => (
         <OptionChip key={option.name + value.name} value={value} />
       ))}
@@ -66,11 +98,27 @@ function OptionChips({option}) {
 
 function OptionChip({value}) {
   const navigate = useNavigate();
-  const {name, handle, variantUriQuery, selected, available, isDifferentProduct} = value;
+  const {
+    name,
+    handle,
+    variantUriQuery,
+    selected,
+    available,
+    isDifferentProduct,
+  } = value;
   const style = {
-    minHeight: 44, minWidth: 44, padding: '10px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-    border: `1px solid ${selected ? 'var(--ink)' : 'var(--mist)'}`, borderRadius: 'var(--radius-md)', cursor: available ? 'pointer' : 'not-allowed',
-    fontFamily: 'var(--font-work-sans)', fontSize: 14,
+    minHeight: 44,
+    minWidth: 44,
+    padding: '10px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    border: `1px solid ${selected ? 'var(--ink)' : 'var(--mist)'}`,
+    borderRadius: 'var(--radius-md)',
+    cursor: available ? 'pointer' : 'not-allowed',
+    fontFamily: 'var(--font-work-sans)',
+    fontSize: 14,
     background: selected ? 'var(--ink)' : 'var(--paper)',
     color: selected ? 'var(--paper)' : 'var(--ink)',
     opacity: available ? 1 : 0.35,
@@ -79,7 +127,12 @@ function OptionChip({value}) {
 
   if (isDifferentProduct) {
     return (
-      <Link style={style} to={`/products/${handle}?${variantUriQuery}`} prefetch="intent" replace>
+      <Link
+        style={style}
+        to={`/products/${handle}?${variantUriQuery}`}
+        prefetch="intent"
+        replace
+      >
         {name}
       </Link>
     );
@@ -93,7 +146,11 @@ function OptionChip({value}) {
       style={style}
       disabled={!value.exists}
       onClick={() => {
-        if (!selected) navigate(`?${variantUriQuery}`, {replace: true, preventScrollReset: true});
+        if (!selected)
+          navigate(`?${variantUriQuery}`, {
+            replace: true,
+            preventScrollReset: true,
+          });
       }}
     >
       {name}
@@ -103,7 +160,11 @@ function OptionChip({value}) {
 
 function ColorSwatches({option}) {
   return (
-    <div role="radiogroup" aria-label={option.name} style={{display: 'flex', gap: 12, flexWrap: 'wrap'}}>
+    <div
+      role="radiogroup"
+      aria-label={option.name}
+      style={{display: 'flex', gap: 12, flexWrap: 'wrap'}}
+    >
       {option.optionValues.map((value) => (
         <ColorSwatch key={option.name + value.name} value={value} />
       ))}
@@ -116,22 +177,46 @@ function ColorSwatches({option}) {
 // null for every product — without a fallback, every color option renders
 // as the same flat gray circle. This best-effort name→color map only kicks
 // in when the real swatch data is absent.
-const NAMED_COLOR_FALLBACKS = {
-  green: '#3f6b4a', olive: '#6b6b47', ocean: '#3f6b82', purple: '#6b4f8a',
-  red: '#a8433a', blue: '#3f5a8a', black: '#1a1a1a', white: '#f2f0ea',
-  gray: '#8a8a86', grey: '#8a8a86', navy: '#1f2d4a', pink: '#c98a9e',
-  yellow: '#c9a63f', orange: '#c97a3f', brown: '#6b4a35', beige: '#c9b896',
-  maroon: '#6b2e3a', teal: '#3f8a82', cream: '#efe6d3',
+export const NAMED_COLOR_FALLBACKS = {
+  green: '#3f6b4a',
+  olive: '#6b6b47',
+  ocean: '#3f6b82',
+  purple: '#6b4f8a',
+  red: '#a8433a',
+  blue: '#3f5a8a',
+  black: '#1a1a1a',
+  white: '#ffffff',
+  gray: '#8a8a86',
+  grey: '#8a8a86',
+  navy: '#1f2d4a',
+  pink: '#c98a9e',
+  yellow: '#c9a63f',
+  orange: '#c97a3f',
+  brown: '#6b4a35',
+  beige: '#c9b896',
+  maroon: '#6b2e3a',
+  teal: '#3f8a82',
+  cream: '#efe6d3',
 };
 
 function fallbackColorFor(name) {
-  const key = Object.keys(NAMED_COLOR_FALLBACKS).find((k) => name.toLowerCase().includes(k));
+  const key = Object.keys(NAMED_COLOR_FALLBACKS).find((k) =>
+    name.toLowerCase().includes(k),
+  );
   return key ? NAMED_COLOR_FALLBACKS[key] : 'var(--mist)';
 }
 
 function ColorSwatch({value}) {
   const navigate = useNavigate();
-  const {name, handle, variantUriQuery, selected, available, isDifferentProduct, swatch} = value;
+  const {
+    name,
+    handle,
+    variantUriQuery,
+    selected,
+    available,
+    isDifferentProduct,
+    swatch,
+  } = value;
   const fill = swatch?.image?.previewImage?.url
     ? `url(${swatch.image.previewImage.url})`
     : swatch?.color || fallbackColorFor(name);
@@ -139,22 +224,46 @@ function ColorSwatch({value}) {
   const swatchCircle = (
     <span
       style={{
-        display: 'block', width: 34, height: 34, borderRadius: '50%',
+        display: 'block',
+        width: 34,
+        height: 34,
+        borderRadius: '50%',
         background: fill.startsWith('url') ? undefined : fill,
         backgroundImage: fill.startsWith('url') ? fill : undefined,
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        boxShadow: selected ? '0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink)' : 'inset 0 0 0 1px rgba(0,0,0,0.12)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        boxShadow: selected
+          ? '0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink)'
+          : 'inset 0 0 0 1px rgba(0,0,0,0.12)',
         opacity: available ? 1 : 0.3,
       }}
     />
   );
 
-  const wrapperStyle = {display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: available ? 'pointer' : 'not-allowed', minWidth: 44};
-  const labelStyle = {fontFamily: 'var(--font-work-sans)', fontSize: 10, color: 'var(--stone)', textAlign: 'center'};
+  const wrapperStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 6,
+    cursor: available ? 'pointer' : 'not-allowed',
+    minWidth: 44,
+  };
+  const labelStyle = {
+    fontFamily: 'var(--font-work-sans)',
+    fontSize: 10,
+    color: 'var(--stone)',
+    textAlign: 'center',
+  };
 
   if (isDifferentProduct) {
     return (
-      <Link to={`/products/${handle}?${variantUriQuery}`} prefetch="intent" replace style={wrapperStyle} aria-label={name}>
+      <Link
+        to={`/products/${handle}?${variantUriQuery}`}
+        prefetch="intent"
+        replace
+        style={wrapperStyle}
+        aria-label={name}
+      >
         {swatchCircle}
         <span style={labelStyle}>{name}</span>
       </Link>
@@ -170,7 +279,11 @@ function ColorSwatch({value}) {
       disabled={!value.exists}
       style={{...wrapperStyle, background: 'none', border: 'none'}}
       onClick={() => {
-        if (!selected) navigate(`?${variantUriQuery}`, {replace: true, preventScrollReset: true});
+        if (!selected)
+          navigate(`?${variantUriQuery}`, {
+            replace: true,
+            preventScrollReset: true,
+          });
       }}
     >
       {swatchCircle}
@@ -188,37 +301,67 @@ export function isNewProduct(tags) {
   return Boolean(tags?.some((tag) => tag.toLowerCase() === 'new'));
 }
 
-export function ProductInfo({product, selectedVariant, productOptions, languageId, setLanguageId, activeLanguage}) {
+export function ProductInfo({
+  product,
+  selectedVariant,
+  productOptions,
+  languageId,
+  setLanguageId,
+  activeLanguage,
+}) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const {typeOptions, colorOption, sizeOption} = categorizeOptions(productOptions);
-  const onSale = selectedVariant?.compareAtPrice
-    && Number(selectedVariant.compareAtPrice.amount) > Number(selectedVariant.price.amount);
+  const {typeOptions, colorOption, sizeOption} =
+    categorizeOptions(productOptions);
+  const onSale =
+    selectedVariant?.compareAtPrice &&
+    Number(selectedVariant.compareAtPrice.amount) >
+      Number(selectedVariant.price.amount);
   let step = 0;
 
   const Steps = (
     <>
       {typeOptions.map((option) => (
         <div key={option.name} style={{marginTop: 28}}>
-          <StepHeading number={String(++step).padStart(2, '0')} label={option.name} />
+          <StepHeading
+            number={String(++step).padStart(2, '0')}
+            label={option.name}
+          />
           <OptionChips option={option} />
         </div>
       ))}
       <div style={{marginTop: 28}}>
-        <StepHeading number={String(++step).padStart(2, '0')} label="Language" />
+        <StepHeading
+          number={String(++step).padStart(2, '0')}
+          label="Language"
+        />
         <LanguageChipSelector value={languageId} onChange={setLanguageId} />
-        <p style={{marginTop: 10, fontFamily: 'var(--font-work-sans)', fontSize: 12, color: 'var(--stone)'}}>
-          The print redraws itself in your chosen script — the design itself can't be edited.
+        <p
+          style={{
+            marginTop: 10,
+            fontFamily: 'var(--font-work-sans)',
+            fontSize: 12,
+            color: 'var(--stone)',
+          }}
+        >
+          The print redraws itself in your chosen script — the design itself
+          can't be edited.
         </p>
       </div>
       {colorOption && (
         <div style={{marginTop: 28}}>
-          <StepHeading number={String(++step).padStart(2, '0')} label={colorOption.name} />
+          <StepHeading
+            number={String(++step).padStart(2, '0')}
+            label={colorOption.name}
+          />
           <ColorSwatches option={colorOption} />
         </div>
       )}
       {sizeOption && (
         <div style={{marginTop: 28}}>
-          <StepHeading number={String(++step).padStart(2, '0')} label={sizeOption.name} />
+          <StepHeading
+            number={String(++step).padStart(2, '0')}
+            label={sizeOption.name}
+          />
           <OptionChips option={sizeOption} />
         </div>
       )}
@@ -228,8 +371,22 @@ export function ProductInfo({product, selectedVariant, productOptions, languageI
   const isNew = isNewProduct(product.tags);
 
   return (
-    <div className="lg:sticky lg:top-[120px] lg:self-start" style={{maxWidth: 460}}>
-      <div style={{display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-work-sans)', fontSize: 12, letterSpacing: 'var(--uniinx-tracking-wide)', color: 'var(--stone)', textTransform: 'uppercase'}}>
+    <div
+      className="lg:sticky lg:top-[120px] lg:self-start"
+      style={{maxWidth: 460}}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          fontFamily: 'var(--font-work-sans)',
+          fontSize: 12,
+          letterSpacing: 'var(--uniinx-tracking-wide)',
+          color: 'var(--stone)',
+          textTransform: 'uppercase',
+        }}
+      >
         Customize your own
         {isNew && (
           <span style={{padding: '2px 8px', border: '1px solid var(--accent-cta)', borderRadius: 'var(--radius-full)', color: 'var(--accent-cta)', fontSize: 10, letterSpacing: 'var(--uniinx-tracking-wide)'}}>
@@ -237,39 +394,106 @@ export function ProductInfo({product, selectedVariant, productOptions, languageI
           </span>
         )}
       </div>
-      <h1 style={{fontFamily: 'var(--font-marcellus)', fontSize: 40, lineHeight: 1.05, letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)', margin: '8px 0 0'}}>
+      <h1
+        style={{
+          fontFamily: 'var(--font-marcellus)',
+          fontSize: 40,
+          lineHeight: 1.05,
+          letterSpacing: 'var(--uniinx-tracking-tight)',
+          color: 'var(--ink)',
+          margin: '8px 0 0',
+        }}
+      >
         {product.title}
       </h1>
-      <div style={{marginTop: 14, display: 'flex', alignItems: 'baseline', gap: 10, fontFamily: 'var(--font-marcellus)', fontSize: 20, letterSpacing: 'var(--uniinx-tracking-wide)'}}>
+      <div
+        style={{
+          marginTop: 14,
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 10,
+          fontFamily: 'var(--font-marcellus)',
+          fontSize: 20,
+          letterSpacing: 'var(--uniinx-tracking-wide)',
+        }}
+      >
         {onSale && (
-          <span style={{fontSize: 15, color: 'var(--stone)', textDecoration: 'line-through'}}>
+          <span
+            style={{
+              fontSize: 15,
+              color: 'var(--stone)',
+              textDecoration: 'line-through',
+            }}
+          >
             <Money data={selectedVariant.compareAtPrice} />
           </span>
         )}
         <span style={{color: onSale ? '#e0483e' : 'var(--accent-cta)'}}>
-          {selectedVariant?.price ? <Money data={selectedVariant.price} /> : null}
+          {selectedVariant?.price ? (
+            <Money data={selectedVariant.price} />
+          ) : null}
         </span>
       </div>
 
-      <DescriptionExpandable description={product.description} descriptionHtml={product.descriptionHtml} />
+      <DescriptionExpandable
+        description={product.description}
+        descriptionHtml={product.descriptionHtml}
+      />
 
-      <div className="uniinx-hide-mobile" style={{marginTop: 20, borderTop: '1px solid var(--mist)', paddingTop: 8}}>
+      <div
+        className="uniinx-hide-mobile"
+        style={{
+          marginTop: 20,
+          borderTop: '1px solid var(--mist)',
+          paddingTop: 8,
+        }}
+      >
         {Steps}
         <div style={{marginTop: 40, borderTop: '1px solid var(--mist)', paddingTop: 24}}>
           <AddToCartButton
             style={buyButtonStyle}
             disabled={!selectedVariant || !selectedVariant.availableForSale}
-            lines={selectedVariant ? [{merchandiseId: selectedVariant.id, quantity: 1, selectedVariant}] : []}
+            lines={
+              selectedVariant
+                ? [
+                    {
+                      merchandiseId: selectedVariant.id,
+                      quantity: 1,
+                      selectedVariant,
+                    },
+                  ]
+                : []
+            }
           >
             {selectedVariant?.availableForSale ? 'Add to Cart →' : 'Sold out'}
           </AddToCartButton>
         </div>
       </div>
-      <button className="uniinx-hide-desktop" onClick={() => setSheetOpen(true)}
-        style={{marginTop: 24, minHeight: 44, width: '100%', padding: '12px 20px', border: '1px solid var(--mist)', borderRadius: 'var(--radius-md)', background: 'var(--paper)', fontFamily: 'var(--font-work-sans)', cursor: 'pointer', textAlign: 'left'}}>
+      <button
+        className="uniinx-hide-desktop"
+        onClick={() => setSheetOpen(true)}
+        style={{
+          marginTop: 24,
+          minHeight: 44,
+          width: '100%',
+          padding: '12px 20px',
+          border: '1px solid var(--mist)',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--paper)',
+          fontFamily: 'var(--font-work-sans)',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
         Customize · {activeLanguage?.label}, {selectedVariant?.title} →
       </button>
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Customize">{Steps}</BottomSheet>
+      <BottomSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Customize"
+      >
+        {Steps}
+      </BottomSheet>
     </div>
   );
 }

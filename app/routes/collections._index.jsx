@@ -1,6 +1,8 @@
 import {useLoaderData, Link} from 'react-router';
 import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Reveal} from '~/components/motion/Reveal.jsx';
+import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 
 /**
  * @param {Route.LoaderArgs} args
@@ -22,12 +24,13 @@ export async function loader(args) {
  */
 async function loadCriticalData({context, request}) {
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 4,
+    pageBy: 8,
   });
 
   const [{collections}] = await Promise.all([
     context.storefront.query(COLLECTIONS_QUERY, {
       variables: paginationVariables,
+      cache: context.storefront.CacheLong(),
     }),
     // Add other queries here, so that they are loaded in parallel
   ]);
@@ -50,20 +53,24 @@ export default function Collections() {
   const {collections} = useLoaderData();
 
   return (
-    <div className="collections">
-      <h1>Collections</h1>
-      <PaginatedResourceSection
-        connection={collections}
-        resourcesClassName="collections-grid"
-      >
-        {({node: collection, index}) => (
-          <CollectionItem
-            key={collection.id}
-            collection={collection}
-            index={index}
-          />
-        )}
-      </PaginatedResourceSection>
+    <div className="bg-white pb-24 text-black">
+      <CollectionThemeHero title="Collections" directory />
+      <section className="mx-auto max-w-[1440px] px-3 pt-2 sm:px-5 lg:px-[60px]">
+        <PaginatedResourceSection
+          connection={collections}
+          ariaLabel="Collections"
+          resourcesClassName="uniinx-collection-mosaic"
+          nextClassName="uniinx-plp-pagination-link"
+        >
+          {({node: collection, index}) => (
+            <CollectionItem
+              key={collection.id}
+              collection={collection}
+              index={index}
+            />
+          )}
+        </PaginatedResourceSection>
+      </section>
     </div>
   );
 }
@@ -75,24 +82,40 @@ export default function Collections() {
  * }}
  */
 function CollectionItem({collection, index}) {
+  const image = collection.image || collection.products?.nodes?.[0]?.featuredImage;
+  const featureCopy = index === 0
+    ? `Say it with ${collection.title}`
+    : index === 1
+      ? `The ${collection.title}`
+      : collection.title;
+
   return (
-    <Link
-      className="collection-item"
-      key={collection.id}
-      to={`/collections/${collection.handle}`}
-      prefetch="intent"
-    >
-      {collection?.image && (
-        <Image
-          alt={collection.image.altText || collection.title}
-          aspectRatio="1/1"
-          data={collection.image}
-          loading={index < 3 ? 'eager' : undefined}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h5>{collection.title}</h5>
-    </Link>
+    <Reveal as="article" variant="card" delay={(index % 4) * 70}>
+      <Link
+        className="group relative flex h-full min-h-[240px] overflow-hidden rounded-[20px] bg-[#d9d9d9] p-5 text-white sm:rounded-[30px] sm:p-7"
+        to={`/collections/${collection.handle}`}
+        prefetch="intent"
+      >
+        {image ? (
+          <Image
+            alt={image.altText || collection.title}
+            data={image}
+            loading={index < 3 ? 'eager' : undefined}
+            sizes="(min-width: 1100px) 66vw, (min-width: 720px) 50vw, 100vw"
+            className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-[1.025] motion-reduce:transition-none"
+          />
+        ) : null}
+        <span className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+        <span className="relative mt-auto flex w-full items-end justify-between gap-4">
+          <span className="max-w-[80%] text-[clamp(28px,4.5vw,78px)] font-normal leading-[0.9] tracking-[-0.065em]">
+            {featureCopy}
+          </span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-2xl text-black transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 sm:size-14">
+            ↗
+          </span>
+        </span>
+      </Link>
+    </Reveal>
   );
 }
 
@@ -101,12 +124,24 @@ const COLLECTIONS_QUERY = `#graphql
     id
     title
     handle
+    description
     image {
       id
       url
       altText
       width
       height
+    }
+    products(first: 1) {
+      nodes {
+        featuredImage {
+          id
+          url
+          altText
+          width
+          height
+        }
+      }
     }
   }
   query StoreCollections(

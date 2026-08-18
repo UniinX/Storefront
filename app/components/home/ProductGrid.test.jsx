@@ -1,45 +1,85 @@
-/**
- * @file Tests for ProductGrid — reused as-is by RelatedProducts to render
- * Shopify's productRecommendations. The Suspense/Await streaming wrapper in
- * RelatedProducts.jsx is router plumbing verified manually (same approach
- * as the rest of this loader); what's tested here is the part that
- * actually decides what renders: a card per product, nothing when empty.
- */
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { ProductGrid } from './ProductGrid.jsx';
+import {describe, expect, it, vi} from 'vitest';
+import {render, screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router';
+import {ProductGrid} from './ProductGrid.jsx';
 
-const product = (id, title) => ({
-  id,
-  handle: title.toLowerCase(),
-  title,
-  featuredImage: null,
-  priceRange: { minVariantPrice: { amount: '100', currencyCode: 'INR' } },
-});
-
-function renderGrid(products) {
-  return render(
-    <MemoryRouter>
-      <ProductGrid title="You Might Also Like" products={products} />
-    </MemoryRouter>,
-  );
-}
+vi.mock('~/components/ds/index.js', () => ({
+  ProductCard: ({product, revealDelay}) => (
+    <div data-reveal-delay={revealDelay}>{product.title}</div>
+  ),
+}));
 
 describe('ProductGrid', () => {
-  it('renders a card per recommended product', () => {
-    renderGrid([product('1', 'Shirt'), product('2', 'Hoodie')]);
-    expect(screen.getByText('Shirt')).toBeInTheDocument();
-    expect(screen.getByText('Hoodie')).toBeInTheDocument();
+  it('renders a responsive product grid capped at eight products', () => {
+    const products = Array.from({length: 9}, (_, index) => ({
+      id: `product-${index}`,
+      title: `Product ${index + 1}`,
+    }));
+
+    render(
+      <MemoryRouter>
+        <ProductGrid products={products} />
+      </MemoryRouter>,
+    );
+
+    const grid = screen.getByRole('grid', {name: 'New arrivals products'});
+    expect(grid).toHaveClass('uniinx-product-grid');
+    expect(grid).not.toHaveClass('overflow-x-auto');
+    expect(screen.getAllByText(/^Product \d+$/)).toHaveLength(8);
+    expect(screen.queryByText('Product 9')).not.toBeInTheDocument();
+    expect(screen.getByText('Product 2')).toHaveAttribute(
+      'data-reveal-delay',
+      '0',
+    );
   });
 
-  it('renders nothing when there are no recommendations', () => {
-    const { container } = renderGrid([]);
-    expect(container).toBeEmptyDOMElement();
+  it('supports a reusable related-products presentation', () => {
+    const products = Array.from({length: 9}, (_, index) => ({
+      id: `related-${index}`,
+      title: `Related ${index + 1}`,
+    }));
+
+    render(
+      <MemoryRouter>
+        <ProductGrid
+          title="MORE LIKE THIS"
+          eyebrow="Continue exploring"
+          products={products}
+          maxProducts={8}
+          ariaLabel="More like this"
+          ctaHref="/collections/all"
+          ctaLabel="Explore all"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('region', {name: 'More like this'}),
+    ).toBeInTheDocument();
+    expect(screen.getByText('MORE LIKE THIS')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Related \d+$/)).toHaveLength(8);
+    expect(screen.queryByText('Related 9')).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole('link', {name: 'Explore all →'})[0],
+    ).toHaveAttribute('href', '/collections/all');
   });
 
-  it('renders nothing when recommendations is undefined', () => {
-    const { container } = renderGrid(undefined);
-    expect(container).toBeEmptyDOMElement();
+  it('uses the compact Figma rhythm only for the homepage grid', () => {
+    render(
+      <MemoryRouter>
+        <ProductGrid
+          homeLayout
+          products={[{id: 'home-product', title: 'Home Product'}]}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('region', {name: 'New arrivals'})).toHaveClass(
+      'lg:pt-12',
+    );
+    expect(screen.getByRole('grid', {name: 'New arrivals products'})).toHaveClass(
+      'uniinx-home-product-grid',
+      'uniinx-horizontal-scroll',
+    );
   });
 });

@@ -7,16 +7,23 @@
  * label. Cross-fades between languages via CrossFade.
  */
 import {CrossFade} from '~/components/motion/CrossFade.jsx';
-import {FontVar} from '~/components/ds/index.js';
+import {fontVariable} from '~/lib/languages.js';
 
 export function LanguagePrintOverlay({language}) {
   if (!language) return null;
   return (
     <div
       style={{
-        position: 'absolute', top: '22%', left: '50%', transform: 'translateX(-50%)',
-        width: '58%', maxWidth: 220, display: 'flex', justifyContent: 'center',
-        pointerEvents: 'none', mixBlendMode: 'multiply',
+        position: 'absolute',
+        top: '22%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '58%',
+        maxWidth: 220,
+        display: 'flex',
+        justifyContent: 'center',
+        pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }}
     >
       <CrossFade keyId={language.id}>
@@ -26,7 +33,7 @@ export function LanguagePrintOverlay({language}) {
         <span
           dir={language.rtl ? 'rtl' : 'ltr'}
           style={{
-            fontFamily: FontVar(language.font),
+            fontFamily: fontVariable(language.font),
             fontSize: 'clamp(22px, 4vw, 34px)',
             lineHeight: 1.1,
             color: 'rgba(24, 18, 14, 0.88)',

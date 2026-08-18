@@ -1,70 +1,223 @@
+import {Await, Link} from 'react-router';
+import {Suspense, useState} from 'react';
+import {LocalizedLogo} from './LocalizedLogo.jsx';
 import {Reveal} from '~/components/motion/Reveal.jsx';
-import {LANGUAGES, FontVar} from '@ds/components/commerce/LanguageChipSelector.jsx';
 
-export function Footer({language, onLanguageChange}) {
+const FOOTER_LINKS = [
+  {
+    title: 'Shop',
+    links: [
+      {label: 'All products', to: '/collections/all'},
+      {label: 'Men', to: '/collections/men'},
+      {label: 'Women', to: '/collections/women'},
+      {label: 'Accessories', to: '/collections/accessories'},
+    ],
+  },
+  {
+    title: 'Explore',
+    links: [
+      {label: 'About', to: '/pages/about'},
+      {label: 'Journal', to: '/blogs'},
+      {label: 'FAQ', to: '/pages/faq'},
+      {label: 'Size & Care', to: '/pages/size-care'},
+    ],
+  },
+  {
+    title: 'Help',
+    links: [
+      {label: 'Contact', to: '/pages/contact'},
+      {label: 'Shipping & Returns', to: '/pages/shipping-returns'},
+      {label: 'Account support', to: '/account/support'},
+      {label: 'Orders', to: '/account/orders'},
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      {label: 'Refund policy', to: '/policies/refund-policy'},
+      {label: 'Shipping policy', to: '/policies/shipping-policy'},
+      {label: 'Privacy policy', to: '/policies/privacy-policy'},
+      {label: 'Terms of service', to: '/policies/terms-of-service'},
+      {label: 'All policies', to: '/policies'},
+    ],
+  },
+];
+
+export function Footer({language, isLoggedIn = false}) {
   return (
-    <Reveal as="footer" className="px-6 md:px-14 py-16 bg-brand-bg-light dark:bg-brand-bg-dark border-t border-black/10 dark:border-white/10 transition-colors duration-200">
+    <footer className="bg-[#121212] px-5 py-12 text-white sm:px-8 lg:px-[60px] lg:py-16">
+      <div className="mx-auto max-w-[1320px]">
+        <div className="grid gap-12 border-b border-white/15 pb-12 lg:grid-cols-[1.2fr_1fr]">
+          <Reveal>
+            <LocalizedLogo
+              language={language}
+              className="h-10 w-auto brightness-0 invert"
+            />
+            <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.16em] text-white/55">
+              Clothes in your Language
+            </p>
+            <NewsletterForm />
+          </Reveal>
 
-      {/* Brand logo closer */}
-      <div className="flex flex-col items-center justify-center text-center mb-12">
-        <p className="font-marcellus text-2xl md:text-3xl tracking-[0.15em] text-black dark:text-white uppercase mb-2">
-          UNIINX
-        </p>
-        <p className="font-work text-xs tracking-[0.2em] text-black/50 dark:text-white/40 uppercase">
-          Clothes in your Language
-        </p>
-      </div>
-
-      {/* Interactive Script Carousel Language Switcher */}
-      <div className="w-full max-w-4xl mx-auto mb-16">
-        <span className="font-work text-[9px] tracking-widest text-black/40 dark:text-white/40 uppercase block text-center mb-6">
-          Select Design Language / भारतीय भाषाएं
-        </span>
-
-        {/* Horizontal Script Row */}
-        <div className="flex items-center justify-start md:justify-center gap-6 overflow-x-auto pb-4 scrollbar-none mask-image-horizontal">
-          {LANGUAGES.map((lang) => {
-            const isActive = lang.id === language;
-            return (
-              <button
-                key={lang.id}
-                onClick={() => onLanguageChange?.(lang.id)}
-                className={`flex flex-col items-center justify-center min-w-[90px] p-2 focus:outline-none transition-all duration-300 rounded-md border ${
-                  isActive
-                    ? 'border-brand-accent dark:border-brand-accent-light bg-brand-surface-light dark:bg-brand-surface-dark'
-                    : 'border-transparent hover:bg-black/5 dark:hover:bg-white/5'
-                }`}
-                id={`footer-lang-${lang.id}`}
+          <nav
+            aria-label="Footer"
+            className="grid grid-cols-2 gap-8 sm:grid-cols-4"
+          >
+            {FOOTER_LINKS.map((group, index) => (
+              <Reveal
+                as="section"
+                delay={index * 70}
+                key={group.title}
+                aria-labelledby={`footer-${group.title.toLowerCase()}`}
               >
-                <span
-                  style={{fontFamily: FontVar(lang.font)}}
-                  dir={lang.rtl ? 'rtl' : 'ltr'}
-                  className={`text-lg md:text-xl font-light transition-colors duration-300 ${
-                    isActive ? 'text-brand-accent dark:text-brand-accent-light' : 'text-black/50 dark:text-white/50'
-                  }`}
+                <h2
+                  id={`footer-${group.title.toLowerCase()}`}
+                  className="mb-4 text-xs font-semibold"
                 >
-                  {lang.wordmark}
-                </span>
-                <span className="font-work text-[9px] tracking-wide text-black/40 dark:text-white/30 mt-1 uppercase">
-                  {lang.label}
-                </span>
-              </button>
-            );
-          })}
+                  {group.title}
+                </h2>
+                <ul className="space-y-1">
+                  {group.links.map((link) => (
+                    <li key={link.to}>
+                      <AccountAwareFooterLink
+                        link={link}
+                        isLoggedIn={isLoggedIn}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </nav>
         </div>
-      </div>
 
-      {/* Footer bottom metadata */}
-      <div className="w-full border-t border-black/5 dark:border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="font-work text-[10px] tracking-wide text-black/45 dark:text-white/40 text-center md:text-left">
-          © {new Date().getFullYear()} UniinX. Styled with Scandinavian minimalism. Made for India &amp; the world.
-        </p>
-        <p className="font-marcellus text-xs tracking-[0.1em] text-black dark:text-white">
-          To this country &amp; its people
-        </p>
+        <Reveal className="flex flex-col gap-3 border-t border-white/15 pt-6 text-[10px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} UniinX. Rooted in Indian language,
+            craft &amp; culture. Made for India &amp; the world.
+          </p>
+          <Suspense fallback={<FooterAccountLink loggedIn={false} />}>
+            <Await resolve={isLoggedIn}>
+              {(loggedIn) => <FooterAccountLink loggedIn={loggedIn} />}
+            </Await>
+          </Suspense>
+        </Reveal>
       </div>
-    </Reveal>
+    </footer>
+  );
+}
+
+function AccountAwareFooterLink({link, isLoggedIn}) {
+  const content = (loggedIn) => {
+    const destination =
+      loggedIn || !link.to.startsWith('/account/')
+        ? link.to
+        : `/account/login?return_to=${encodeURIComponent(link.to)}`;
+    return (
+      <Link
+        to={destination}
+        prefetch="intent"
+        className="inline-flex min-h-11 items-center text-xs text-white/60 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      >
+        {link.label}
+      </Link>
+    );
+  };
+  if (!link.to.startsWith('/account/')) return content(true);
+  return (
+    <Suspense fallback={content(false)}>
+      <Await resolve={isLoggedIn}>{content}</Await>
+    </Suspense>
+  );
+}
+
+function FooterAccountLink({loggedIn}) {
+  if (loggedIn)
+    return (
+      <Link
+        to="/account"
+        className="inline-flex min-h-11 items-center font-medium uppercase tracking-[0.1em] text-white"
+      >
+        My account
+      </Link>
+    );
+  return (
+    <Link
+      to="/account/login?return_to=%2Faccount"
+      className="inline-flex min-h-11 items-center font-medium uppercase tracking-[0.1em] text-white"
+    >
+      Sign in / Sign up
+    </Link>
   );
 }
 
 export default Footer;
+
+function NewsletterForm() {
+  const [status, setStatus] = useState('idle');
+  const [message, setMessage] = useState('');
+
+  async function subscribe(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    setStatus('submitting');
+    setMessage('');
+    try {
+      const response = await fetch('/newsletter', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error);
+      form.reset();
+      setStatus('success');
+      setMessage('You’re on the list.');
+    } catch (error) {
+      setStatus('error');
+      setMessage(error?.message || 'Signup failed. Please try again.');
+    }
+  }
+
+  return (
+    <form
+      className="mt-8 max-w-sm"
+      action="/newsletter"
+      method="post"
+      onSubmit={subscribe}
+    >
+      <div className="flex border-b border-white/45">
+        <label htmlFor="footer-email" className="sr-only">
+          Email address
+        </label>
+        <input
+          id="footer-email"
+          name="email"
+          type="email"
+          required
+          placeholder="Enter your email"
+          className="h-12 min-w-0 flex-1 border-0 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+        />
+        <label className="sr-only">
+          Website
+          <input name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+        <button
+          type="submit"
+          disabled={status === 'submitting'}
+          aria-label="Subscribe"
+          className="grid size-12 place-items-center rounded-full text-lg disabled:opacity-50"
+        >
+          {status === 'submitting' ? '…' : '→'}
+        </button>
+      </div>
+      {message ? (
+        <p
+          role={status === 'error' ? 'alert' : 'status'}
+          className={`mt-3 text-xs ${status === 'error' ? 'text-red-300' : 'text-white/65'}`}
+        >
+          {message}
+        </p>
+      ) : null}
+    </form>
+  );
+}

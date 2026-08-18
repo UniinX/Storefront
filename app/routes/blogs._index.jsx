@@ -1,12 +1,20 @@
 import {Link, useLoaderData} from 'react-router';
-import {getPaginationVariables} from '@shopify/hydrogen';
+import {Image, getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Reveal} from '~/components/motion/Reveal.jsx';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: `Hydrogen | Blogs`}];
+  return [
+    {title: 'Journal | UniinX'},
+    {
+      name: 'description',
+      content:
+        'Stories about Indian scripts, clothing, culture, and the making of UniinX collections.',
+    },
+  ];
 };
 
 /**
@@ -34,6 +42,7 @@ async function loadCriticalData({context, request}) {
 
   const [{blogs}] = await Promise.all([
     context.storefront.query(BLOGS_QUERY, {
+      cache: context.storefront.CacheLong(),
       variables: {
         ...paginationVariables,
       },
@@ -59,22 +68,83 @@ export default function Blogs() {
   const {blogs} = useLoaderData();
 
   return (
-    <div className="blogs">
-      <h1>Blogs</h1>
-      <div className="blogs-grid">
-        <PaginatedResourceSection connection={blogs}>
-          {({node: blog}) => (
+    <div className="bg-surface-subtle text-foreground">
+      <section className="uniinx-home-gutter border-b border-black/10 pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">
+        <Reveal>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-black/45">
+            Notes from the studio
+          </p>
+          <div className="mt-7 grid gap-8 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
+            <h1 className="text-[clamp(48px,11vw,164px)] font-normal leading-[0.84] tracking-[-0.065em] sm:leading-[0.76] sm:tracking-[-0.08em]">
+              Journal.
+            </h1>
+            <p className="max-w-md border-l border-black/20 pl-5 text-sm leading-7 text-black/60 sm:text-base">
+              Indian scripts, material studies, collection stories, and the
+              people who make UniinX.
+            </p>
+          </div>
+        </Reveal>
+      </section>
+      <section className="uniinx-home-gutter py-16 sm:py-20 lg:py-28">
+        {blogs.nodes.length ? (
+          <PaginatedResourceSection connection={blogs}>
+            {({node: blog, index}) => (
+              <Link
+                className="group grid gap-6 border-b border-black/15 py-8 sm:grid-cols-[72px_1fr_0.8fr_auto] sm:items-center"
+                key={blog.handle}
+                prefetch="intent"
+                to={`/blogs/${blog.handle}`}
+              >
+                <span className="text-xs text-black/35">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h2 className="text-[clamp(30px,4vw,58px)] font-normal leading-[0.9] tracking-[-0.05em]">
+                  {blog.title}
+                </h2>
+                <span className="relative block aspect-[3/2] overflow-hidden rounded-[16px] bg-[#ddd7cd]">
+                  {blog.articles.nodes[0]?.image ? (
+                    <Image
+                      data={blog.articles.nodes[0].image}
+                      alt={blog.articles.nodes[0].image.altText || blog.title}
+                      sizes="(min-width: 768px) 30vw, 90vw"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <span className="grid size-full place-items-center text-xs uppercase tracking-[0.15em] text-black/30">
+                      UniinX Journal
+                    </span>
+                  )}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="text-3xl transition-transform group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
+            )}
+          </PaginatedResourceSection>
+        ) : (
+          <Reveal className="rounded-[24px] border border-black/10 bg-white p-8 sm:p-12">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-black/40">
+              The first issue is in progress
+            </p>
+            <h2 className="mt-5 max-w-3xl text-[clamp(38px,5vw,72px)] font-normal leading-[0.9] tracking-[-0.055em]">
+              Stories are being set in type.
+            </h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-black/60">
+              When Shopify blog entries are published, they will appear here
+              automatically.
+            </p>
             <Link
-              className="blog"
-              key={blog.handle}
-              prefetch="intent"
-              to={`/blogs/${blog.handle}`}
+              to="/pages/about"
+              className="mt-7 inline-flex min-h-12 items-center rounded-full bg-black px-6 text-xs font-semibold text-white"
             >
-              <h2>{blog.title}</h2>
+              Read our story →
             </Link>
-          )}
-        </PaginatedResourceSection>
-      </div>
+          </Reveal>
+        )}
+      </section>
     </div>
   );
 }
@@ -104,6 +174,12 @@ const BLOGS_QUERY = `#graphql
       nodes {
         title
         handle
+        articles(first: 1) {
+          nodes {
+            title
+            image { id altText url width height }
+          }
+        }
         seo {
           title
           description

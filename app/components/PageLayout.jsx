@@ -1,57 +1,44 @@
-import {useState, useEffect} from 'react';
 import {useLocation} from 'react-router';
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header} from '~/components/Header';
-import {BottomNav} from '~/components/BottomNav';
-import {useLanguage} from '~/hooks/useLanguage.js';
 
 /**
  * @param {PageLayoutProps}
  */
-export function PageLayout({cart, children = null}) {
-  const {language, changeLanguage} = useLanguage();
-  const [theme, setTheme] = useState('light');
+export function PageLayout({
+  cart,
+  children = null,
+  language,
+  isLoggedIn,
+  megaMenuProducts,
+  megaMenuCollections,
+}) {
   const {pathname} = useLocation();
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.removeAttribute('data-theme');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    if (newTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-  };
+  const reduceMotion = useReducedMotion();
 
   return (
     <Aside.Provider>
       <Header
         cart={cart}
         language={language}
-        onLanguageChange={changeLanguage}
-        theme={theme}
-        onToggleTheme={toggleTheme}
+        isLoggedIn={isLoggedIn}
+        megaMenuProducts={megaMenuProducts}
+        megaMenuCollections={megaMenuCollections}
       />
-      <main style={{paddingTop: pathname === '/' ? 0 : 80}}>{children}</main>
-      <Footer language={language} onLanguageChange={changeLanguage} />
-      {/* On mobile PDP, the sticky buy bar (MobileBuyBar) is the bottom action
-          bar — a persistent tab bar underneath it would overlap it. */}
-      {!pathname.startsWith('/products/') && <BottomNav cart={cart} />}
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={pathname}
+          initial={{opacity: 0, y: reduceMotion ? 0 : 8}}
+          animate={{opacity: 1, y: 0}}
+          exit={{opacity: 0, y: reduceMotion ? 0 : -8}}
+          transition={{duration: reduceMotion ? 0.15 : 0.28, ease: [0.16, 0.84, 0.32, 1]}}
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
+      <Footer language={language} isLoggedIn={isLoggedIn} />
     </Aside.Provider>
   );
 }

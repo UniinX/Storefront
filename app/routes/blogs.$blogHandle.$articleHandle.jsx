@@ -1,4 +1,4 @@
-import {useLoaderData} from 'react-router';
+import {Link, useLoaderData} from 'react-router';
 import {Image} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
@@ -6,7 +6,13 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.article.title ?? ''} article`}];
+  const article = data?.article;
+  return [
+    {title: article?.seo?.title || `${article?.title ?? 'Journal'} | UniinX`},
+    ...(article?.seo?.description
+      ? [{name: 'description', content: article.seo.description}]
+      : []),
+  ];
 };
 
 /**
@@ -36,6 +42,7 @@ async function loadCriticalData({context, request, params}) {
 
   const [{blog}] = await Promise.all([
     context.storefront.query(ARTICLE_QUERY, {
+      cache: context.storefront.CacheLong(),
       variables: {blogHandle, articleHandle},
     }),
     // Add other queries here, so that they are loaded in parallel
@@ -84,20 +91,53 @@ export default function Article() {
   }).format(new Date(article.publishedAt));
 
   return (
-    <div className="article">
-      <h1>
-        {title}
-        <div>
-          <time dateTime={article.publishedAt}>{publishedDate}</time> &middot;{' '}
-          <address>{author?.name}</address>
-        </div>
-      </h1>
-
-      {image && <Image data={image} sizes="90vw" loading="eager" />}
-      <div
-        dangerouslySetInnerHTML={{__html: contentHtml}}
-        className="article"
-      />
+    <div className="bg-surface-subtle text-foreground">
+      <article>
+        <header className="uniinx-home-gutter pb-14 pt-20 sm:pt-28 lg:pb-20 lg:pt-36">
+          <Link
+            to="/blogs"
+            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45"
+          >
+            ← Journal
+          </Link>
+          <h1 className="mt-8 max-w-6xl text-[clamp(50px,8vw,118px)] font-normal leading-[0.82] tracking-[-0.07em]">
+            {title}
+          </h1>
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-black/45">
+            <time dateTime={article.publishedAt}>{publishedDate}</time>
+            {author?.name ? (
+              <address className="not-italic">By {author.name}</address>
+            ) : null}
+          </div>
+        </header>
+        {image ? (
+          <div className="uniinx-home-gutter">
+            <div className="max-h-[760px] overflow-hidden rounded-[22px]">
+              <Image
+                data={image}
+                sizes="100vw"
+                loading="eager"
+                className="size-full object-cover"
+              />
+            </div>
+          </div>
+        ) : null}
+        <div
+          dangerouslySetInnerHTML={{__html: contentHtml}}
+          className="uniinx-rich-text mx-auto max-w-3xl px-5 py-16 text-base leading-8 text-black/70 sm:px-8 lg:py-24"
+        />
+      </article>
+      <nav
+        aria-label="Continue exploring"
+        className="uniinx-home-gutter border-t border-black/10 py-12"
+      >
+        <Link
+          to="/blogs"
+          className="inline-flex min-h-12 items-center rounded-full bg-black px-6 text-xs font-semibold text-white"
+        >
+          Back to Journal →
+        </Link>
+      </nav>
     </div>
   );
 }

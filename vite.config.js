@@ -12,7 +12,6 @@ export default defineConfig({
       // Vite's native tsconfig path resolver does not cover JavaScript
       // projects that use jsconfig.json, so define Hydrogen's app alias here.
       '~': fileURLToPath(new URL('./app', import.meta.url)),
-      '@ds': fileURLToPath(new URL('./Uniinx Design System', import.meta.url)),
     },
     tsconfigPaths: true,
   },
@@ -34,6 +33,7 @@ export default defineConfig({
        * @see https://vitejs.dev/config/dep-optimization-options
        */
       include: [
+        'expect-type',
         'react-router > set-cookie-parser',
         'react-router > cookie',
         'react-router',
@@ -41,6 +41,6 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['.tryhydrogen.dev'],
+    allowedHosts: ['.tryhydrogen.dev', '.trycloudflare.com'],
   },
 });

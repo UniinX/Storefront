@@ -1,183 +1,298 @@
-import {useState, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
+import {useState} from 'react';
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion';
+import {MOTION_EASE, Reveal} from '~/components/motion/Reveal.jsx';
 
-const REGIONS = [
+const WHEEL_LANGUAGES = [
   {
-    name: 'North',
-    label: 'Northern Region',
-    scripts: [
-      {lang: 'Hindi', text: 'यूनिंक्स', font: 'var(--font-devanagari)'},
-      {lang: 'Punjabi', text: 'ਯੂਨਿੰਕਸ', font: 'var(--font-gurmukhi)'},
-      {lang: 'Urdu', text: 'یونینکس', font: 'var(--font-urdu)', rtl: true},
-    ],
-    angle: 270, // Top
+    id: 'telugu',
+    label: 'Telugu',
+    native: 'తెలుగు',
+    wordmark: 'యూనింక్స్',
+    font: 'var(--font-telugu)',
   },
   {
-    name: 'East',
-    label: 'Eastern Region',
-    scripts: [
-      {lang: 'Bengali', text: 'ইউনিংক্স', font: 'var(--font-bengali)'},
-      {lang: 'Odia', text: 'ଉନିଙ୍କ୍ସ', font: 'var(--font-oriya)'},
-    ],
-    angle: 0, // Right
+    id: 'hindi',
+    label: 'Hindi',
+    native: 'हिन्दी',
+    wordmark: 'यूनिंक्स',
+    font: 'var(--font-devanagari)',
   },
   {
-    name: 'South',
-    label: 'Southern Region',
-    scripts: [
-      {lang: 'Tamil', text: 'யூனிங்க்ஸ்', font: 'var(--font-tamil)'},
-      {lang: 'Telugu', text: 'యూనింక్స్', font: 'var(--font-telugu)'},
-      {lang: 'Kannada', text: 'ಯೂನಿಂಕ್ಸ್', font: 'var(--font-kannada)'},
-    ],
-    angle: 90, // Bottom
+    id: 'english',
+    label: 'English',
+    native: 'English',
+    wordmark: 'UNIINX',
+    font: 'var(--font-inter)',
   },
   {
-    name: 'West',
-    label: 'Western Region',
-    scripts: [
-      {lang: 'Gujarati', text: 'યુનિંક્સ', font: 'var(--font-gujarati)'},
-      {lang: 'Marathi', text: 'युनिंक्स', font: 'var(--font-devanagari)'},
-    ],
-    angle: 180, // Left
+    id: 'tamil',
+    label: 'Tamil',
+    native: 'தமிழ்',
+    wordmark: 'யூனிங்க்ஸ்',
+    font: 'var(--font-tamil)',
+  },
+  {
+    id: 'malayalam',
+    label: 'Malayalam',
+    native: 'മലയാളം',
+    wordmark: 'യൂനിങ്ക്സ്',
+    font: 'var(--font-malayalam)',
+  },
+  {
+    id: 'kannada',
+    label: 'Kannada',
+    native: 'ಕನ್ನಡ',
+    wordmark: 'ಯೂನಿಂಕ್ಸ್',
+    font: 'var(--font-kannada)',
+  },
+  {
+    id: 'bengali',
+    label: 'Bengali',
+    native: 'বাংলা',
+    wordmark: 'ইউনিংক্স',
+    font: 'var(--font-bengali)',
+  },
+  {
+    id: 'odia',
+    label: 'Odia',
+    native: 'ଓଡ଼ିଆ',
+    wordmark: 'ଉନିଙ୍କ୍ସ',
+    font: 'var(--font-oriya)',
   },
 ];
 
-export function BrandStory() {
-  const [activeRegion, setActiveRegion] = useState(REGIONS[0]);
-  const [scriptIndex, setScriptIndex] = useState(0);
+const SQUARE_POSITIONS = [
+  {x: 22, y: 22},
+  {x: 50, y: 14},
+  {x: 78, y: 22},
+  {x: 86, y: 50},
+  {x: 78, y: 78},
+  {x: 50, y: 86},
+  {x: 22, y: 78},
+  {x: 14, y: 50},
+];
 
-  useEffect(() => {
-    setScriptIndex(0);
-  }, [activeRegion]);
+const BENEFITS = [
+  {
+    title: 'Take care with love',
+    body: 'Thoughtful packaging and careful handling from our studio to your door.',
+    icon: '♥',
+  },
+  {
+    title: 'Friendly customer service',
+    body: 'Clear help when you need support with products, sizing, or an order.',
+    icon: '⌕',
+  },
+  {
+    title: 'Straightforward returns',
+    body: 'A simple, human return process with clear expectations at every step.',
+    icon: '↻',
+  },
+];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setScriptIndex((prev) => (prev + 1) % activeRegion.scripts.length);
-    }, 1800);
-    return () => clearInterval(timer);
-  }, [activeRegion]);
+export function BrandStory({
+  language = 'english',
+  onLanguageChange,
+  showBenefits = true,
+}) {
+  const reduceMotion = useReducedMotion();
+  const fallback =
+    WHEEL_LANGUAGES.find((item) => item.id === language) ?? WHEEL_LANGUAGES[0];
+  const [previewLanguage, setPreviewLanguage] = useState(fallback.id);
+  const active =
+    WHEEL_LANGUAGES.find((item) => item.id === previewLanguage) ?? fallback;
 
-  const activeScript = activeRegion.scripts[scriptIndex % activeRegion.scripts.length];
+  const selectLanguage = (id) => {
+    setPreviewLanguage(id);
+    onLanguageChange?.(id);
+  };
 
   return (
-    <section className="px-6 md:px-14 py-24 bg-brand-bg-light dark:bg-brand-bg-dark transition-colors duration-200">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-        {/* Left: Interactive Language Wheel Centerpiece */}
-        <div className="flex flex-col items-center justify-center relative min-h-[420px] min-w-0">
-          <div className="relative w-[200px] h-[200px] flex items-center justify-center">
-
-            {/* Outer dotted track */}
-            <div className="absolute inset-0 rounded-full border border-dashed border-black/10 dark:border-white/10" />
-
-            {/* Connecting lines from center to active region */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <svg className="w-full h-full transform -rotate-90">
-                <line
-                  x1="50%"
-                  y1="50%"
-                  x2={`${50 + 40 * Math.cos((activeRegion.angle * Math.PI) / 180)}%`}
-                  y2={`${50 + 40 * Math.sin((activeRegion.angle * Math.PI) / 180)}%`}
-                  className="stroke-brand-accent dark:stroke-brand-accent-light stroke-[1.5]"
-                  style={{transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'}}
-                />
-              </svg>
+    <>
+      <section className="uniinx-home-gutter bg-white py-12 sm:py-16 lg:pb-24 lg:pt-12">
+        <div className="grid w-full items-center gap-10 sm:gap-12 lg:grid-cols-[1.35fr_0.65fr] lg:gap-20">
+          <Reveal>
+            <h2 className="max-w-4xl text-[clamp(34px,10vw,44px)] font-normal leading-[0.98] tracking-[-0.055em] sm:text-[clamp(40px,4.5vw,65px)]">
+              India&apos;s Script As Design Material
+            </h2>
+            <div className="mt-6 max-w-2xl space-y-4 text-sm leading-6 text-black/70 sm:mt-8 sm:space-y-5 sm:text-base sm:leading-7">
+              <p>
+                We believe that India&apos;s linguistic diversity is not a
+                costume, but a structural identity. Script, sound, and rhythm
+                become raw material for modern clothing.
+              </p>
+              <p>
+                UniinX pairs a quiet global silhouette with the unmistakable
+                character of Indian languages. Final campaign context will be
+                added here.
+              </p>
             </div>
+            <blockquote className="mt-6 border-l-2 border-black pl-4 sm:mt-8 sm:pl-5">
+              <p className="text-sm font-semibold">
+                “For Every Language, For Every State, For India.”
+              </p>
+              <footer className="mt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-black/45">
+                UniinX philosophy
+              </footer>
+            </blockquote>
+          </Reveal>
 
-            {/* Center Brand Transliterations */}
-            <div className="absolute w-28 h-28 rounded-full bg-brand-surface-light dark:bg-brand-surface-dark flex flex-col items-center justify-center p-3 text-center z-10 transition-colors duration-200 border border-black/5 dark:border-white/5 shadow-sm">
-              <span className="font-work text-[7px] tracking-widest text-black/40 dark:text-white/40 uppercase mb-1">
-                {activeRegion.label}
-              </span>
-              <div className="min-h-[40px] flex flex-col items-center justify-center">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${activeRegion.name}-${activeScript.lang}`}
-                    initial={{opacity: 0, y: 10}}
-                    animate={{opacity: 1, y: 0}}
-                    exit={{opacity: 0, y: -10}}
-                    transition={{duration: 0.3}}
-                    style={{fontFamily: activeScript.font}}
-                    dir={activeScript.rtl ? 'rtl' : 'ltr'}
-                    className="text-black dark:text-white text-sm font-light"
-                  >
-                    {activeScript.text}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Region Interactive Nodes */}
-            {REGIONS.map((region) => {
-              const rad = (region.angle * Math.PI) / 180;
-              const radius = 100; // radius of orbit — kept within the 200px wheel so nodes never push past the viewport at narrow widths
-              const x = radius * Math.cos(rad);
-              const y = radius * Math.sin(rad);
-              const isActive = activeRegion.name === region.name;
-
-              return (
-                <button
-                  key={region.name}
-                  onClick={() => setActiveRegion(region)}
-                  onMouseEnter={() => setActiveRegion(region)}
-                  className="absolute w-11 h-11 rounded-full flex items-center justify-center z-20 focus:outline-none transition-all duration-300"
-                  style={{
-                    left: `calc(50% + ${x}px - 22px)`,
-                    top: `calc(50% + ${y}px - 22px)`,
-                    backgroundColor: isActive ? 'var(--accent-indigo)' : 'var(--paper-soft)',
-                    boxShadow: isActive ? '0 0 15px rgba(27,42,74,0.3)' : 'none',
-                  }}
-                  id={`node-${region.name.toLowerCase()}`}
+          <div className="flex justify-center lg:justify-end">
+            <Reveal variant="scale">
+              <div
+                className="relative aspect-square w-[min(90vw,340px)] sm:w-[min(82vw,361px)]"
+                role="group"
+                aria-label="Select design language"
+                data-pattern="square"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="absolute inset-0 size-full"
+                  viewBox="0 0 361 361"
                 >
-                  <span
-                    className={`font-work text-[10px] tracking-wider font-semibold transition-colors duration-300 ${
-                      isActive ? 'text-white' : 'text-black/50 dark:text-white/50'
-                    }`}
-                  >
-                    {region.name}
-                  </span>
-                </button>
-              );
-            })}
+                  <rect
+                    x="53"
+                    y="53"
+                    width="255"
+                    height="255"
+                    fill="none"
+                    stroke="#121212"
+                    strokeWidth="1"
+                    strokeDasharray="2 8"
+                    opacity=".28"
+                  />
+                  <rect
+                    x="116"
+                    y="116"
+                    width="129"
+                    height="129"
+                    fill="none"
+                    stroke="#121212"
+                    strokeWidth="1"
+                    opacity=".18"
+                  />
+                  <line
+                    x1="53"
+                    y1="180.5"
+                    x2="308"
+                    y2="180.5"
+                    stroke="#121212"
+                    strokeWidth="1"
+                    opacity=".2"
+                  />
+                  <line
+                    x1="180.5"
+                    y1="53"
+                    x2="180.5"
+                    y2="308"
+                    stroke="#121212"
+                    strokeWidth="1"
+                    opacity=".2"
+                  />
+                </svg>
+
+                <div className="absolute left-1/2 top-1/2 flex size-[129px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center overflow-hidden border border-black bg-[#d9d9d9] p-3 text-center">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={active.id}
+                      initial={{opacity: 0, y: reduceMotion ? 0 : 10}}
+                      animate={{opacity: 1, y: 0}}
+                      exit={{opacity: 0, y: reduceMotion ? 0 : -8}}
+                      transition={{duration: 0.28, ease: MOTION_EASE}}
+                      className="flex flex-col items-center"
+                    >
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-black/50">
+                        {active.label}
+                      </span>
+                      <span
+                        className="mt-2 text-lg leading-tight"
+                        style={{fontFamily: active.font}}
+                      >
+                        {active.wordmark}
+                      </span>
+                      <span
+                        className="mt-1 text-xs text-black/55"
+                        style={{fontFamily: active.font}}
+                      >
+                        {active.native}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {WHEEL_LANGUAGES.map((item, index) => {
+                  const {x, y} = SQUARE_POSITIONS[index];
+                  const selected = active.id === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      className="absolute -translate-x-1/2 -translate-y-1/2"
+                      style={{left: `${x}%`, top: `${y}%`}}
+                    >
+                      <motion.button
+                        type="button"
+                        aria-pressed={selected}
+                        aria-label={`Select ${item.label}`}
+                        onClick={() => selectLanguage(item.id)}
+                        onMouseEnter={() => setPreviewLanguage(item.id)}
+                        whileHover={
+                          reduceMotion ? undefined : {scale: 1.08, y: -2}
+                        }
+                        whileTap={reduceMotion ? undefined : {scale: 0.94}}
+                        className={`grid size-12 place-items-center overflow-hidden border px-1 text-center text-[8px] font-semibold leading-tight transition-colors sm:size-14 sm:text-[10px] ${selected ? 'border-black bg-black text-white' : 'border-black/25 bg-[#d9d9d9] text-black hover:border-black'}`}
+                        style={{fontFamily: item.font}}
+                      >
+                        {item.native}
+                      </motion.button>
+                    </div>
+                  );
+                })}
+              </div>
+            </Reveal>
           </div>
-
-          <p className="mt-8 font-work text-[10px] text-black/40 dark:text-white/40 tracking-widest uppercase text-center">
-            Hover or tap regions to explore
-          </p>
         </div>
+      </section>
 
-        {/* Right: Modern Manifesto & Copy */}
-        <div className="flex flex-col justify-center min-w-0">
-          <span className="font-work text-xs tracking-[0.2em] text-brand-accent dark:text-brand-accent-light uppercase mb-4 block">
-            About UniinX
-          </span>
-          <h2 className="font-marcellus text-4xl md:text-5xl leading-tight text-black dark:text-white uppercase font-light mb-8">
-            India's Script As <br />
-            <span className="italic font-normal">Design Material</span>
-          </h2>
-          <p className="font-work text-sm md:text-base leading-relaxed text-black/70 dark:text-white/75 font-light mb-6">
-            We believe that India's linguistic diversity is not a costume, but a structural identity.
-            By stripping away heavy, ornate borders and saturated festival colors, we allow the script,
-            sound, and rhythm of Indian languages to live as raw, minimalist texture.
-          </p>
-          <p className="font-work text-sm md:text-base leading-relaxed text-black/70 dark:text-white/75 font-light mb-8">
-            Styled with the clean lines of Scandinavian and Japanese minimalism, UniinX is unmistakably
-            Indian in spirit, and confidently modern for the global stage.
-          </p>
-
-          {/* Clean minimal quotes */}
-          <div className="border-l-[2px] border-brand-accent dark:border-brand-accent-light pl-6 py-1">
-            <span className="font-marcellus text-lg text-black dark:text-white italic block mb-1">
-              "For Every Language, For Every State, For India."
-            </span>
-            <span className="font-work text-[10px] text-black/40 dark:text-white/40 tracking-wider uppercase">
-              The UniinX Philosophy
-            </span>
+      {showBenefits ? (
+      <section className="uniinx-home-gutter bg-white pb-16 sm:pb-20 lg:pb-24">
+        <div className="w-full">
+          <Reveal className="mb-7 flex items-end justify-between gap-4 sm:mb-10">
+            <h2 className="max-w-lg text-[clamp(32px,9vw,42px)] font-normal leading-[0.98] tracking-[-0.05em] sm:text-[clamp(34px,4vw,56px)]">
+              Why you&apos;ll love to shop with us
+            </h2>
+            <a
+              href="/pages/about"
+              className="hidden min-h-11 items-center border-b border-black text-sm sm:inline-flex"
+            >
+              Know more about us →
+            </a>
+          </Reveal>
+          <div className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto border-t border-black/15 px-5 pt-6 sm:mx-0 sm:grid sm:gap-8 sm:px-0 sm:pt-8 md:grid-cols-3">
+            {BENEFITS.map((benefit, index) => (
+              <Reveal
+                as="article"
+                variant="card"
+                delay={index * 90}
+                key={benefit.title}
+                className="w-[78vw] max-w-[300px] shrink-0 snap-center rounded-2xl bg-[#f4f2ee] p-5 sm:w-auto sm:max-w-none sm:rounded-none sm:bg-transparent sm:p-0"
+              >
+                <span
+                  aria-hidden="true"
+                  className="grid size-12 place-items-center rounded-full bg-black text-xl text-white"
+                >
+                  {benefit.icon}
+                </span>
+                <h3 className="mt-5 text-lg font-medium">{benefit.title}</h3>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-black/60">
+                  {benefit.body}
+                </p>
+              </Reveal>
+            ))}
           </div>
         </div>
-
-      </div>
-    </section>
+      </section>
+      ) : null}
+    </>
   );
 }
 

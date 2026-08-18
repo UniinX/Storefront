@@ -1,6 +1,6 @@
 /** @file Tests for the categorizeOptions and isNewProduct helpers that drive the PDP. */
 import { describe, it, expect } from 'vitest';
-import { categorizeOptions, isNewProduct } from './ProductInfo.jsx';
+import { categorizeOptions, isNewProduct, NAMED_COLOR_FALLBACKS } from './ProductInfo.jsx';
 
 function option(name, valueCount = 2) {
   return {
@@ -58,5 +58,11 @@ describe('isNewProduct', () => {
   it('is false when tags is missing or empty', () => {
     expect(isNewProduct(undefined)).toBe(false);
     expect(isNewProduct([])).toBe(false);
+  });
+});
+
+describe('NAMED_COLOR_FALLBACKS', () => {
+  it('renders the "white" fallback swatch as true white, not off-white', () => {
+    expect(NAMED_COLOR_FALLBACKS.white).toBe('#ffffff');
   });
 });
