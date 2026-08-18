@@ -1,6 +1,6 @@
-/** @file Tests for the categorizeOptions helper that drives the PDP configurator steps. */
+/** @file Tests for the categorizeOptions and isNewProduct helpers that drive the PDP. */
 import { describe, it, expect } from 'vitest';
-import { categorizeOptions } from './ProductInfo.jsx';
+import { categorizeOptions, isNewProduct } from './ProductInfo.jsx';
 
 function option(name, valueCount = 2) {
   return {
@@ -42,5 +42,21 @@ describe('categorizeOptions', () => {
     expect(typeOptions).toEqual([]);
     expect(colorOption).toBeNull();
     expect(sizeOption).toBeNull();
+  });
+});
+
+describe('isNewProduct', () => {
+  it('is true when tags include "new" (case-insensitive)', () => {
+    expect(isNewProduct(['Bestseller', 'New'])).toBe(true);
+    expect(isNewProduct(['new'])).toBe(true);
+  });
+
+  it('is false when tags do not include "new"', () => {
+    expect(isNewProduct(['Bestseller', 'Limited'])).toBe(false);
+  });
+
+  it('is false when tags is missing or empty', () => {
+    expect(isNewProduct(undefined)).toBe(false);
+    expect(isNewProduct([])).toBe(false);
   });
 });

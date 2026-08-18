@@ -9,6 +9,7 @@ import {Link, useNavigate} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import {LanguageChipSelector, BottomSheet} from '~/components/ds/index.js';
 import {AddToCartButton} from '~/components/AddToCartButton';
+import {DescriptionExpandable} from './DescriptionExpandable.jsx';
 
 const buyButtonStyle = {
   border: 'none', cursor: 'pointer', padding: '14px 24px', lineHeight: 1, width: '100%', minHeight: 44,
@@ -178,6 +179,15 @@ function ColorSwatch({value}) {
   );
 }
 
+/**
+ * A product is "new" when it carries a real Shopify tag named "new"
+ * (case-insensitive) — not a hardcoded flag.
+ * @param {string[]|undefined} tags
+ */
+export function isNewProduct(tags) {
+  return Boolean(tags?.some((tag) => tag.toLowerCase() === 'new'));
+}
+
 export function ProductInfo({product, selectedVariant, productOptions, languageId, setLanguageId, activeLanguage}) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const {typeOptions, colorOption, sizeOption} = categorizeOptions(productOptions);
@@ -215,10 +225,17 @@ export function ProductInfo({product, selectedVariant, productOptions, languageI
     </>
   );
 
+  const isNew = isNewProduct(product.tags);
+
   return (
     <div className="lg:sticky lg:top-[120px] lg:self-start" style={{maxWidth: 460}}>
-      <div style={{fontFamily: 'var(--font-work-sans)', fontSize: 12, letterSpacing: 'var(--uniinx-tracking-wide)', color: 'var(--stone)', textTransform: 'uppercase'}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-work-sans)', fontSize: 12, letterSpacing: 'var(--uniinx-tracking-wide)', color: 'var(--stone)', textTransform: 'uppercase'}}>
         Customize your own
+        {isNew && (
+          <span style={{padding: '2px 8px', border: '1px solid var(--accent-cta)', borderRadius: 'var(--radius-full)', color: 'var(--accent-cta)', fontSize: 10, letterSpacing: 'var(--uniinx-tracking-wide)'}}>
+            NEW
+          </span>
+        )}
       </div>
       <h1 style={{fontFamily: 'var(--font-marcellus)', fontSize: 40, lineHeight: 1.05, letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)', margin: '8px 0 0'}}>
         {product.title}
@@ -234,9 +251,11 @@ export function ProductInfo({product, selectedVariant, productOptions, languageI
         </span>
       </div>
 
-      <div className="uniinx-hide-mobile" style={{marginTop: 8, borderTop: '1px solid var(--mist)', paddingTop: 8}}>
+      <DescriptionExpandable description={product.description} descriptionHtml={product.descriptionHtml} />
+
+      <div className="uniinx-hide-mobile" style={{marginTop: 20, borderTop: '1px solid var(--mist)', paddingTop: 8}}>
         {Steps}
-        <div style={{marginTop: 40}}>
+        <div style={{marginTop: 40, borderTop: '1px solid var(--mist)', paddingTop: 24}}>
           <AddToCartButton
             style={buyButtonStyle}
             disabled={!selectedVariant || !selectedVariant.availableForSale}

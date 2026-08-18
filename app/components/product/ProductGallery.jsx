@@ -1,7 +1,8 @@
 /**
- * @file Product preview panel — real Shopify variant image with the
- * language print overlay layered on top, plus a fabric-texture placeholder
- * fallback for products with no image.
+ * @file Product gallery — hero is the real Shopify variant image with the
+ * language print overlay layered on top (fabric-texture placeholder when
+ * there's no image at all), followed by the rest of the product's real
+ * images stacked underneath, Kaft-style continuous scroll.
  */
 import {useState} from 'react';
 import {Image} from '@shopify/hydrogen';
@@ -9,8 +10,9 @@ import {CrossFade} from '~/components/motion/CrossFade.jsx';
 import {FontVar} from '~/components/ds/index.js';
 import {LanguagePrintOverlay} from './LanguagePrintOverlay.jsx';
 
-export function ProductImage({image, language}) {
+export function ProductGallery({image, images, language}) {
   const [zoomed, setZoomed] = useState(false);
+  const restImages = (images ?? []).filter((img) => img.id !== image?.id);
 
   return (
     <div>
@@ -57,6 +59,20 @@ export function ProductImage({image, language}) {
           Printed in {language?.label} · {language?.native}
         </p>
       </CrossFade>
+      {restImages.length > 0 && (
+        <div style={{marginTop: 24, display: 'flex', flexDirection: 'column', gap: 24}}>
+          {restImages.map((img) => (
+            <Image
+              key={img.id}
+              data={img}
+              alt={img.altText || 'Product photo'}
+              sizes="(min-width: 45em) 480px, 100vw"
+              loading="lazy"
+              style={{width: '100%', maxWidth: 480, height: 'auto', borderRadius: 'var(--radius-lg)'}}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

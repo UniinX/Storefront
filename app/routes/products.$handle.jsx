@@ -1,6 +1,8 @@
 /**
- * @file Product detail page — composes ProductImage, ProductInfo, MobileBuyBar
- * around real Shopify product/variant data.
+ * @file Product detail page — composes ProductGallery, ProductInfo,
+ * ProductAccordions, RelatedProducts and MobileBuyBar around real Shopify
+ * product/variant data, in Kaft.com's PDP layout (scrolling gallery +
+ * sticky info panel, accordions and related products below the fold).
  */
 import {useState} from 'react';
 import {useLoaderData, useNavigate} from 'react-router';
@@ -14,8 +16,11 @@ import {
 } from '@shopify/hydrogen';
 import {Reveal} from '~/components/motion/Reveal.jsx';
 import {LANGUAGES} from '~/components/ds/index.js';
-import {ProductImage} from '~/components/product/ProductImage.jsx';
+import {Breadcrumb} from '~/components/product/Breadcrumb.jsx';
+import {ProductGallery} from '~/components/product/ProductGallery.jsx';
 import {ProductInfo} from '~/components/product/ProductInfo.jsx';
+import {ProductAccordions} from '~/components/product/ProductAccordions.jsx';
+import {RelatedProducts} from '~/components/product/RelatedProducts.jsx';
 import {MobileBuyBar} from '~/components/product/MobileBuyBar.jsx';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
@@ -33,8 +38,11 @@ export const meta = ({data}) => {
  * @param {Route.LoaderArgs} args
  */
 export async function loader(args) {
-  const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+  // Recommendations need the product's real id, which only exists once the
+  // critical query above has resolved — kicked off here but not awaited, so
+  // it streams in after first paint instead of blocking the response.
+  const deferredData = loadDeferredData(args, criticalData.product.id);
   return {...deferredData, ...criticalData};
 }
 
@@ -64,13 +72,26 @@ async function loadCriticalData({context, params, request}) {
   return {product};
 }
 
-function loadDeferredData() {
-  return {};
+/**
+ * Related products stream in after first paint — a failed/slow
+ * recommendations call shouldn't hold up or break the PDP, so a rejected
+ * fetch resolves to an empty list instead of throwing.
+ * @param {Route.LoaderArgs} args
+ * @param {string} productId
+ */
+function loadDeferredData({context}, productId) {
+  const {storefront} = context;
+  const recommendations = storefront
+    .query(PRODUCT_RECOMMENDATIONS_QUERY, {variables: {productId}})
+    .then(({productRecommendations}) => productRecommendations ?? [])
+    .catch(() => []);
+
+  return {recommendations};
 }
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product} = useLoaderData();
+  const {product, recommendations} = useLoaderData();
   const navigate = useNavigate();
   const [languageId, setLanguageId] = useState(LANGUAGES[0].id);
   const language = LANGUAGES.find((l) => l.id === languageId);
@@ -93,9 +114,10 @@ export default function Product() {
         style={{background: 'none', border: 'none', cursor: 'pointer', padding: '13px 0', minHeight: 44, display: 'flex', alignItems: 'center', marginBottom: 20, fontFamily: 'var(--font-work-sans)', fontSize: 'var(--uniinx-cta-size)', letterSpacing: 'var(--uniinx-tracking-tight)', color: 'var(--ink)'}}>
         ← Back
       </button>
+      <Breadcrumb productType={product.productType} title={product.title} />
       <div className="uniinx-pdp-layout">
         <Reveal>
-          <ProductImage image={selectedVariant?.image} language={language} />
+          <ProductGallery image={selectedVariant?.image} images={product.images?.nodes} language={language} />
         </Reveal>
         <Reveal delay={90}>
           <ProductInfo
@@ -107,6 +129,12 @@ export default function Product() {
             activeLanguage={language}
           />
         </Reveal>
+      </div>
+      <div style={{marginTop: 48, maxWidth: 700}}>
+        <ProductAccordions product={product} />
+      </div>
+      <div style={{marginTop: 64}}>
+        <RelatedProducts recommendations={recommendations} />
       </div>
       <MobileBuyBar selectedVariant={selectedVariant} language={language} />
       <Analytics.ProductView
@@ -171,10 +199,30 @@ const PRODUCT_FRAGMENT = `#graphql
     title
     vendor
     handle
+    productType
+    tags
     descriptionHtml
     description
     encodedVariantExistence
     encodedVariantAvailability
+    images(first: 10) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    material: metafield(namespace: "custom", key: "material") {
+      value
+    }
+    careInstructions: metafield(namespace: "custom", key: "care_instructions") {
+      value
+    }
+    sustainability: metafield(namespace: "custom", key: "sustainability") {
+      value
+    }
     options {
       name
       optionValues {
@@ -218,6 +266,39 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+const PRODUCT_RECOMMENDATIONS_QUERY = `#graphql
+  query ProductRecommendations(
+    $productId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    productRecommendations(productId: $productId) {
+      id
+      title
+      handle
+      featuredImage {
+        id
+        url
+        altText
+        width
+        height
+      }
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+      compareAtPriceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
 `;
 
 /** @typedef {import('./+types/products.$handle').Route} Route */
