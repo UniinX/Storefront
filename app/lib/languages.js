@@ -5,6 +5,7 @@ export const LANGUAGES = [
     native: 'English',
     wordmark: 'UNIINX',
     font: 'inter',
+    languageWord: 'Language',
   },
   {
     id: 'hindi',
@@ -12,6 +13,7 @@ export const LANGUAGES = [
     native: 'हिन्दी',
     wordmark: 'यूनिंक्स',
     font: 'devanagari',
+    languageWord: 'भाषा',
   },
   {
     id: 'telugu',
@@ -19,6 +21,7 @@ export const LANGUAGES = [
     native: 'తెలుగు',
     wordmark: 'యూనింక్స్',
     font: 'telugu',
+    languageWord: 'భాష',
   },
   {
     id: 'tamil',
@@ -26,6 +29,7 @@ export const LANGUAGES = [
     native: 'தமிழ்',
     wordmark: 'யூனிங்க்ஸ்',
     font: 'tamil',
+    languageWord: 'மொழி',
   },
   {
     id: 'malayalam',
@@ -33,6 +37,7 @@ export const LANGUAGES = [
     native: 'മലയാളം',
     wordmark: 'യൂനിങ്ക്സ്',
     font: 'malayalam',
+    languageWord: 'ഭാഷ',
   },
   {
     id: 'kannada',
@@ -40,6 +45,7 @@ export const LANGUAGES = [
     native: 'ಕನ್ನಡ',
     wordmark: 'ಯೂನಿಂಕ್ಸ್',
     font: 'kannada',
+    languageWord: 'ಭಾಷೆ',
   },
   {
     id: 'bengali',
@@ -47,6 +53,7 @@ export const LANGUAGES = [
     native: 'বাংলা',
     wordmark: 'ইউনিংক্স',
     font: 'bengali',
+    languageWord: 'ভাষা',
   },
   {
     id: 'odia',
@@ -54,6 +61,7 @@ export const LANGUAGES = [
     native: 'ଓଡ଼ିଆ',
     wordmark: 'ଉନିଙ୍କ୍ସ',
     font: 'oriya',
+    languageWord: 'ଭାଷା',
   },
 ];
 

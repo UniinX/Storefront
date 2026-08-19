@@ -597,7 +597,7 @@ function MobileNavigation({
       <PromoTile product={promo} compact />
       <div className="mt-5 grid grid-cols-2 gap-3">
         <Link
-          to="/account/wishlist"
+          to="/wishlist"
           onClick={onClose}
           className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-border-strong text-xs font-semibold uppercase tracking-wider text-foreground"
         >
@@ -882,7 +882,7 @@ function WishlistHeaderLink() {
   const {count} = useWishlist();
   return (
     <Link
-      to="/account/wishlist"
+      to="/wishlist"
       aria-label={`Wishlist (${count} items)`}
       title="Saved Wishlist Items"
       className="relative grid size-10 sm:size-11 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-subtle"

@@ -155,7 +155,7 @@ export default function AccountOverview() {
             <QuickLink to="/account/security" number="03" label="Security & sign-in" />
             <QuickLink to="/account/policies" number="04" label="Store policies" />
             <QuickLink to="/account/support" number="05" label="Returns & support" />
-            <QuickLink to="/account/wishlist" number="06" label="Saved wishlist" />
+            <QuickLink to="/wishlist" number="06" label="Saved wishlist" />
           </div>
         </section>
       </Reveal>

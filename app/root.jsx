@@ -1,6 +1,7 @@
 import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {MotionConfig} from 'framer-motion';
 import {
+  Await,
   Outlet,
   useRouteError,
   isRouteErrorResponse,
@@ -10,6 +11,7 @@ import {
   ScrollRestoration,
   useRouteLoaderData,
 } from 'react-router';
+import {Suspense} from 'react';
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import uniinxStyles from '~/styles/uniinx.css?url';
@@ -17,6 +19,7 @@ import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 import {useLanguage} from '~/hooks/useLanguage.js';
 import {WishlistProvider} from '~/context/WishlistContext.jsx';
+import {WishlistAccountSync} from '~/components/WishlistAccountSync.jsx';
 import {getLanguagePreference} from '~/hooks/useLanguage.js';
 
 /**
@@ -199,6 +202,11 @@ export default function App() {
 
   return (
     <WishlistProvider>
+      <Suspense fallback={null}>
+        <Await resolve={data.isLoggedIn}>
+          {(isLoggedIn) => <WishlistAccountSync isLoggedIn={isLoggedIn} />}
+        </Await>
+      </Suspense>
       <Analytics.Provider
         cart={data.cart}
         shop={data.shop}

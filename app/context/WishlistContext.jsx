@@ -62,6 +62,20 @@ export function WishlistProvider({children}) {
     setWishlist([]);
   };
 
+  // Unions items synced from the customer's account (another device, or a
+  // previous session) into the local list without clobbering anything the
+  // customer already saved on this device.
+  const mergeWishlist = (remoteItems) => {
+    if (!Array.isArray(remoteItems) || remoteItems.length === 0) return;
+    setWishlist((prev) => {
+      const byId = new Map(prev.map((item) => [item.id, item]));
+      for (const item of remoteItems) {
+        if (item?.id && !byId.has(item.id)) byId.set(item.id, item);
+      }
+      return [...byId.values()];
+    });
+  };
+
   return (
     <WishlistContext.Provider
       value={{
@@ -71,6 +85,7 @@ export function WishlistProvider({children}) {
         isInWishlist,
         removeWishlist,
         clearWishlist,
+        mergeWishlist,
         isLoaded,
       }}
     >
@@ -89,6 +104,7 @@ export function useWishlist() {
       isInWishlist: () => false,
       removeWishlist: () => {},
       clearWishlist: () => {},
+      mergeWishlist: () => {},
       isLoaded: true,
     };
   }

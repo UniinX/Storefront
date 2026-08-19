@@ -619,6 +619,38 @@ export type SupportCustomerQuery = {
   };
 };
 
+export type CustomerWishlistQueryVariables = CustomerAccountAPI.Exact<{
+  [key: string]: never;
+}>;
+
+export type CustomerWishlistQuery = {
+  customer: Pick<CustomerAccountAPI.Customer, 'id'> & {
+    metafield?: CustomerAccountAPI.Maybe<
+      Pick<CustomerAccountAPI.Metafield, 'value'>
+    >;
+  };
+};
+
+export type WishlistSyncMutationVariables = CustomerAccountAPI.Exact<{
+  metafields:
+    | Array<CustomerAccountAPI.MetafieldsSetInput>
+    | CustomerAccountAPI.MetafieldsSetInput;
+}>;
+
+export type WishlistSyncMutation = {
+  metafieldsSet?: CustomerAccountAPI.Maybe<{
+    metafields?: CustomerAccountAPI.Maybe<
+      Array<Pick<CustomerAccountAPI.Metafield, 'key' | 'namespace' | 'value'>>
+    >;
+    userErrors: Array<
+      Pick<
+        CustomerAccountAPI.MetafieldsSetUserError,
+        'field' | 'message' | 'code'
+      >
+    >;
+  }>;
+};
+
 interface GeneratedQueryTypes {
   '#graphql\n  query CustomerDetails($language: LanguageCode) @inContext(language: $language) {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment OrderItem on Order {\n    totalPrice {\n      amount\n      currencyCode\n    }\n    financialStatus\n    fulfillmentStatus\n    fulfillments(first: 10) {\n      nodes {\n        status\n        trackingInformation {\n          number\n          url\n          company\n        }\n      }\n    }\n    id\n    number\n    confirmationNumber\n    processedAt\n    lineItems(first: 10) {\n      nodes {\n        id\n        title\n        quantity\n        variantTitle\n        image {\n          url\n          altText\n          width\n          height\n        }\n      }\n    }\n  }\n\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    emailAddress {\n      emailAddress\n    }\n    phoneNumber {\n      phoneNumber\n    }\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 100) {\n      nodes {\n        ...Address\n      }\n    }\n    orders(first: 5, sortKey: PROCESSED_AT, reverse: true) {\n      nodes {\n        ...OrderItem\n      }\n      pageInfo { hasNextPage }\n    }\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
     return: CustomerDetailsQuery;
@@ -635,6 +667,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  query SupportCustomer($language: LanguageCode) @inContext(language: $language) {\n    customer {\n      id\n      emailAddress { emailAddress }\n      orders(first: 100, sortKey: PROCESSED_AT, reverse: true) {\n        nodes { number }\n      }\n    }\n  }\n': {
     return: SupportCustomerQuery;
     variables: SupportCustomerQueryVariables;
+  };
+  '#graphql\n  query CustomerWishlist {\n    customer {\n      id\n      metafield(namespace: "custom", key: "wishlist") {\n        value\n      }\n    }\n  }\n': {
+    return: CustomerWishlistQuery;
+    variables: CustomerWishlistQueryVariables;
   };
 }
 
@@ -654,6 +690,10 @@ interface GeneratedMutationTypes {
   '#graphql\n  mutation customerUpdate(\n    $customer: CustomerUpdateInput!\n    $language: LanguageCode\n  ) @inContext(language: $language) {\n    customerUpdate(input: $customer) {\n      customer {\n        firstName\n        lastName\n        emailAddress {\n          emailAddress\n        }\n        phoneNumber {\n          phoneNumber\n        }\n      }\n      userErrors {\n        code\n        field\n        message\n      }\n    }\n  }\n': {
     return: CustomerUpdateMutation;
     variables: CustomerUpdateMutationVariables;
+  };
+  '#graphql\n  mutation WishlistSync($metafields: [MetafieldsSetInput!]!) {\n    metafieldsSet(metafields: $metafields) {\n      metafields {\n        key\n        namespace\n        value\n      }\n      userErrors {\n        field\n        message\n        code\n      }\n    }\n  }\n': {
+    return: WishlistSyncMutation;
+    variables: WishlistSyncMutationVariables;
   };
 }
 

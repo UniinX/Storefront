@@ -2,7 +2,8 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
-import {Configurator, COLOR_MAP} from './Configurator';
+import {Configurator} from './Configurator';
+import {resolveColorHex} from '~/lib/colorSwatch.js';
 
 // Mock AddToCartButton to prevent useFetcher rendering requirements in tests
 vi.mock('~/components/AddToCartButton', () => ({
@@ -72,12 +73,14 @@ const mockOptions = [
         name: 'Black',
         selected: true,
         exists: true,
+        available: true,
         variantUriQuery: 'Color=Black',
       },
       {
         name: 'White',
         selected: false,
         exists: true,
+        available: true,
         variantUriQuery: 'Color=White',
       },
     ],
@@ -85,10 +88,10 @@ const mockOptions = [
   {
     name: 'Size',
     optionValues: [
-      {name: 'XL', selected: false, exists: true, variantUriQuery: 'Size=XL'},
-      {name: 'S', selected: false, exists: true, variantUriQuery: 'Size=S'},
-      {name: 'L', selected: false, exists: true, variantUriQuery: 'Size=L'},
-      {name: 'M', selected: true, exists: true, variantUriQuery: 'Size=M'},
+      {name: 'XL', selected: false, exists: true, available: true, variantUriQuery: 'Size=XL'},
+      {name: 'S', selected: false, exists: true, available: true, variantUriQuery: 'Size=S'},
+      {name: 'L', selected: false, exists: true, available: true, variantUriQuery: 'Size=L'},
+      {name: 'M', selected: true, exists: true, available: true, variantUriQuery: 'Size=M'},
     ],
   },
 ];
@@ -136,19 +139,42 @@ describe('2D Configurator Panel', () => {
     );
   });
 
-  it('renders accordions correctly', () => {
-    renderConfigurator();
-    expect(screen.getByText('Design Story')).toBeInTheDocument();
-  });
-
-  it('opens the sizing guide from its control', async () => {
+  it('opens the sizing guide as a dialog from its control', async () => {
     const user = userEvent.setup();
     renderConfigurator();
 
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', {name: 'Sizing Guide'}));
     expect(
-      screen.getByRole('region', {name: 'Sizing guide'}),
+      screen.getByRole('dialog', {name: 'Size Guide'}),
     ).toHaveTextContent('Chest: measure around the fullest point.');
+  });
+
+  it('disables a size that exists on the product but is currently sold out', () => {
+    render(
+      <WishlistProvider>
+        <MemoryRouter>
+          <Configurator
+            product={mockProduct}
+            selectedVariant={mockVariant}
+            productOptions={[
+              mockOptions[0],
+              {
+                name: 'Size',
+                optionValues: mockOptions[1].optionValues.map((value) =>
+                  value.name === 'L' ? {...value, available: false} : {...value, available: true},
+                ),
+              },
+            ]}
+            activeLanguage={mockLanguage}
+            setLanguageId={vi.fn()}
+          />
+        </MemoryRouter>
+      </WishlistProvider>,
+    );
+
+    expect(screen.getByRole('button', {name: /^L/})).toBeDisabled();
+    expect(screen.getByRole('button', {name: /^M/})).not.toBeDisabled();
   });
 
   it('renders Shopify size values in standard garment order', () => {
@@ -162,8 +188,61 @@ describe('2D Configurator Panel', () => {
   });
 });
 
-describe('COLOR_MAP', () => {
+describe('color swatch fallback', () => {
   it('renders the "white" fallback swatch as true white, not off-white', () => {
-    expect(COLOR_MAP.white).toBe('#ffffff');
+    expect(resolveColorHex('white')).toBe('#ffffff');
+  });
+});
+
+describe('NEW badge', () => {
+  function renderWithTags(tags) {
+    return render(
+      <WishlistProvider>
+        <MemoryRouter>
+          <Configurator
+            product={{...mockProduct, tags}}
+            selectedVariant={mockVariant}
+            productOptions={mockOptions}
+            activeLanguage={mockLanguage}
+            setLanguageId={vi.fn()}
+          />
+        </MemoryRouter>
+      </WishlistProvider>,
+    );
+  }
+
+  it('shows a NEW badge when the product has a "new" tag', () => {
+    renderWithTags(['New']);
+    expect(screen.getByText('NEW')).toBeInTheDocument();
+  });
+
+  it('hides the NEW badge when the product has no "new" tag', () => {
+    renderWithTags(['Summer']);
+    expect(screen.queryByText('NEW')).not.toBeInTheDocument();
+  });
+});
+
+describe('product description', () => {
+  it('renders the product description text', () => {
+    render(
+      <WishlistProvider>
+        <MemoryRouter>
+          <Configurator
+            product={{
+              ...mockProduct,
+              description: 'A soft cotton hoodie for everyday wear.',
+              descriptionHtml: '<p>A soft cotton hoodie for everyday wear.</p>',
+            }}
+            selectedVariant={mockVariant}
+            productOptions={mockOptions}
+            activeLanguage={mockLanguage}
+            setLanguageId={vi.fn()}
+          />
+        </MemoryRouter>
+      </WishlistProvider>,
+    );
+    expect(
+      screen.getByText('A soft cotton hoodie for everyday wear.'),
+    ).toBeInTheDocument();
   });
 });

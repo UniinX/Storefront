@@ -1,4 +1,5 @@
-import {describe, expect, it} from 'vitest';
+import {act} from 'react';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {Hero} from './Hero.jsx';
@@ -35,5 +36,34 @@ describe('Hero', () => {
     expect(
       screen.queryByText(/Campaign image placeholder/i),
     ).not.toBeInTheDocument();
+  });
+
+  it('animates the headline through supported languages, keeping a stable accessible name', () => {
+    vi.useFakeTimers();
+    render(
+      <MemoryRouter>
+        <Hero />
+      </MemoryRouter>,
+    );
+
+    const heading = screen.getByRole('heading', {
+      name: 'Clothes in your Language',
+    });
+    expect(heading).toHaveTextContent('Language');
+
+    act(() => {
+      vi.advanceTimersByTime(2400);
+    });
+    expect(heading).toHaveTextContent('भाषा');
+    expect(heading).toHaveAccessibleName('Clothes in your Language');
+
+    act(() => {
+      vi.advanceTimersByTime(2400);
+    });
+    expect(heading).toHaveTextContent('భాష');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 });

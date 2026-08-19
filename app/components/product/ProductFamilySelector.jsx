@@ -1,5 +1,6 @@
 import {Image} from '@shopify/hydrogen';
 import {Link, useLocation} from 'react-router';
+import {resolveColorHex} from '~/lib/colorSwatch.js';
 
 /**
  * Keep a selected option only when the destination product exposes the same
@@ -74,6 +75,11 @@ export function ProductFamilySelector({currentProduct, family}) {
           const value = getFamilyValue(item);
           const swatch = getProductSwatch(item, value);
           const swatchImage = swatch?.image?.previewImage?.url;
+          // A solid block of the actual color reads far better than a
+          // photo of the garment here — the swatch's job is to say "this
+          // one is red," not to preview the product shot. Only fall back
+          // to the photo when there's truly no color data to render from.
+          const resolvedColor = swatch?.color || resolveColorHex(value);
           const image = item.featuredImage;
           const unavailable = !item.availableForSale;
           const to = `/products/${item.handle}${getCompatibleOptionSearch(
@@ -101,11 +107,11 @@ export function ProductFamilySelector({currentProduct, family}) {
                   alt=""
                   className="w-full h-full object-cover"
                 />
-              ) : swatch?.color ? (
+              ) : resolvedColor ? (
                 <span
                   aria-hidden="true"
                   className="block w-full h-full"
-                  style={{backgroundColor: swatch.color}}
+                  style={{backgroundColor: resolvedColor}}
                 />
               ) : image ? (
                 <Image

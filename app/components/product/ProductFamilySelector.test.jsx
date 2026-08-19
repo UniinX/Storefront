@@ -61,4 +61,47 @@ describe('ProductFamilySelector', () => {
       screen.getByRole('link', {name: /White.*sold out/i}),
     ).toHaveAttribute('href', '/products/white-shirt?Size=M');
   });
+
+  it('renders a solid color block instead of the product photo when there is no real swatch', () => {
+    const currentProduct = {
+      id: 'current',
+      title: 'Regular tee',
+      handle: 'brick-red-tee',
+      availableForSale: true,
+      familyColor: {value: 'Brick Red'},
+      featuredImage: {id: 'img-1', url: 'https://cdn.example.com/brick-red.jpg'},
+    };
+    const family = {
+      name: {value: 'Color'},
+      products: {
+        references: {
+          nodes: [
+            currentProduct,
+            {
+              id: 'navy',
+              title: 'Navy tee',
+              handle: 'navy-tee',
+              availableForSale: true,
+              familyColor: {value: 'Navy Blue'},
+              featuredImage: {id: 'img-2', url: 'https://cdn.example.com/navy.jpg'},
+              options: [{name: 'Size', optionValues: [{name: 'M'}]}],
+            },
+          ],
+        },
+      },
+    };
+
+    render(
+      <MemoryRouter initialEntries={['/products/brick-red-tee']}>
+        <ProductFamilySelector currentProduct={currentProduct} family={family} />
+      </MemoryRouter>,
+    );
+
+    // No <img> for the product photo — the swatch is a solid color block.
+    expect(document.querySelector('img')).not.toBeInTheDocument();
+    const navyLink = screen.getByRole('link', {name: 'Navy Blue'});
+    expect(navyLink.querySelector('span[style]')).toHaveStyle({
+      backgroundColor: '#1f2d4a',
+    });
+  });
 });

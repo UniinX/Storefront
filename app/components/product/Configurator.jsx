@@ -1,27 +1,18 @@
 import {useState} from 'react';
-import {Link, useNavigate} from 'react-router';
+import {useNavigate} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {ProductFamilySelector} from '~/components/product/ProductFamilySelector';
+import {getMetafieldMap, isNewProduct} from '~/lib/productDisplay.js';
+import {resolveColorHex} from '~/lib/colorSwatch.js';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+} from '~/components/ui/sheet.jsx';
 import {orderSizeGuideLines, sortSizes} from '~/lib/sizing.js';
 import {useWishlist} from '~/context/WishlistContext.jsx';
-import {
-  Accordion as AccordionRoot,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '~/components/ui/accordion.jsx';
-
-// Fallback color swatches helper
-export const COLOR_MAP = {
-  black: '#1a1a1a',
-  white: '#ffffff',
-  gray: '#8a8a86',
-  grey: '#8a8a86',
-  navy: '#1f2d4a',
-  blue: '#3f5a8a',
-  red: '#a8433a',
-};
 
 function getColorSwatchStyle(optionValue) {
   const swatchImage = optionValue.swatch?.image?.previewImage?.url;
@@ -37,42 +28,28 @@ function getColorSwatchStyle(optionValue) {
     return {backgroundColor: optionValue.swatch.color};
   }
 
-  const colorName = optionValue.name;
-  const normalized = colorName.toLowerCase();
-  return {backgroundColor: COLOR_MAP[normalized] || '#cccccc'};
+  return {backgroundColor: resolveColorHex(optionValue.name) || '#cccccc'};
 }
 
+/**
+ * The purchase card that floats over the hero gallery. Keeps only what a
+ * shopper needs to decide and buy (identity, price, variant pickers, CTA);
+ * fuller content (design story, fabric, care, size chart) lives below the
+ * hero in `ProductDetails` so the card stays compact over the photography.
+ */
 export function Configurator({product, selectedVariant, productOptions}) {
   const navigate = useNavigate();
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const {isInWishlist, toggleWishlist} = useWishlist();
   const isSaved = isInWishlist(product?.id);
 
-  // 1. Extract current product metafield values
-  const currentMetafields = {};
-  for (const mf of product.metafields ?? []) {
-    if (mf) currentMetafields[mf.key] = mf.value;
-  }
-
+  const currentMetafields = getMetafieldMap(product.metafields);
   const currentType =
     currentMetafields['garment_type'] || product.productType || 'T-Shirt';
   const currentFit = currentMetafields['fit'] || 'Regular Fit';
-  const material =
-    currentMetafields.material ||
-    product.description ||
-    'See product description for materials and care.';
   const sizeGuide =
     currentMetafields.size_guide ||
     'See the selected variant measurements before ordering.';
-
-  const designStory =
-    currentMetafields['design_story'] ||
-    'A linguistic template exploring typographic forms.';
-  // Unlike the sections above, these have no fallback copy — a product
-  // without a care_instructions/sustainability metafield simply doesn't
-  // show that accordion, rather than displaying placeholder text.
-  const careInstructions = currentMetafields.care_instructions || null;
-  const sustainability = currentMetafields.sustainability || null;
   const family =
     product.productFamily?.reference?.__typename === 'Metaobject'
       ? product.productFamily.reference
@@ -103,16 +80,31 @@ export function Configurator({product, selectedVariant, productOptions}) {
     selectedVariant?.compareAtPrice &&
     Number(selectedVariant.compareAtPrice.amount) >
       Number(selectedVariant.price.amount);
+  const isNew = isNewProduct(product.tags);
 
   return (
-    <div className="flex w-full flex-col gap-7 bg-white py-2 text-black sm:py-4 lg:p-0">
+    <div className="flex w-full flex-col gap-5 rounded-2xl border border-black/10 bg-white/85 p-5 text-black shadow-[var(--shadow-floating)] backdrop-blur-md sm:p-6 lg:rounded-3xl lg:p-7">
       {/* Product Title, Price, and Wishlist */}
       <div>
-        <span className="mb-3 block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#233c6b]">
+        <span className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">
           {currentFit} · {currentType}
+          {isNew && (
+            <span
+              style={{
+                padding: '2px 8px',
+                border: '1px solid var(--accent-cta)',
+                borderRadius: 'var(--radius-full)',
+                color: 'var(--accent-cta)',
+                fontSize: 10,
+                letterSpacing: 'var(--uniinx-tracking-wide)',
+              }}
+            >
+              NEW
+            </span>
+          )}
         </span>
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-[clamp(36px,4vw,58px)] font-normal leading-[0.98] tracking-[-0.05em]">
+          <h1 className="text-[clamp(26px,2.6vw,38px)] font-normal leading-[1.02] tracking-[-0.03em]">
             {product.title}
           </h1>
           <button
@@ -124,15 +116,15 @@ export function Configurator({product, selectedVariant, productOptions}) {
                 : `Add ${product.title} to wishlist`
             }
             title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
-            className={`grid size-11 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${
+            className={`grid size-10 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${
               isSaved
                 ? 'border-black bg-black text-white'
                 : 'border-black/15 bg-white text-black hover:border-black'
             }`}
           >
             <svg
-              width="20"
-              height="20"
+              width="17"
+              height="17"
               viewBox="0 0 24 24"
               fill={isSaved ? 'currentColor' : 'none'}
               stroke="currentColor"
@@ -142,14 +134,19 @@ export function Configurator({product, selectedVariant, productOptions}) {
             </svg>
           </button>
         </div>
-        <div className="flex items-end justify-between gap-4 mt-5">
+        {product.description && (
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-black/55">
+            {product.description}
+          </p>
+        )}
+        <div className="flex items-end justify-between gap-4 mt-4">
           <div className="flex items-baseline gap-3 text-lg font-medium">
             {onSale && (
               <span className="text-xs text-black/40 line-through">
                 <Money data={selectedVariant.compareAtPrice} />
               </span>
             )}
-            <span className={onSale ? 'text-[#b52d2d]' : 'text-black'}>
+            <span className={onSale ? 'text-destructive' : 'text-black'}>
               {selectedVariant?.price ? (
                 <Money data={selectedVariant.price} />
               ) : null}
@@ -171,7 +168,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
       <div className="w-full h-px bg-black/[0.07]" />
 
       {/* Product family and Shopify variant controls */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         {family && (
           <ProductFamilySelector currentProduct={product} family={family} />
         )}
@@ -187,9 +184,10 @@ export function Configurator({product, selectedVariant, productOptions}) {
             <div className="flex gap-3">
               {colorOption.optionValues.map((val) => {
                 const active = activeColor === val.name;
+                const unavailable = !val.exists || !val.available;
                 return (
                   <button
-                    disabled={!val.exists}
+                    disabled={unavailable}
                     key={val.name}
                     type="button"
                     onClick={() => {
@@ -204,10 +202,13 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         : 'border-black/10 dark:border-white/10'
                     }`}
                     style={getColorSwatchStyle(val)}
-                    title={val.name}
+                    title={unavailable ? `${val.name} — Sold out` : val.name}
                     aria-pressed={active}
                   >
-                    <span className="sr-only">{val.name}</span>
+                    <span className="sr-only">
+                      {val.name}
+                      {unavailable ? ' — Sold out' : ''}
+                    </span>
                   </button>
                 );
               })}
@@ -231,23 +232,19 @@ export function Configurator({product, selectedVariant, productOptions}) {
               </span>
               <button
                 type="button"
-                aria-expanded={sizeGuideOpen}
-                aria-controls="product-size-guide"
-                onClick={() => setSizeGuideOpen((open) => !open)}
+                onClick={() => setSizeGuideOpen(true)}
                 className="inline-flex min-h-11 cursor-pointer items-center text-[10px] font-medium tracking-wide text-brand-accent underline underline-offset-4"
               >
                 Sizing Guide
               </button>
             </div>
-            {sizeGuideOpen && (
-              <SizeGuide id="product-size-guide" content={orderedSizeGuide} />
-            )}
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {orderedSizeValues.map((val) => {
                 const active = activeSize === val.name;
+                const unavailable = !val.exists || !val.available;
                 return (
                   <button
-                    disabled={!val.exists}
+                    disabled={unavailable}
                     key={val.name}
                     type="button"
                     onClick={() => {
@@ -261,9 +258,11 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         ? 'bg-black text-white border-black shadow-sm'
                         : 'border-black/10 bg-white hover:border-black/35 hover:bg-black/[0.02]'
                     }`}
+                    title={unavailable ? `${val.name} — Sold out` : undefined}
                     aria-pressed={active}
                   >
                     {val.name}
+                    {unavailable && <span className="sr-only"> — Sold out</span>}
                   </button>
                 );
               })}
@@ -272,89 +271,73 @@ export function Configurator({product, selectedVariant, productOptions}) {
         )}
       </div>
 
-      {/* Add To Cart */}
-      <div className="flex flex-col gap-2 mt-4">
-        <AddToCartButton
-          disabled={
-            !selectedVariant ||
-            !selectedVariant.availableForSale ||
-            (Boolean(sizeOption) && !activeSize) ||
-            (Boolean(colorOption) && !family && !activeColor)
-          }
-          lines={
-            selectedVariant
-              ? [
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                    selectedVariant,
-                  },
-                ]
-              : []
-          }
-          className="flex min-h-14 w-full cursor-pointer items-center justify-center rounded-full bg-black px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-85"
-        >
-          {selectedVariant?.availableForSale ? 'Add to Cart →' : 'Out of Stock'}
-        </AddToCartButton>
-      </div>
+      <SizeGuideSheet open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)}>
+        <SizeGuide content={orderedSizeGuide} />
+      </SizeGuideSheet>
 
-      {/* Accordions details */}
-      <div className="flex flex-col border-t border-black/5 dark:border-white/5 pt-4 mt-6">
-        <ProductAccordion title="Design Story" content={designStory} />
-        <ProductAccordion title="Product Details" content={material} />
-        <ProductAccordion
-          title="Size & Fit"
-          content={orderedSizeGuide}
-          preserveLines
-        />
-        <ProductAccordion
-          title="Delivery & Returns"
-          content="Delivery estimates and return eligibility are shown at checkout and in the store policies."
-        />
-        {careInstructions && (
-          <ProductAccordion title="Care Instructions" content={careInstructions} preserveLines />
-        )}
-        {sustainability && (
-          <ProductAccordion title="Sustainability" content={sustainability} preserveLines />
-        )}
-      </div>
-      <nav
-        aria-label="Product help"
-        className="flex flex-wrap gap-x-5 gap-y-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-black/50"
+      {/* Add To Cart */}
+      <AddToCartButton
+        disabled={
+          !selectedVariant ||
+          !selectedVariant.availableForSale ||
+          (Boolean(sizeOption) && !activeSize) ||
+          (Boolean(colorOption) && !family && !activeColor)
+        }
+        lines={
+          selectedVariant
+            ? [
+                {
+                  merchandiseId: selectedVariant.id,
+                  quantity: 1,
+                  selectedVariant,
+                },
+              ]
+            : []
+        }
+        className="flex min-h-14 w-full cursor-pointer items-center justify-center rounded-full bg-black px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-85"
       >
-        <Link
-          to="/pages/size-care"
-          className="underline underline-offset-4 hover:text-black"
-        >
-          Size & care
-        </Link>
-        <Link
-          to="/pages/shipping-returns"
-          className="underline underline-offset-4 hover:text-black"
-        >
-          Shipping & returns
-        </Link>
-        <Link
-          to="/pages/contact"
-          className="underline underline-offset-4 hover:text-black"
-        >
-          Ask the studio
-        </Link>
-      </nav>
+        {selectedVariant?.availableForSale ? 'Add to Cart →' : 'Out of Stock'}
+      </AddToCartButton>
     </div>
   );
 }
 
-function SizeGuide({content, id}) {
+// A bottom sheet on mobile (matching the rest of the site's sheet pattern),
+// but a centered dialog on larger screens — a bottom-anchored sheet reads as
+// broken on a tall desktop viewport when its content is this short.
+function SizeGuideSheet({open, onClose, children}) {
+  return (
+    <Sheet open={open} onOpenChange={(next) => !next && onClose?.()}>
+      <SheetContent
+        className="inset-x-0 bottom-0 max-h-[82dvh] rounded-t-2xl border-x-0 border-b-0 p-5 pb-[max(2rem,env(safe-area-inset-bottom))] lg:inset-x-auto lg:inset-y-auto lg:left-1/2 lg:top-1/2 lg:max-h-[70vh] lg:w-full lg:max-w-lg lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-2xl lg:border lg:p-6"
+      >
+        <div
+          className="mx-auto mb-4 h-1 w-9 rounded-full bg-muted lg:hidden"
+          aria-hidden="true"
+        />
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <SheetTitle className="text-xl font-semibold tracking-tight">
+            Size Guide
+          </SheetTitle>
+          <SheetClose
+            type="button"
+            aria-label="Close"
+            className="grid size-11 shrink-0 place-items-center rounded-full border border-border text-xl leading-none transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          >
+            ×
+          </SheetClose>
+        </div>
+        {children}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function SizeGuide({content}) {
   const lines = orderSizeGuideLines(content);
 
   return (
-    <div
-      id={id}
-      className="rounded-2xl border border-black/[0.07] bg-[#faf7f0] p-4"
-      role="region"
-      aria-label="Sizing guide"
-    >
+    <div>
       <p className="font-work text-[9px] tracking-[0.14em] uppercase text-black/40 mb-3">
         Garment measurements · follow the listed unit
       </p>
@@ -376,7 +359,7 @@ function VariantOption({option, navigate}) {
           <button
             key={value.name}
             type="button"
-            disabled={!value.exists}
+            disabled={!value.exists || !value.available}
             aria-pressed={Boolean(value.selected)}
             onClick={() =>
               navigate(`?${value.variantUriQuery}`, {
@@ -395,25 +378,5 @@ function VariantOption({option, navigate}) {
         ))}
       </div>
     </div>
-  );
-}
-
-function ProductAccordion({title, content, preserveLines = false}) {
-  return (
-    <AccordionRoot type="single" collapsible>
-      <AccordionItem
-        value={title}
-        className="border-black/5 dark:border-white/5"
-      >
-        <AccordionTrigger className="min-h-0 py-3 font-marcellus text-xs uppercase tracking-wider text-black/75 hover:text-black dark:text-white/70 dark:hover:text-white">
-          {title}
-        </AccordionTrigger>
-        <AccordionContent
-          className={`text-xs font-light leading-relaxed text-black/50 dark:text-white/40 ${preserveLines ? 'whitespace-pre-line' : ''}`}
-        >
-          {content}
-        </AccordionContent>
-      </AccordionItem>
-    </AccordionRoot>
   );
 }

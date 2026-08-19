@@ -8,14 +8,14 @@ import {
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
-  Image,
   getSeoMeta,
 } from '@shopify/hydrogen';
 import {Reveal} from '~/components/motion/Reveal.jsx';
 import {LANGUAGES} from '~/lib/languages.js';
-import {Breadcrumb} from '~/components/product/Breadcrumb.jsx';
 import {Configurator} from '~/components/product/Configurator';
 import {MobileBuyBar} from '~/components/product/MobileBuyBar';
+import {ProductGallery} from '~/components/product/ProductGallery.jsx';
+import {ProductDetails} from '~/components/product/ProductDetails.jsx';
 import {ProductGrid} from '~/components/home/ProductGrid.jsx';
 
 /**
@@ -148,46 +148,34 @@ export default function Product() {
 
   return (
     <>
-      <section className="mx-auto max-w-[1320px] px-5 pb-16 pt-8 text-black sm:px-8 lg:px-[60px] lg:pt-12">
-        {/* Back CTA */}
+      <div className="mx-auto max-w-[1320px] px-5 pt-4 text-black sm:px-8 lg:px-[60px] lg:pt-6">
         <button
           onClick={() => navigate('/collections/all')}
-          className="mb-6 flex min-h-11 cursor-pointer items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-black/50 transition-colors hover:text-black"
+          className="mb-2 flex min-h-11 cursor-pointer items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-black/50 transition-colors hover:text-black"
         >
           ← Back to catalog
         </button>
-        <Breadcrumb productType={product.productType} title={product.title} />
+      </div>
 
-        {/* PDP Layout: Vertical Photos on Left, Sticky Details on Right */}
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:gap-12 xl:gap-16">
-          {/* Left: Scrollable Photos (Horizontal Carousel on Mobile, Vertical Stack on Desktop) */}
-          <div className="uniinx-horizontal-scroll -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 scrollbar-none sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-hidden lg:px-0 lg:pb-0 rounded-[16px] border border-black/[0.06] bg-[#f4f2ee]">
-            {imagesList.length > 0 ? (
-              imagesList.map((img, idx) => (
-                <div
-                  key={img.id || idx}
-                  className="group relative aspect-square w-[86vw] max-w-[420px] shrink-0 snap-center overflow-hidden bg-[#f4f2ee] sm:w-[75vw] lg:w-full lg:max-w-none"
-                >
-                  <Image
-                    data={img}
-                    alt={img.altText || `${product.title} view ${idx + 1}`}
-                    sizes="(min-width: 1024px) 55vw, 90vw"
-                    loading={idx === 0 ? 'eager' : 'lazy'}
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="flex aspect-square w-full items-center justify-center bg-[#f4f2ee]">
-                <span className="font-work text-xs opacity-40">
-                  Garment Preview Template
-                </span>
-              </div>
-            )}
-          </div>
+      {/* Hero: full-width autoplay image filmstrip with the purchase card
+          floating over it (KAFT-style), on both desktop and mobile.
+          Both children share one grid cell so the section is always exactly
+          `max(gallery height, card height)` tall — the card's height varies
+          a lot per product (size count, description length, family
+          selector), so a fixed negative-margin overlap would either clip
+          the card or, if the card is shorter than the overlap assumed,
+          leave a dead gap below the images before the next section. */}
+      <section className="grid">
+        <div className="col-start-1 row-start-1 min-w-0 self-start">
+          <ProductGallery images={imagesList} productTitle={product.title} />
+        </div>
 
-          {/* Right: Sticky Details & Configuration Panel */}
-          <div className="w-full min-w-0 lg:sticky lg:top-24 lg:self-start">
+        {/* This wrapper spans the full row width so the card can align to
+            its right edge on desktop, but only the card itself should
+            capture pointer/scroll input — the empty space around it must
+            let clicks and drags reach the gallery underneath. */}
+        <div className="pointer-events-none relative z-10 col-start-1 row-start-1 mx-auto w-full min-w-0 max-w-[1320px] self-end px-5 pb-4 sm:px-8 lg:px-[60px] lg:pb-8">
+          <div className="pointer-events-auto lg:ml-auto lg:max-w-[420px]">
             <Reveal delay={80}>
               <Configurator
                 product={product}
@@ -197,30 +185,36 @@ export default function Product() {
             </Reveal>
           </div>
         </div>
-
-        {/* Analytics integration */}
-        <Analytics.ProductView
-          data={{
-            products: [
-              {
-                id: product.id,
-                title: product.title,
-                price: selectedVariant?.price.amount || '0',
-                vendor: product.vendor,
-                variantId: selectedVariant?.id || '',
-                variantTitle: selectedVariant?.title || '',
-                quantity: 1,
-              },
-            ],
-          }}
-        />
-        <MobileBuyBar
-          selectedVariant={selectedVariant}
-          language={activeLanguage}
-          productOptions={productOptions}
-          hasProductFamily={Boolean(product.productFamily?.reference)}
-        />
       </section>
+
+      <ProductDetails
+        product={product}
+        selectedVariant={selectedVariant}
+        media={mediaNodes}
+      />
+
+      {/* Analytics integration */}
+      <Analytics.ProductView
+        data={{
+          products: [
+            {
+              id: product.id,
+              title: product.title,
+              price: selectedVariant?.price.amount || '0',
+              vendor: product.vendor,
+              variantId: selectedVariant?.id || '',
+              variantTitle: selectedVariant?.title || '',
+              quantity: 1,
+            },
+          ],
+        }}
+      />
+      <MobileBuyBar
+        selectedVariant={selectedVariant}
+        language={activeLanguage}
+        productOptions={productOptions}
+        hasProductFamily={Boolean(product.productFamily?.reference)}
+      />
 
       {/* Row 1: VARIANTS Section (if available) */}
       {familyProducts.length > 0 && (
@@ -309,6 +303,7 @@ const PRODUCT_FRAGMENT = `#graphql
     vendor
     handle
     productType
+    tags
     descriptionHtml
     description
     encodedVariantExistence
@@ -347,6 +342,15 @@ const PRODUCT_FRAGMENT = `#graphql
             altText
             width
             height
+          }
+        }
+        ... on Video {
+          previewImage {
+            url
+          }
+          sources {
+            url
+            mimeType
           }
         }
       }

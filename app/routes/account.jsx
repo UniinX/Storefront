@@ -10,7 +10,7 @@ const ACCOUNT_LINKS = [
   {to: '/account/security', label: 'Sign-in & Security', index: '04'},
   {to: '/account/policies', label: 'Store Policies', index: '05'},
   {to: '/account/support', label: 'Support & Returns', index: '06'},
-  {to: '/account/wishlist', label: 'Wishlist', index: '07'},
+  {to: '/wishlist', label: 'Wishlist', index: '07'},
 ];
 
 export function shouldRevalidate() {
