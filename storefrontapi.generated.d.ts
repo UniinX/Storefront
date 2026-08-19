@@ -1929,6 +1929,54 @@ export type ProductFragment = Pick<
   >;
   familyColor?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  languageFamily?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<
+      | {
+          __typename:
+            | 'Article'
+            | 'Collection'
+            | 'GenericFile'
+            | 'MediaImage'
+            | 'Model3d'
+            | 'Page'
+            | 'Product'
+            | 'ProductVariant'
+            | 'Video';
+        }
+      | ({__typename: 'Metaobject'} & Pick<
+          StorefrontAPI.Metaobject,
+          'id' | 'handle' | 'type'
+        > & {
+            name?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            slug?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            products?: StorefrontAPI.Maybe<{
+              references?: StorefrontAPI.Maybe<{
+                nodes: Array<
+                  Pick<
+                    StorefrontAPI.Product,
+                    'id' | 'title' | 'handle' | 'availableForSale'
+                  > & {
+                    language?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.Metafield, 'value'>
+                    >;
+                    options: Array<
+                      Pick<StorefrontAPI.ProductOption, 'name'> & {
+                        optionValues: Array<
+                          Pick<StorefrontAPI.ProductOptionValue, 'name'>
+                        >;
+                      }
+                    >;
+                  }
+                >;
+              }>;
+            }>;
+          })
+    >;
+  }>;
   productFamily?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<
       | {
@@ -2150,6 +2198,54 @@ export type ProductQuery = {
       >;
       familyColor?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
       familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+      languageFamily?: StorefrontAPI.Maybe<{
+        reference?: StorefrontAPI.Maybe<
+          | {
+              __typename:
+                | 'Article'
+                | 'Collection'
+                | 'GenericFile'
+                | 'MediaImage'
+                | 'Model3d'
+                | 'Page'
+                | 'Product'
+                | 'ProductVariant'
+                | 'Video';
+            }
+          | ({__typename: 'Metaobject'} & Pick<
+              StorefrontAPI.Metaobject,
+              'id' | 'handle' | 'type'
+            > & {
+                name?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                >;
+                slug?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                >;
+                products?: StorefrontAPI.Maybe<{
+                  references?: StorefrontAPI.Maybe<{
+                    nodes: Array<
+                      Pick<
+                        StorefrontAPI.Product,
+                        'id' | 'title' | 'handle' | 'availableForSale'
+                      > & {
+                        language?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Metafield, 'value'>
+                        >;
+                        options: Array<
+                          Pick<StorefrontAPI.ProductOption, 'name'> & {
+                            optionValues: Array<
+                              Pick<StorefrontAPI.ProductOptionValue, 'name'>
+                            >;
+                          }
+                        >;
+                      }
+                    >;
+                  }>;
+                }>;
+              })
+        >;
+      }>;
       productFamily?: StorefrontAPI.Maybe<{
         reference?: StorefrontAPI.Maybe<
           | {
@@ -2822,7 +2918,7 @@ interface GeneratedQueryTypes {
     return: PoliciesQuery;
     variables: PoliciesQueryVariables;
   };
-  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    productType\n    tags\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    media(first: 10) {\n      nodes {\n        __typename\n        ... on MediaImage {\n          image {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n        ... on Video {\n          previewImage {\n            url\n          }\n          sources {\n            url\n            mimeType\n          }\n        }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "design_reference"},\n      {namespace: "custom", key: "design_group"},\n      {namespace: "custom", key: "language"},\n      {namespace: "custom", key: "fit"},\n      {namespace: "custom", key: "material"},\n      {namespace: "custom", key: "size_guide"},\n      {namespace: "custom", key: "garment_type"},\n      {namespace: "custom", key: "design_story"},\n      {namespace: "custom", key: "care_instructions"},\n      {namespace: "custom", key: "sustainability"}\n    ]) {\n      key\n      value\n    }\n    familyColor: metafield(namespace: "custom", key: "color") {\n      value\n    }\n    familyValue: metafield(namespace: "custom", key: "family_value") {\n      value\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference {\n        __typename\n        ... on Metaobject {\n          id\n          handle\n          type\n          name: field(key: "name") {\n            value\n          }\n          slug: field(key: "slug") {\n            value\n          }\n          products: field(key: "products") {\n            references(first: 50) {\n              nodes {\n                ... on Product {\n                  id\n                  title\n                  handle\n                  availableForSale\n                  featuredImage {\n                    id\n                    url\n                    altText\n                    width\n                    height\n                  }\n                  priceRange {\n                    minVariantPrice {\n                      amount\n                      currencyCode\n                    }\n                  }\n                  familyColor: metafield(namespace: "custom", key: "color") {\n                    value\n                  }\n                  familyValue: metafield(namespace: "custom", key: "family_value") {\n                    value\n                  }\n                  options {\n                    name\n                    optionValues {\n                      name\n                      swatch {\n                        color\n                        image {\n                          previewImage {\n                            url\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
+  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    productType\n    tags\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    featuredImage {\n      id\n      url\n      altText\n      width\n      height\n    }\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    media(first: 10) {\n      nodes {\n        __typename\n        ... on MediaImage {\n          image {\n            id\n            url\n            altText\n            width\n            height\n          }\n        }\n        ... on Video {\n          previewImage {\n            url\n          }\n          sources {\n            url\n            mimeType\n          }\n        }\n      }\n    }\n    metafields(identifiers: [\n      {namespace: "custom", key: "design_reference"},\n      {namespace: "custom", key: "design_group"},\n      {namespace: "custom", key: "language"},\n      {namespace: "custom", key: "fit"},\n      {namespace: "custom", key: "material"},\n      {namespace: "custom", key: "size_guide"},\n      {namespace: "custom", key: "garment_type"},\n      {namespace: "custom", key: "design_story"},\n      {namespace: "custom", key: "care_instructions"},\n      {namespace: "custom", key: "sustainability"}\n    ]) {\n      key\n      value\n    }\n    familyColor: metafield(namespace: "custom", key: "color") {\n      value\n    }\n    familyValue: metafield(namespace: "custom", key: "family_value") {\n      value\n    }\n    languageFamily: metafield(namespace: "custom", key: "language_family") {\n      reference {\n        __typename\n        ... on Metaobject {\n          id\n          handle\n          type\n          name: field(key: "name") {\n            value\n          }\n          slug: field(key: "slug") {\n            value\n          }\n          products: field(key: "products") {\n            references(first: 50) {\n              nodes {\n                ... on Product {\n                  id\n                  title\n                  handle\n                  availableForSale\n                  language: metafield(namespace: "custom", key: "language") {\n                    value\n                  }\n                  options {\n                    name\n                    optionValues {\n                      name\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference {\n        __typename\n        ... on Metaobject {\n          id\n          handle\n          type\n          name: field(key: "name") {\n            value\n          }\n          slug: field(key: "slug") {\n            value\n          }\n          products: field(key: "products") {\n            references(first: 50) {\n              nodes {\n                ... on Product {\n                  id\n                  title\n                  handle\n                  availableForSale\n                  featuredImage {\n                    id\n                    url\n                    altText\n                    width\n                    height\n                  }\n                  priceRange {\n                    minVariantPrice {\n                      amount\n                      currencyCode\n                    }\n                  }\n                  familyColor: metafield(namespace: "custom", key: "color") {\n                    value\n                  }\n                  familyValue: metafield(namespace: "custom", key: "family_value") {\n                    value\n                  }\n                  options {\n                    name\n                    optionValues {\n                      name\n                      swatch {\n                        color\n                        image {\n                          previewImage {\n                            url\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };

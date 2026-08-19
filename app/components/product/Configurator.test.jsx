@@ -223,7 +223,7 @@ describe('NEW badge', () => {
 });
 
 describe('product description', () => {
-  it('renders the product description text', () => {
+  it('does not render the description in the floating card — it lives in ProductDetails below the hero instead', () => {
     render(
       <WishlistProvider>
         <MemoryRouter>
@@ -242,7 +242,30 @@ describe('product description', () => {
       </WishlistProvider>,
     );
     expect(
-      screen.getByText('A soft cotton hoodie for everyday wear.'),
-    ).toBeInTheDocument();
+      screen.queryByText('A soft cotton hoodie for everyday wear.'),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('color swatches', () => {
+  it('lets the color row scroll horizontally instead of wrapping, and rounds the swatches', () => {
+    const {container} = render(
+      <WishlistProvider>
+        <MemoryRouter>
+          <Configurator
+            product={{...mockProduct, productFamily: undefined}}
+            selectedVariant={mockVariant}
+            productOptions={mockOptions}
+            activeLanguage={mockLanguage}
+            setLanguageId={vi.fn()}
+          />
+        </MemoryRouter>
+      </WishlistProvider>,
+    );
+
+    const row = container.querySelector('.overflow-x-auto');
+    expect(row).toBeInTheDocument();
+    const swatch = screen.getByRole('button', {name: 'Black'});
+    expect(swatch).toHaveClass('rounded-2xl', 'shrink-0');
   });
 });

@@ -59,6 +59,7 @@ export default function Catalog() {
         title="All Products"
         artwork="collections"
         description="Explore contemporary garments shaped by Indian scripts, language, and culture."
+        hideImage
       />
       <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
         <CatalogFilters

@@ -1,5 +1,5 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {act, fireEvent, render, screen} from '@testing-library/react';
+import {describe, expect, it} from 'vitest';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {ProductGallery} from './ProductGallery';
 
 const images = [
@@ -55,48 +55,18 @@ describe('ProductGallery', () => {
     expect(strip.querySelectorAll('[aria-hidden="true"]')).toHaveLength(0);
   });
 
-  describe('scrolling the page', () => {
-    beforeEach(() => {
-      vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'performance']});
-    });
-    afterEach(() => {
-      vi.useRealTimers();
-    });
+  it('keeps scrolling through page scroll — only interacting with the strip itself stops it', () => {
+    const {container} = render(
+      <ProductGallery images={images} productTitle="Just Grow Hoodie" />,
+    );
+    expect(container.querySelectorAll('img')).toHaveLength(images.length * 2);
 
-    it('does not stop the instant the page scrolls — it feels like an off switch otherwise', () => {
-      const {container} = render(
-        <ProductGallery images={images} productTitle="Just Grow Hoodie" />,
-      );
-      expect(container.querySelectorAll('img')).toHaveLength(images.length * 2);
+    fireEvent.scroll(window);
+    fireEvent.scroll(window);
+    fireEvent.scroll(window);
 
-      fireEvent.scroll(window);
-      act(() => {
-        vi.advanceTimersByTime(200);
-      });
-
-      // Still playing — a scroll tick shouldn't feel like it instantly kills
-      // the animation.
-      expect(container.querySelectorAll('img')).toHaveLength(images.length * 2);
-    });
-
-    it('eases to a stop (not a hard cut) after the grace period following a page scroll', () => {
-      const {container} = render(
-        <ProductGallery images={images} productTitle="Just Grow Hoodie" />,
-      );
-
-      fireEvent.scroll(window);
-      // Past the ~1s grace period, but not yet through the fade-out.
-      act(() => {
-        vi.advanceTimersByTime(1100);
-      });
-      expect(container.querySelectorAll('img')).toHaveLength(images.length * 2);
-
-      // Past the fade-out duration too — now it's actually stopped.
-      act(() => {
-        vi.advanceTimersByTime(600);
-      });
-      expect(container.querySelectorAll('img')).toHaveLength(images.length);
-    });
+    // Still playing — page scroll never touches the gallery's autoplay.
+    expect(container.querySelectorAll('img')).toHaveLength(images.length * 2);
   });
 
   it('never resumes once stopped — there is no control to bring the loop back', () => {

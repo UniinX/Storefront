@@ -1,5 +1,4 @@
 import {Image} from '@shopify/hydrogen';
-import {Link} from 'react-router';
 import collectionsHero from '~/assets/collections/collections-hero.webp';
 import solidsHero from '~/assets/collections/solids-hero.webp';
 
@@ -7,6 +6,10 @@ import solidsHero from '~/assets/collections/solids-hero.webp';
  * Photography-led collection masthead based on the Figma collection templates.
  * Shopify collection art wins for dynamic collections; Solids keeps the exact
  * authored artwork from the supplied Figma template.
+ *
+ * `hideImage` skips the photography entirely for a plain text masthead — used
+ * on the full product catalog, which isn't really "a collection" and doesn't
+ * have a specific image to represent it.
  */
 export function CollectionThemeHero({
   title,
@@ -14,7 +17,30 @@ export function CollectionThemeHero({
   image,
   directory = false,
   artwork = 'detail',
+  hideImage = false,
 }) {
+  if (hideImage) {
+    return (
+      <section className="relative bg-background pb-10 pt-[104px] sm:pb-12 sm:pt-[128px] lg:pt-[152px]">
+        {/* Matches the max-width + horizontal padding of the content
+            section below, so the heading's left edge lines up with the
+            filters/product grid rather than drifting apart on wide
+            viewports (the section below is capped at 1440px and centered;
+            this wasn't). */}
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-[60px]">
+          <h1 className="text-[clamp(28px,3vw,42px)] font-medium leading-tight tracking-[-0.04em]">
+            {title}
+          </h1>
+          {description && (
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-black/70 sm:text-base">
+              {description}
+            </p>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   const isSolids = /solid/i.test(title || '');
   const fallbackImage =
     directory || artwork === 'collections' ? collectionsHero : solidsHero;
@@ -46,33 +72,6 @@ export function CollectionThemeHero({
 
         <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-white/35 to-transparent" />
 
-        <nav
-          aria-label="Breadcrumb"
-          className="absolute left-5 top-18 sm:top-20 lg:top-22 z-10 flex min-h-11 items-center text-[11px] tracking-[-0.02em] text-black/70 sm:left-8 lg:left-[60px]"
-        >
-          <Link
-            to="/"
-            className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55"
-          >
-            Home
-          </Link>
-          <span aria-hidden="true"> / </span>
-          {directory ? (
-            <span>Collections</span>
-          ) : (
-            <>
-              <Link
-                to="/collections"
-                className="inline-flex min-h-11 items-center transition-opacity hover:opacity-55"
-              >
-                Collections
-              </Link>
-              <span aria-hidden="true"> / </span>
-              <span>{title}</span>
-            </>
-          )}
-        </nav>
-
         {showDynamicTitle ? (
           <h1 className="absolute inset-x-5 top-1/2 z-10 -translate-y-1/2 text-center text-[clamp(64px,12vw,172px)] font-normal leading-none tracking-[-0.075em] text-[#d4ffee] drop-shadow-sm sm:inset-x-8">
             {title}
@@ -91,7 +90,11 @@ export function CollectionThemeHero({
           </p>
         </div>
       ) : (
-        <div className="relative z-10 -mt-11 h-16 rounded-t-[30px] bg-white" />
+        <div className="relative z-10 -mt-11 rounded-t-[30px] bg-white px-5 pb-6 pt-8 sm:px-8 lg:px-[60px]">
+          <h1 className="text-[clamp(28px,3vw,42px)] font-medium leading-tight tracking-[-0.04em]">
+            {title}
+          </h1>
+        </div>
       )}
     </section>
   );

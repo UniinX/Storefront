@@ -376,6 +376,43 @@ const PRODUCT_FRAGMENT = `#graphql
     familyValue: metafield(namespace: "custom", key: "family_value") {
       value
     }
+    languageFamily: metafield(namespace: "custom", key: "language_family") {
+      reference {
+        __typename
+        ... on Metaobject {
+          id
+          handle
+          type
+          name: field(key: "name") {
+            value
+          }
+          slug: field(key: "slug") {
+            value
+          }
+          products: field(key: "products") {
+            references(first: 50) {
+              nodes {
+                ... on Product {
+                  id
+                  title
+                  handle
+                  availableForSale
+                  language: metafield(namespace: "custom", key: "language") {
+                    value
+                  }
+                  options {
+                    name
+                    optionValues {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     productFamily: metafield(namespace: "custom", key: "product_family") {
       reference {
         __typename

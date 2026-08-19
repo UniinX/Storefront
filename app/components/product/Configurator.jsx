@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router';
 import {Money} from '@shopify/hydrogen';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import {ProductFamilySelector} from '~/components/product/ProductFamilySelector';
+import {LanguageFamilySelector} from '~/components/product/LanguageFamilySelector';
 import {getMetafieldMap, isNewProduct} from '~/lib/productDisplay.js';
 import {resolveColorHex} from '~/lib/colorSwatch.js';
 import {
@@ -53,6 +54,10 @@ export function Configurator({product, selectedVariant, productOptions}) {
   const family =
     product.productFamily?.reference?.__typename === 'Metaobject'
       ? product.productFamily.reference
+      : null;
+  const languageFamily =
+    product.languageFamily?.reference?.__typename === 'Metaobject'
+      ? product.languageFamily.reference
       : null;
 
   // Color belongs to Product Family when the family reference is configured.
@@ -134,11 +139,6 @@ export function Configurator({product, selectedVariant, productOptions}) {
             </svg>
           </button>
         </div>
-        {product.description && (
-          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-black/55">
-            {product.description}
-          </p>
-        )}
         <div className="flex items-end justify-between gap-4 mt-4">
           <div className="flex items-baseline gap-3 text-lg font-medium">
             {onSale && (
@@ -181,7 +181,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                 {activeColor}
               </span>
             </span>
-            <div className="flex gap-3">
+            <div className="flex gap-3 overflow-x-auto scrollbar-none py-1">
               {colorOption.optionValues.map((val) => {
                 const active = activeColor === val.name;
                 const unavailable = !val.exists || !val.available;
@@ -196,7 +196,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                         preventScrollReset: true,
                       });
                     }}
-                    className={`relative flex size-11 cursor-pointer items-center justify-center rounded-[10px] border transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
+                    className={`relative flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl border transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
                       active
                         ? 'ring-2 ring-black dark:ring-white border-transparent'
                         : 'border-black/10 dark:border-white/10'
@@ -214,6 +214,13 @@ export function Configurator({product, selectedVariant, productOptions}) {
               })}
             </div>
           </div>
+        )}
+
+        {languageFamily && (
+          <LanguageFamilySelector
+            currentProduct={product}
+            languageFamily={languageFamily}
+          />
         )}
 
         {otherOptions.map((option) => (

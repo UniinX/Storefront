@@ -67,7 +67,7 @@ export function ProductFamilySelector({currentProduct, family}) {
         </span>
       </legend>
       <div
-        className="flex flex-wrap gap-3"
+        className="flex gap-3 overflow-x-auto scrollbar-none py-1"
         aria-label={`${familyName} choices`}
       >
         {products.map((item) => {
@@ -95,7 +95,7 @@ export function ProductFamilySelector({currentProduct, family}) {
               aria-current={selected ? 'page' : undefined}
               aria-label={`${value}${unavailable ? ', sold out' : ''}${selected ? ', selected' : ''}`}
               title={`${value}${unavailable ? ' — Sold out' : ''}`}
-              className={`group relative w-12 h-12 overflow-hidden border transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent ${
+              className={`group relative w-12 h-12 shrink-0 overflow-hidden rounded-2xl border transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent ${
                 selected
                   ? 'ring-2 ring-black dark:ring-white border-transparent'
                   : 'border-black/15 dark:border-white/15 hover:border-black/40 dark:hover:border-white/40'
