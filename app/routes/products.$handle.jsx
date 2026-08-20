@@ -157,16 +157,19 @@ export default function Product() {
         </button>
       </div>
 
-      {/* Hero: full-width autoplay image filmstrip with the purchase card
-          floating over it (KAFT-style), on both desktop and mobile.
-          Both children share one grid cell so the section is always exactly
-          `max(gallery height, card height)` tall — the card's height varies
-          a lot per product (size count, description length, family
-          selector), so a fixed negative-margin overlap would either clip
-          the card or, if the card is shorter than the overlap assumed,
-          leave a dead gap below the images before the next section. */}
-      <section className="grid">
-        <div className="col-start-1 row-start-1 min-w-0 self-start">
+      {/* Hero: full-width autoplay image filmstrip with the purchase card.
+          On desktop (lg+), the gallery shows several images side by side, so
+          the card can float over just the bottom-right corner of it (both
+          share one grid cell, sized to `max(gallery, card)`) without hiding
+          the photography — plenty of other frames stay fully visible. On
+          mobile, only ~1 frame is ever visible at a time, and the card is
+          routinely taller than that single frame (a product with 10+ sizes
+          alone runs 3 rows), so the same overlap would bury the entire
+          visible photo under the card. Mobile stacks them instead: the
+          image gets its full height, and the card sits in normal flow
+          right below it with just a small peek-over-the-edge overlap. */}
+      <section className="flex flex-col lg:grid">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1 lg:self-start">
           <ProductGallery images={imagesList} productTitle={product.title} />
         </div>
 
@@ -174,7 +177,7 @@ export default function Product() {
             its right edge on desktop, but only the card itself should
             capture pointer/scroll input — the empty space around it must
             let clicks and drags reach the gallery underneath. */}
-        <div className="pointer-events-none relative z-10 col-start-1 row-start-1 mx-auto w-full min-w-0 max-w-[1320px] self-end px-5 pb-4 sm:px-8 lg:px-[60px] lg:pb-8">
+        <div className="pointer-events-none relative z-10 -mt-6 mx-auto w-full min-w-0 max-w-[1320px] px-5 pb-4 sm:px-8 lg:col-start-1 lg:row-start-1 lg:mt-0 lg:self-end lg:px-[60px] lg:pb-8">
           <div className="pointer-events-auto lg:ml-auto lg:max-w-[420px]">
             <Reveal delay={80}>
               <Configurator

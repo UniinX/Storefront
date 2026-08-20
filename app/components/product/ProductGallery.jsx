@@ -111,7 +111,7 @@ export function ProductGallery({images = [], productTitle}) {
         onPointerDown={stopAutoplay}
         onWheel={stopAutoplay}
         onTouchStart={stopAutoplay}
-        className="flex gap-3 overflow-x-auto px-5 scrollbar-none sm:px-8 lg:gap-4 lg:px-0"
+        className="flex overflow-x-auto px-5 scrollbar-none sm:px-8 lg:px-0"
         role="group"
         aria-label={`${productTitle} — product images`}
       >

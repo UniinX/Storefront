@@ -121,7 +121,7 @@ export function Configurator({product, selectedVariant, productOptions}) {
                 : `Add ${product.title} to wishlist`
             }
             title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
-            className={`grid size-10 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${
+            className={`grid size-11 shrink-0 place-items-center rounded-full border transition-all hover:scale-105 active:scale-95 ${
               isSaved
                 ? 'border-black bg-black text-white'
                 : 'border-black/15 bg-white text-black hover:border-black'
