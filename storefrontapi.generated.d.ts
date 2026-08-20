@@ -1369,64 +1369,32 @@ export type CatalogProductsQuery = {
   };
 };
 
-export type CollectionFragment = Pick<
-  StorefrontAPI.Collection,
-  'id' | 'title' | 'handle' | 'description'
-> & {
-  image?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
-  >;
+export type ThemeProductsQueryVariables = StorefrontAPI.Exact<{
+  first?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductSortKeys>;
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type ThemeProductsQuery = {
   products: {
     nodes: Array<{
+      collectionName?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.Metafield, 'value'>
+      >;
+      colorPattern?: StorefrontAPI.Maybe<{
+        references?: StorefrontAPI.Maybe<{
+          nodes: Array<{
+            label?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+          }>;
+        }>;
+      }>;
       featuredImage?: StorefrontAPI.Maybe<
         Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
       >;
     }>;
-  };
-};
-
-export type StoreCollectionsQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  endCursor?: StorefrontAPI.InputMaybe<
-    StorefrontAPI.Scalars['String']['input']
-  >;
-  first?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-  last?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
-  startCursor?: StorefrontAPI.InputMaybe<
-    StorefrontAPI.Scalars['String']['input']
-  >;
-}>;
-
-export type StoreCollectionsQuery = {
-  collections: {
-    nodes: Array<
-      Pick<
-        StorefrontAPI.Collection,
-        'id' | 'title' | 'handle' | 'description'
-      > & {
-        image?: StorefrontAPI.Maybe<
-          Pick<
-            StorefrontAPI.Image,
-            'id' | 'url' | 'altText' | 'width' | 'height'
-          >
-        >;
-        products: {
-          nodes: Array<{
-            featuredImage?: StorefrontAPI.Maybe<
-              Pick<
-                StorefrontAPI.Image,
-                'id' | 'url' | 'altText' | 'width' | 'height'
-              >
-            >;
-          }>;
-        };
-      }
-    >;
-    pageInfo: Pick<
-      StorefrontAPI.PageInfo,
-      'hasNextPage' | 'hasPreviousPage' | 'startCursor' | 'endCursor'
-    >;
   };
 };
 
@@ -3068,9 +3036,9 @@ interface GeneratedQueryTypes {
     return: CatalogProductsQuery;
     variables: CatalogProductsQueryVariables;
   };
-  '#graphql\n  fragment Collection on Collection {\n    id\n    title\n    handle\n    description\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    products(first: 1) {\n      nodes {\n        featuredImage {\n          id\n          url\n          altText\n          width\n          height\n        }\n      }\n    }\n  }\n  query StoreCollections(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $startCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collections(\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      nodes {\n        ...Collection\n      }\n      pageInfo {\n        hasNextPage\n        hasPreviousPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n': {
-    return: StoreCollectionsQuery;
-    variables: StoreCollectionsQueryVariables;
+  '#graphql\n  query ThemeProducts($first: Int, $sortKey: ProductSortKeys, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {\n    products(first: $first, sortKey: $sortKey) {\n      nodes {\n        collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n        colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n          references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n        }\n        featuredImage {\n          id\n          url\n          altText\n          width\n          height\n        }\n      }\n    }\n  }\n': {
+    return: ThemeProductsQuery;
+    variables: ThemeProductsQueryVariables;
   };
   '#graphql\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberCollectionItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment CollectionItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference { __typename ... on Metaobject {\n        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }\n      } }\n    }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n  }\n\n  query Catalog($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...CollectionItem }\n      filters { id label type values { id label count input } }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
     return: CatalogQuery;

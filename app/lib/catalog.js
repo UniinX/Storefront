@@ -630,13 +630,28 @@ export function getFamilyProducts(product) {
   );
 }
 
+/** The product-family metaobject id for `product`, or `null` if it has none. */
+export function getProductFamilyKey(product) {
+  const family = product?.productFamily?.reference;
+  return family?.__typename === 'Metaobject' ? family.id : null;
+}
+
+/**
+ * De-dupes products sharing the same product family down to one card each,
+ * keeping the first one seen. Only ever sees one loader call's own raw page
+ * of results (12 items at a time) — a family whose members span more than
+ * one page (common; e.g. this store's "Hoodie" family has 11 members) will
+ * still produce a duplicate card once that family's other members show up
+ * on a later page. `PaginatedResourceSection`'s `dedupeKey` prop re-dedupes
+ * the full cross-page accumulated list on the client for that reason; this
+ * one stays useful for a single page's `totalCount`/`filterOptions`.
+ */
 export function groupCatalogFamilies(connection) {
   const seenFamilies = new Set();
   const nodes = [];
 
   for (const product of connection?.nodes ?? []) {
-    const family = product.productFamily?.reference;
-    const familyId = family?.__typename === 'Metaobject' ? family.id : null;
+    const familyId = getProductFamilyKey(product);
     if (familyId && seenFamilies.has(familyId)) continue;
     if (familyId) seenFamilies.add(familyId);
     nodes.push(product);

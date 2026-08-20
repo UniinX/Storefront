@@ -5,12 +5,14 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductCard} from '~/components/ds/index.js';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {useVisibleCatalogCount} from '~/hooks/useVisibleCatalogCount.js';
 import {
   applyClientFilters,
   CLIENT_FILTER_BATCH_SIZE,
   getCatalogFilterOptions,
   getCatalogSort,
   getCollectionFilters,
+  getProductFamilyKey,
   getProductSearchQuery,
   groupCatalogFamilies,
   hasClientOnlyFilters,
@@ -135,6 +137,13 @@ export default function Collection() {
     totalCount,
     hasMoreResults,
   } = useLoaderData();
+  // The loader only ever sees its own single fetched page — the visible
+  // count needs to track what <PaginatedResourceSection> has actually
+  // accumulated (and de-duped) across every page loaded so far.
+  const [visible, onVisibleCountChange] = useVisibleCatalogCount(
+    totalCount,
+    hasMoreResults,
+  );
   return (
     <div className="bg-white">
       <CollectionThemeHero
@@ -144,8 +153,8 @@ export default function Collection() {
       />
       <section className="uniinx-plp-shell mx-auto max-w-[1440px] px-5 pb-24 text-black sm:px-8 lg:px-[60px]">
         <CatalogFilters
-          totalCount={totalCount}
-          hasMoreResults={hasMoreResults}
+          totalCount={visible.count}
+          hasMoreResults={visible.hasMore}
           filterOptions={filterOptions}
           currentCollection={collection.handle}
           hideTheme
@@ -165,6 +174,8 @@ export default function Collection() {
             className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
+            dedupeKey={getProductFamilyKey}
+            onVisibleCountChange={onVisibleCountChange}
             nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
           >
             {({node: product, index}) => (

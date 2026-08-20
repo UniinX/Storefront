@@ -5,11 +5,13 @@ import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductCard} from '~/components/ProductCard.jsx';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
+import {useVisibleCatalogCount} from '~/hooks/useVisibleCatalogCount.js';
 import {
   applyClientFilters,
   CLIENT_FILTER_BATCH_SIZE,
   getCatalogFilterOptions,
   getCollectionFilters,
+  getProductFamilyKey,
   groupCatalogFamilies,
   hasClientOnlyFilters,
 } from '~/lib/catalog';
@@ -48,12 +50,19 @@ export default function SearchPage() {
     totalCount,
     hasMoreResults,
   } = useLoaderData();
+  // The loader only ever sees its own single fetched page — the visible
+  // count needs to track what <PaginatedResourceSection> has actually
+  // accumulated (and de-duped) across every page loaded so far.
+  const [visible, onVisibleCountChange] = useVisibleCatalogCount(
+    totalCount,
+    hasMoreResults,
+  );
   if (type === 'predictive') return null;
 
   const pages = result?.items?.pages?.nodes ?? [];
   const articles = result?.items?.articles?.nodes ?? [];
   const description = term
-    ? `${totalCount}${hasMoreResults ? '+' : ''} products matching “${term}”, with related stories and pages.`
+    ? `${visible.count}${visible.hasMore ? '+' : ''} products matching “${term}”, with related stories and pages.`
     : 'Search the UniinX catalog by garment, collection, color, or language.';
 
   return (
@@ -95,8 +104,8 @@ export default function SearchPage() {
 
         {term ? (
           <CatalogFilters
-            totalCount={totalCount}
-            hasMoreResults={hasMoreResults}
+            totalCount={visible.count}
+            hasMoreResults={visible.hasMore}
             filterOptions={filterOptions}
             sortOptions={SEARCH_SORT_OPTIONS}
             defaultSort="relevance"
@@ -124,6 +133,8 @@ export default function SearchPage() {
             className="uniinx-plp-results"
             resourcesClassName="uniinx-product-grid"
             autoLoadNext
+            dedupeKey={getProductFamilyKey}
+            onVisibleCountChange={onVisibleCountChange}
             nextClassName="uniinx-plp-pagination-link font-work text-xs rounded-full border border-black/10 px-6 py-3"
           >
             {({node: product, index}) => (

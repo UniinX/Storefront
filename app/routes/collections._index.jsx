@@ -1,105 +1,92 @@
 import {useLoaderData, Link} from 'react-router';
-import {getPaginationVariables, Image} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Image} from '@shopify/hydrogen';
 import {Reveal} from '~/components/motion/Reveal.jsx';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 
 /**
  * @param {Route.LoaderArgs} args
  */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {Route.LoaderArgs}
- */
-async function loadCriticalData({context, request}) {
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+export async function loader({context}) {
+  // Themes ("Solids" and whatever else gets added) come from the
+  // `custom.collection_name` product metafield, not real Shopify
+  // Collections — those are the garment-type ones (Hoodies, Joggers, etc.)
+  // used elsewhere. There's no Storefront API query that lists distinct
+  // metafield values directly, so this fetches the (currently small, ~80
+  // product) catalog and derives them, same approach as the catalog
+  // filter facets in lib/catalog.js.
+  const {products} = await context.storefront.query(THEME_PRODUCTS_QUERY, {
+    variables: {first: 100, sortKey: 'BEST_SELLING'},
+    cache: context.storefront.CacheLong(),
   });
 
-  const [{collections}] = await Promise.all([
-    context.storefront.query(COLLECTIONS_QUERY, {
-      variables: paginationVariables,
-      cache: context.storefront.CacheLong(),
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const themes = new Map();
+  for (const product of products.nodes) {
+    const value = product.collectionName?.value;
+    if (!value) continue;
+    const color = product.colorPattern?.references?.nodes?.[0]?.label?.value;
+    const existing = themes.get(value);
+    if (!existing) {
+      // sortKey: BEST_SELLING means the first product seen per theme is
+      // already its top seller — a reasonable representative image on its
+      // own — but if a later, less-best-selling product turns out to be
+      // the neutral "Black" variant, prefer that instead, since that's the
+      // conventional hero color for a basics/solids line.
+      themes.set(value, {value, image: product.featuredImage, count: 1, imageColor: color});
+      continue;
+    }
+    existing.count += 1;
+    if (color === 'Black' && existing.imageColor !== 'Black') {
+      existing.image = product.featuredImage;
+      existing.imageColor = color;
+    }
+  }
 
-  return {collections};
-}
-
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {Route.LoaderArgs}
- */
-function loadDeferredData({context}) {
-  return {};
+  return {
+    themes: [...themes.values()].sort((a, b) => a.value.localeCompare(b.value)),
+  };
 }
 
 export default function Collections() {
   /** @type {LoaderReturnData} */
-  const {collections} = useLoaderData();
+  const {themes} = useLoaderData();
 
   return (
     <div className="bg-white pb-24 text-black">
       <CollectionThemeHero title="Collections" directory />
       <section className="mx-auto max-w-[1440px] px-3 pt-2 sm:px-5 lg:px-[60px]">
-        <PaginatedResourceSection
-          connection={collections}
-          ariaLabel="Collections"
-          resourcesClassName="uniinx-collection-mosaic"
-          nextClassName="uniinx-plp-pagination-link"
+        <div
+          className="uniinx-collection-mosaic"
+          aria-label="Collections"
+          role="region"
         >
-          {({node: collection, index}) => (
-            <CollectionItem
-              key={collection.id}
-              collection={collection}
-              index={index}
-            />
-          )}
-        </PaginatedResourceSection>
+          {themes.map((theme, index) => (
+            <ThemeItem key={theme.value} theme={theme} index={index} />
+          ))}
+        </div>
       </section>
     </div>
   );
 }
 
-/**
- * @param {{
- *   collection: CollectionFragment;
- *   index: number;
- * }}
- */
-function CollectionItem({collection, index}) {
-  const image = collection.image || collection.products?.nodes?.[0]?.featuredImage;
-  const featureCopy = index === 0
-    ? `Say it with ${collection.title}`
-    : index === 1
-      ? `The ${collection.title}`
-      : collection.title;
+function ThemeItem({theme, index}) {
+  const featureCopy =
+    index === 0
+      ? `Say it with ${theme.value}`
+      : index === 1
+        ? `The ${theme.value}`
+        : theme.value;
 
   return (
     <Reveal as="article" variant="card" delay={(index % 4) * 70}>
       <Link
         className="group relative flex h-full min-h-[240px] overflow-hidden rounded-[20px] bg-[#d9d9d9] p-5 text-white sm:rounded-[30px] sm:p-7"
-        to={`/collections/${collection.handle}`}
+        to={`/collections/all?theme=${encodeURIComponent(theme.value)}`}
         prefetch="intent"
       >
-        {image ? (
+        {theme.image ? (
           <Image
-            alt={image.altText || collection.title}
-            data={image}
+            alt={theme.image.altText || theme.value}
+            data={theme.image}
             loading={index < 3 ? 'eager' : undefined}
             sizes="(min-width: 1100px) 66vw, (min-width: 720px) 50vw, 100vw"
             className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-[1.025] motion-reduce:transition-none"
@@ -119,21 +106,14 @@ function CollectionItem({collection, index}) {
   );
 }
 
-const COLLECTIONS_QUERY = `#graphql
-  fragment Collection on Collection {
-    id
-    title
-    handle
-    description
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    products(first: 1) {
+const THEME_PRODUCTS_QUERY = `#graphql
+  query ThemeProducts($first: Int, $sortKey: ProductSortKeys, $country: CountryCode, $language: LanguageCode) @inContext(country: $country, language: $language) {
+    products(first: $first, sortKey: $sortKey) {
       nodes {
+        collectionName: metafield(namespace: "custom", key: "collection_name") { value }
+        colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+          references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+        }
         featuredImage {
           id
           url
@@ -144,33 +124,7 @@ const COLLECTIONS_QUERY = `#graphql
       }
     }
   }
-  query StoreCollections(
-    $country: CountryCode
-    $endCursor: String
-    $first: Int
-    $language: LanguageCode
-    $last: Int
-    $startCursor: String
-  ) @inContext(country: $country, language: $language) {
-    collections(
-      first: $first,
-      last: $last,
-      before: $startCursor,
-      after: $endCursor
-    ) {
-      nodes {
-        ...Collection
-      }
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
-    }
-  }
 `;
 
 /** @typedef {import('./+types/collections._index').Route} Route */
-/** @typedef {import('storefrontapi.generated').CollectionFragment} CollectionFragment */
 /** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */
