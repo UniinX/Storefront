@@ -6,10 +6,13 @@ import {BentoFeaturedGrid} from '~/components/product/BentoFeaturedGrid';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 import {
+  applyClientFilters,
+  CLIENT_FILTER_BATCH_SIZE,
   getCatalogFilterOptions,
   getCatalogSort,
   getProductSearchQuery,
   groupCatalogFamilies,
+  hasClientOnlyFilters,
 } from '~/lib/catalog';
 
 export const meta = () => [{title: 'UniinX | Products Catalog'}];
@@ -17,7 +20,7 @@ export const meta = () => [{title: 'UniinX | Products Catalog'}];
 export async function loader({context, request}) {
   const url = new URL(request.url);
   const sort = url.searchParams.get('sort') || 'featured';
-  const query = getProductSearchQuery({
+  const selected = {
     type: url.searchParams.get('type'),
     theme: url.searchParams.get('theme'),
     language: url.searchParams.get('language'),
@@ -25,9 +28,23 @@ export async function loader({context, request}) {
     size: url.searchParams.get('size'),
     collection: url.searchParams.get('collection'),
     q: url.searchParams.get('q'),
+  };
+  // `getProductSearchQuery` only narrows on type/collection/q — theme,
+  // language, color, and size can't be filtered via `products(query:)`
+  // (see STOREFRONT_NATIVE_FILTER_SUPPORT / typedFiltersAvailable in
+  // lib/catalog.js), so those are matched client-side below against a
+  // larger fetched batch.
+  const query = getProductSearchQuery(selected);
+  // Top-level `products(query:)` has no `filters:` argument at all, so this
+  // route can never use typed ProductFilters regardless of what Shopify's
+  // index supports — always client-match any selected attribute.
+  const clientFiltering = hasClientOnlyFilters(selected, {
+    typedFiltersAvailable: false,
   });
   const variables = {
-    ...getPaginationVariables(request, {pageBy: 12}),
+    ...(clientFiltering
+      ? {first: CLIENT_FILTER_BATCH_SIZE}
+      : getPaginationVariables(request, {pageBy: 12})),
     ...getCatalogSort(sort),
     query,
   };
@@ -38,7 +55,10 @@ export async function loader({context, request}) {
       cache: CacheShort(),
     },
   );
-  const products = groupCatalogFamilies(rawProducts);
+  const scopedProducts = clientFiltering
+    ? applyClientFilters(rawProducts, selected)
+    : rawProducts;
+  const products = groupCatalogFamilies(scopedProducts);
 
   return {
     products,
@@ -106,6 +126,9 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
     id handle title availableForSale
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     featuredImage { id altText url width height }
   }
   fragment CollectionItem on Product {
@@ -114,6 +137,9 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
     language: metafield(namespace: "custom", key: "language") { value }
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     productFamily: metafield(namespace: "custom", key: "product_family") {
       reference { __typename ... on Metaobject {
         id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }

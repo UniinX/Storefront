@@ -6,9 +6,12 @@ import {ProductCard} from '~/components/ProductCard.jsx';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 import {
+  applyClientFilters,
+  CLIENT_FILTER_BATCH_SIZE,
   getCatalogFilterOptions,
   getCollectionFilters,
   groupCatalogFamilies,
+  hasClientOnlyFilters,
 } from '~/lib/catalog';
 import {
   getEmptyPredictiveSearchResult,
@@ -208,6 +211,9 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     id handle title availableForSale
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     featuredImage { id altText url width height }
   }
   fragment SearchProduct on Product {
@@ -216,6 +222,9 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     language: metafield(namespace: "custom", key: "language") { value }
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {
       id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }
       products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberSearchProduct } } }
@@ -297,6 +306,7 @@ async function regularSearch({request, context}) {
     theme: url.searchParams.get('theme'),
     language: url.searchParams.get('language'),
     color: url.searchParams.get('color'),
+    size: url.searchParams.get('size'),
     collection: url.searchParams.get('collection'),
   };
   const sort = url.searchParams.get('sort') || 'relevance';
@@ -328,8 +338,17 @@ async function regularSearch({request, context}) {
     };
   }
 
+  // `term` still goes straight to Shopify's `search(query:)` — that's the
+  // real full-text engine (relevance, typo tolerance, boosts) and works
+  // correctly on its own; verified narrowing 46->0 between a real and a
+  // bogus term. `productFilters` narrows for whatever's enabled in
+  // STOREFRONT_NATIVE_FILTER_SUPPORT (lib/catalog.js); anything not covered
+  // there is matched client-side below instead.
+  const clientFiltering = hasClientOnlyFilters(selected);
   const variables = {
-    ...getPaginationVariables(request, {pageBy: 12}),
+    ...(clientFiltering
+      ? {first: CLIENT_FILTER_BATCH_SIZE}
+      : getPaginationVariables(request, {pageBy: 12})),
     productFilters: getCollectionFilters(selected),
     reverse,
     sortKey,
@@ -344,7 +363,10 @@ async function regularSearch({request, context}) {
     throw new Error('No search data returned from Shopify API');
   }
 
-  const products = groupCatalogFamilies(items.products);
+  const scopedProducts = clientFiltering
+    ? applyClientFilters(items.products, selected)
+    : items.products;
+  const products = groupCatalogFamilies(scopedProducts);
   const totalCount = products.nodes.length;
   const hasMoreResults = Boolean(
     products.pageInfo.hasNextPage || products.pageInfo.hasPreviousPage,

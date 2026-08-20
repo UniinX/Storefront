@@ -902,6 +902,15 @@ export type FamilyMemberProductItemFragment = Pick<
 > & {
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  colorPattern?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<{
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }>;
+    }>;
+  }>;
   featuredImage?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
   >;
@@ -921,6 +930,15 @@ export type ProductItemFragment = Pick<
   language?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  colorPattern?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<{
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }>;
+    }>;
+  }>;
   productFamily?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<
       | {
@@ -958,6 +976,15 @@ export type ProductItemFragment = Pick<
                     color?: StorefrontAPI.Maybe<
                       Pick<StorefrontAPI.Metafield, 'value'>
                     >;
+                    colorPattern?: StorefrontAPI.Maybe<{
+                      references?: StorefrontAPI.Maybe<{
+                        nodes: Array<{
+                          label?: StorefrontAPI.Maybe<
+                            Pick<StorefrontAPI.MetaobjectField, 'value'>
+                          >;
+                        }>;
+                      }>;
+                    }>;
                     featuredImage?: StorefrontAPI.Maybe<
                       Pick<
                         StorefrontAPI.Image,
@@ -1047,6 +1074,15 @@ export type CollectionQuery = {
               Pick<StorefrontAPI.Metafield, 'value'>
             >;
             color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+            colorPattern?: StorefrontAPI.Maybe<{
+              references?: StorefrontAPI.Maybe<{
+                nodes: Array<{
+                  label?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
+                }>;
+              }>;
+            }>;
             productFamily?: StorefrontAPI.Maybe<{
               reference?: StorefrontAPI.Maybe<
                 | {
@@ -1084,6 +1120,18 @@ export type CollectionQuery = {
                               color?: StorefrontAPI.Maybe<
                                 Pick<StorefrontAPI.Metafield, 'value'>
                               >;
+                              colorPattern?: StorefrontAPI.Maybe<{
+                                references?: StorefrontAPI.Maybe<{
+                                  nodes: Array<{
+                                    label?: StorefrontAPI.Maybe<
+                                      Pick<
+                                        StorefrontAPI.MetaobjectField,
+                                        'value'
+                                      >
+                                    >;
+                                  }>;
+                                }>;
+                              }>;
                               featuredImage?: StorefrontAPI.Maybe<
                                 Pick<
                                   StorefrontAPI.Image,
@@ -1196,6 +1244,15 @@ export type CatalogProductsQuery = {
           Pick<StorefrontAPI.Metafield, 'value'>
         >;
         color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+        colorPattern?: StorefrontAPI.Maybe<{
+          references?: StorefrontAPI.Maybe<{
+            nodes: Array<{
+              label?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MetaobjectField, 'value'>
+              >;
+            }>;
+          }>;
+        }>;
         productFamily?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
             | {
@@ -1233,6 +1290,15 @@ export type CatalogProductsQuery = {
                           color?: StorefrontAPI.Maybe<
                             Pick<StorefrontAPI.Metafield, 'value'>
                           >;
+                          colorPattern?: StorefrontAPI.Maybe<{
+                            references?: StorefrontAPI.Maybe<{
+                              nodes: Array<{
+                                label?: StorefrontAPI.Maybe<
+                                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                                >;
+                              }>;
+                            }>;
+                          }>;
                           featuredImage?: StorefrontAPI.Maybe<
                             Pick<
                               StorefrontAPI.Image,
@@ -1375,6 +1441,15 @@ export type FamilyMemberCollectionItemFragment = Pick<
 > & {
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  colorPattern?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<{
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }>;
+    }>;
+  }>;
   featuredImage?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
   >;
@@ -1394,6 +1469,15 @@ export type CollectionItemFragment = Pick<
   language?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  colorPattern?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<{
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }>;
+    }>;
+  }>;
   productFamily?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<
       | {
@@ -1431,6 +1515,15 @@ export type CollectionItemFragment = Pick<
                     color?: StorefrontAPI.Maybe<
                       Pick<StorefrontAPI.Metafield, 'value'>
                     >;
+                    colorPattern?: StorefrontAPI.Maybe<{
+                      references?: StorefrontAPI.Maybe<{
+                        nodes: Array<{
+                          label?: StorefrontAPI.Maybe<
+                            Pick<StorefrontAPI.MetaobjectField, 'value'>
+                          >;
+                        }>;
+                      }>;
+                    }>;
                     featuredImage?: StorefrontAPI.Maybe<
                       Pick<
                         StorefrontAPI.Image,
@@ -1507,6 +1600,15 @@ export type CatalogQuery = {
           Pick<StorefrontAPI.Metafield, 'value'>
         >;
         color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+        colorPattern?: StorefrontAPI.Maybe<{
+          references?: StorefrontAPI.Maybe<{
+            nodes: Array<{
+              label?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MetaobjectField, 'value'>
+              >;
+            }>;
+          }>;
+        }>;
         productFamily?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
             | {
@@ -1544,6 +1646,15 @@ export type CatalogQuery = {
                           color?: StorefrontAPI.Maybe<
                             Pick<StorefrontAPI.Metafield, 'value'>
                           >;
+                          colorPattern?: StorefrontAPI.Maybe<{
+                            references?: StorefrontAPI.Maybe<{
+                              nodes: Array<{
+                                label?: StorefrontAPI.Maybe<
+                                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                                >;
+                              }>;
+                            }>;
+                          }>;
                           featuredImage?: StorefrontAPI.Maybe<
                             Pick<
                               StorefrontAPI.Image,
@@ -1641,6 +1752,15 @@ export type AllCatalogFacetsQuery = {
           Pick<StorefrontAPI.Metafield, 'value'>
         >;
         color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+        colorPattern?: StorefrontAPI.Maybe<{
+          references?: StorefrontAPI.Maybe<{
+            nodes: Array<{
+              label?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MetaobjectField, 'value'>
+              >;
+            }>;
+          }>;
+        }>;
         productFamily?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
             | {
@@ -1678,6 +1798,15 @@ export type AllCatalogFacetsQuery = {
                           color?: StorefrontAPI.Maybe<
                             Pick<StorefrontAPI.Metafield, 'value'>
                           >;
+                          colorPattern?: StorefrontAPI.Maybe<{
+                            references?: StorefrontAPI.Maybe<{
+                              nodes: Array<{
+                                label?: StorefrontAPI.Maybe<
+                                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                                >;
+                              }>;
+                            }>;
+                          }>;
                           featuredImage?: StorefrontAPI.Maybe<
                             Pick<
                               StorefrontAPI.Image,
@@ -2460,6 +2589,15 @@ export type FamilyMemberSearchProductFragment = Pick<
 > & {
   familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
   color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  colorPattern?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<{
+        label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+      }>;
+    }>;
+  }>;
   featuredImage?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
   >;
@@ -2482,6 +2620,15 @@ export type SearchProductFragment = {__typename: 'Product'} & Pick<
     language?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
     familyValue?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
     color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+    colorPattern?: StorefrontAPI.Maybe<{
+      references?: StorefrontAPI.Maybe<{
+        nodes: Array<{
+          label?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MetaobjectField, 'value'>
+          >;
+        }>;
+      }>;
+    }>;
     productFamily?: StorefrontAPI.Maybe<{
       reference?: StorefrontAPI.Maybe<
         | {
@@ -2519,6 +2666,15 @@ export type SearchProductFragment = {__typename: 'Product'} & Pick<
                       color?: StorefrontAPI.Maybe<
                         Pick<StorefrontAPI.Metafield, 'value'>
                       >;
+                      colorPattern?: StorefrontAPI.Maybe<{
+                        references?: StorefrontAPI.Maybe<{
+                          nodes: Array<{
+                            label?: StorefrontAPI.Maybe<
+                              Pick<StorefrontAPI.MetaobjectField, 'value'>
+                            >;
+                          }>;
+                        }>;
+                      }>;
                       featuredImage?: StorefrontAPI.Maybe<
                         Pick<
                           StorefrontAPI.Image,
@@ -2632,6 +2788,15 @@ export type RegularSearchQuery = {
             Pick<StorefrontAPI.Metafield, 'value'>
           >;
           color?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+          colorPattern?: StorefrontAPI.Maybe<{
+            references?: StorefrontAPI.Maybe<{
+              nodes: Array<{
+                label?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                >;
+              }>;
+            }>;
+          }>;
           productFamily?: StorefrontAPI.Maybe<{
             reference?: StorefrontAPI.Maybe<
               | {
@@ -2669,6 +2834,15 @@ export type RegularSearchQuery = {
                             color?: StorefrontAPI.Maybe<
                               Pick<StorefrontAPI.Metafield, 'value'>
                             >;
+                            colorPattern?: StorefrontAPI.Maybe<{
+                              references?: StorefrontAPI.Maybe<{
+                                nodes: Array<{
+                                  label?: StorefrontAPI.Maybe<
+                                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                                  >;
+                                }>;
+                              }>;
+                            }>;
                             featuredImage?: StorefrontAPI.Maybe<
                               Pick<
                                 StorefrontAPI.Image,
@@ -2886,11 +3060,11 @@ interface GeneratedQueryTypes {
     return: CartRecommendedProductsQuery;
     variables: CartRecommendedProductsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberProductItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    featuredImage { id altText url width height }\n  }\n  fragment ProductItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberProductItem } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n  }\n\n  query Collection($handle: String!, $country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $filters: [ProductFilter!], $sortKey: ProductCollectionSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) { id handle title description image { id url altText width height } products(first: $first, last: $last, before: $startCursor, after: $endCursor, filters: $filters, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...ProductItem } filters { id label type values { id label count input } } pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    } }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberProductItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment ProductItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberProductItem } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n  }\n\n  query Collection($handle: String!, $country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $filters: [ProductFilter!], $sortKey: ProductCollectionSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) { id handle title description image { id url altText width height } products(first: $first, last: $last, before: $startCursor, after: $endCursor, filters: $filters, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...ProductItem } filters { id label type values { id label count input } } pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    } }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberProductItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    featuredImage { id altText url width height }\n  }\n  fragment ProductItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberProductItem } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n  }\n\n  query CatalogProducts($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) { nodes { ...ProductItem } filters { id label type values { id label count input } } pageInfo { hasPreviousPage hasNextPage startCursor endCursor } }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberProductItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment ProductItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberProductItem } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyProductItem } maxVariantPrice { ...MoneyProductItem } }\n  }\n\n  query CatalogProducts($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) { nodes { ...ProductItem } filters { id label type values { id label count input } } pageInfo { hasPreviousPage hasNextPage startCursor endCursor } }\n  }\n': {
     return: CatalogProductsQuery;
     variables: CatalogProductsQueryVariables;
   };
@@ -2898,11 +3072,11 @@ interface GeneratedQueryTypes {
     return: StoreCollectionsQuery;
     variables: StoreCollectionsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberCollectionItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    featuredImage { id altText url width height }\n  }\n  fragment CollectionItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference { __typename ... on Metaobject {\n        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }\n      } }\n    }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n  }\n\n  query Catalog($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...CollectionItem }\n      filters { id label type values { id label count input } }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberCollectionItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment CollectionItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference { __typename ... on Metaobject {\n        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }\n      } }\n    }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n  }\n\n  query Catalog($country: CountryCode, $language: LanguageCode, $first: Int, $last: Int, $startCursor: String, $endCursor: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor, query: $query, sortKey: $sortKey, reverse: $reverse) {\n      nodes { ...CollectionItem }\n      filters { id label type values { id label count input } }\n      pageInfo { hasPreviousPage hasNextPage startCursor endCursor }\n    }\n  }\n': {
     return: CatalogQuery;
     variables: CatalogQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberCollectionItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    featuredImage { id altText url width height }\n  }\n  fragment CollectionItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference { __typename ... on Metaobject {\n        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }\n      } }\n    }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n  }\n\n  query AllCatalogFacets($country: CountryCode, $language: LanguageCode, $first: Int) @inContext(country: $country, language: $language) {\n    products(first: $first) {\n      nodes { ...CollectionItem }\n      filters { id label type values { id label count input } }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberCollectionItem on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment CollectionItem on Product {\n    id handle title productType publishedAt tags availableForSale\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") {\n      reference { __typename ... on Metaobject {\n        id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n        products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberCollectionItem } } }\n      } }\n    }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n    compareAtPriceRange { minVariantPrice { ...MoneyCollectionItem } maxVariantPrice { ...MoneyCollectionItem } }\n  }\n\n  query AllCatalogFacets($country: CountryCode, $language: LanguageCode, $first: Int) @inContext(country: $country, language: $language) {\n    products(first: $first) {\n      nodes { ...CollectionItem }\n      filters { id label type values { id label count input } }\n    }\n  }\n': {
     return: AllCatalogFacetsQuery;
     variables: AllCatalogFacetsQueryVariables;
   };
@@ -2926,7 +3100,7 @@ interface GeneratedQueryTypes {
     return: ProductRecommendationsQuery;
     variables: ProductRecommendationsQueryVariables;
   };
-  '#graphql\n  query RegularSearch(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $productFilters: [ProductFilter!]\n    $reverse: Boolean\n    $sortKey: SearchSortKeys\n    $startCursor: String\n    $term: String!\n  ) @inContext(country: $country, language: $language) {\n    articles: search(query: $term, types: [ARTICLE], first: 6) {\n      nodes { ...on Article { ...SearchArticle } }\n    }\n    pages: search(query: $term, types: [PAGE], first: 6) {\n      nodes { ...on Page { ...SearchPage } }\n    }\n    products: search(\n      after: $endCursor\n      before: $startCursor\n      first: $first\n      last: $last\n      productFilters: $productFilters\n      query: $term\n      reverse: $reverse\n      sortKey: $sortKey\n      types: [PRODUCT]\n      unavailableProducts: HIDE\n    ) {\n      nodes { ...on Product { ...SearchProduct } }\n      pageInfo { ...PageInfoFragment }\n    }\n  }\n  #graphql\n  fragment MoneySearchProduct on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberSearchProduct on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    featuredImage { id altText url width height }\n  }\n  fragment SearchProduct on Product {\n    __typename id handle title productType publishedAt tags availableForSale trackingParameters\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberSearchProduct } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }\n    compareAtPriceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }\n  }\n\n  #graphql\n  fragment SearchPage on Page {\n    __typename handle id title trackingParameters\n  }\n\n  #graphql\n  fragment SearchArticle on Article {\n    __typename handle id title trackingParameters\n  }\n\n  #graphql\n  fragment PageInfoFragment on PageInfo {\n    hasNextPage hasPreviousPage startCursor endCursor\n  }\n\n': {
+  '#graphql\n  query RegularSearch(\n    $country: CountryCode\n    $endCursor: String\n    $first: Int\n    $language: LanguageCode\n    $last: Int\n    $productFilters: [ProductFilter!]\n    $reverse: Boolean\n    $sortKey: SearchSortKeys\n    $startCursor: String\n    $term: String!\n  ) @inContext(country: $country, language: $language) {\n    articles: search(query: $term, types: [ARTICLE], first: 6) {\n      nodes { ...on Article { ...SearchArticle } }\n    }\n    pages: search(query: $term, types: [PAGE], first: 6) {\n      nodes { ...on Page { ...SearchPage } }\n    }\n    products: search(\n      after: $endCursor\n      before: $startCursor\n      first: $first\n      last: $last\n      productFilters: $productFilters\n      query: $term\n      reverse: $reverse\n      sortKey: $sortKey\n      types: [PRODUCT]\n      unavailableProducts: HIDE\n    ) {\n      nodes { ...on Product { ...SearchProduct } }\n      pageInfo { ...PageInfoFragment }\n    }\n  }\n  #graphql\n  fragment MoneySearchProduct on MoneyV2 { amount currencyCode }\n  fragment FamilyMemberSearchProduct on Product {\n    id handle title availableForSale\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    featuredImage { id altText url width height }\n  }\n  fragment SearchProduct on Product {\n    __typename id handle title productType publishedAt tags availableForSale trackingParameters\n    collectionName: metafield(namespace: "custom", key: "collection_name") { value }\n    language: metafield(namespace: "custom", key: "language") { value }\n    familyValue: metafield(namespace: "custom", key: "family_value") { value }\n    color: metafield(namespace: "custom", key: "color") { value }\n    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {\n      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }\n    }\n    productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {\n      id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }\n      products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberSearchProduct } } }\n    } } }\n    variants(first: 10) { nodes { selectedOptions { name value } } }\n    featuredImage { id altText url width height }\n    category { id name }\n    collections(first: 10) { nodes { id handle title } }\n    priceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }\n    compareAtPriceRange { minVariantPrice { ...MoneySearchProduct } maxVariantPrice { ...MoneySearchProduct } }\n  }\n\n  #graphql\n  fragment SearchPage on Page {\n    __typename handle id title trackingParameters\n  }\n\n  #graphql\n  fragment SearchArticle on Article {\n    __typename handle id title trackingParameters\n  }\n\n  #graphql\n  fragment PageInfoFragment on PageInfo {\n    hasNextPage hasPreviousPage startCursor endCursor\n  }\n\n': {
     return: RegularSearchQuery;
     variables: RegularSearchQueryVariables;
   };

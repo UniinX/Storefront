@@ -1,12 +1,17 @@
 import {describe, expect, it} from 'vitest';
 import {
+  applyClientFilters,
   categoryLabel,
   getCatalogFilterOptions,
+  getCollectionFilters,
   getProductCategoryCollections,
+  getProductColor,
   getProductSearchQuery,
   groupCatalogFamilies,
+  hasClientOnlyFilters,
   mergeCatalogFilterOptions,
   normalizeProductTaxonomy,
+  productMatchesFilters,
 } from './catalog';
 
 describe('catalog helpers', () => {
@@ -17,16 +22,101 @@ describe('catalog helpers', () => {
     expect(categoryLabel("Women's Classic T-shirt")).toBe('T-Shirts');
   });
 
-  it('builds a Shopify-side query for family color and metadata filters', () => {
-    const query = getProductSearchQuery({
-      type: 'T-Shirts',
-      theme: 'Space',
-      language: 'Telugu',
-      color: 'Navy',
-    });
+  it('builds a Shopify-side query from only the fields verified to narrow (tag/title/product_type)', () => {
+    const query = getProductSearchQuery({type: 'T-Shirts', collection: 'men', q: 'tiger'});
     expect(query).toContain('tag:tshirt');
-    expect(query).toContain('metafields.custom.collection_name:"Space"');
-    expect(query).toContain('metafields.custom.family_value:"Navy"');
+    expect(query).toContain('(tag:men OR tag:unisex)');
+    expect(query).toContain('title:"tiger"');
+    // theme/language/color/size never narrow via products(query:) on this
+    // store (metafields.*/variant_option: are silently ignored), so they're
+    // no longer emitted here — they're matched client-side instead, see
+    // productMatchesFilters below.
+    expect(query).not.toContain('metafields');
+    expect(query).not.toContain('variant_option');
+  });
+
+  it('matches products client-side for attributes Shopify does not narrow on', () => {
+    const product = {
+      collectionName: {value: 'Solids'},
+      language: {value: 'Telugu'},
+      colorPattern: {references: {nodes: [{label: {value: 'Navy Blue'}}]}},
+      variants: {nodes: [{selectedOptions: [{name: 'Size', value: 'M'}]}]},
+      tags: ['unisex'],
+    };
+    expect(productMatchesFilters(product, {theme: 'Solids'})).toBe(true);
+    expect(productMatchesFilters(product, {theme: 'Stripes'})).toBe(false);
+    expect(productMatchesFilters(product, {language: 'telugu'})).toBe(true);
+    expect(productMatchesFilters(product, {color: 'navy blue'})).toBe(true);
+    expect(productMatchesFilters(product, {color: 'Black'})).toBe(false);
+    expect(productMatchesFilters(product, {size: 'M'})).toBe(true);
+    expect(productMatchesFilters(product, {size: 'XL'})).toBe(false);
+  });
+
+  it('prefers the canonical shopify.color-pattern taxonomy over legacy metafields', () => {
+    const product = {
+      colorPattern: {references: {nodes: [{label: {value: 'Flamingo'}}]}},
+      familyValue: {value: 'Legacy Value'},
+      color: {value: 'Legacy Color'},
+    };
+    expect(getProductColor(product)).toBe('Flamingo');
+  });
+
+  it('applyClientFilters narrows a connection and returns a single unpaginated page', () => {
+    const nodes = [
+      {title: 'Tiger Hoodie', tags: ['unisex'], collectionName: {value: 'Wild'}},
+      {title: 'Plain Hoodie', tags: ['unisex'], collectionName: {value: 'Solids'}},
+    ];
+    const result = applyClientFilters({nodes, pageInfo: {hasNextPage: true}}, {q: 'tiger'});
+    expect(result.nodes.map((n) => n.title)).toEqual(['Tiger Hoodie']);
+    expect(result.pageInfo.hasNextPage).toBe(false);
+  });
+
+  it('hasClientOnlyFilters is true whenever an unsupported-native attribute or q is selected', () => {
+    expect(hasClientOnlyFilters({})).toBe(false);
+    // 'Hoodies' has a verified CATEGORY_TO_PRODUCT_TYPE mapping ('Hoodie'),
+    // so it's native now and no longer needs client-side matching.
+    expect(hasClientOnlyFilters({type: 'Hoodies'})).toBe(false);
+    // Language has no live data yet, so it stays client-matched even though
+    // the flag map documents it as "mechanism should work, unverified".
+    expect(hasClientOnlyFilters({language: 'Telugu'})).toBe(true);
+    expect(hasClientOnlyFilters({q: 'tiger'})).toBe(true);
+    expect(hasClientOnlyFilters({q: '  '})).toBe(false);
+  });
+
+  it('hasClientOnlyFilters still requires client matching for a category with no verified productType mapping', () => {
+    // "Oversized" is a tag on productType "Hoodie", not its own Shopify
+    // productType — CATEGORY_TO_PRODUCT_TYPE deliberately excludes it.
+    expect(hasClientOnlyFilters({type: 'Oversized'})).toBe(true);
+  });
+
+  it('hasClientOnlyFilters never trusts typed filters when the fetch mechanism cannot send them', () => {
+    // collections.all.jsx and the department fallback use products(query:),
+    // which has no `filters:` argument at all.
+    expect(
+      hasClientOnlyFilters({type: 'Hoodies'}, {typedFiltersAvailable: false}),
+    ).toBe(true);
+    expect(
+      hasClientOnlyFilters({color: 'Black'}, {typedFiltersAvailable: false}),
+    ).toBe(true);
+  });
+
+  it('getCollectionFilters sends the exact mapped productType, not the UI label, and omits language entirely', () => {
+    const filters = getCollectionFilters({
+      type: 'Hoodies',
+      language: 'Telugu',
+      color: 'Black',
+      size: 'M',
+    });
+    expect(filters).toContainEqual({productType: 'Hoodie'});
+    expect(filters).toContainEqual({variantOption: {name: 'Color', value: 'Black'}});
+    expect(filters).toContainEqual({variantOption: {name: 'Size', value: 'M'}});
+    // language: false in STOREFRONT_NATIVE_FILTER_SUPPORT until real data exists.
+    expect(filters.some((f) => f.productMetafield?.key === 'language')).toBe(false);
+  });
+
+  it('getCollectionFilters omits productType for an unmapped category rather than guessing', () => {
+    const filters = getCollectionFilters({type: 'Oversized'});
+    expect(filters.some((f) => f.productType)).toBe(false);
   });
 
   it('groups products from the same family within a cursor page', () => {
@@ -57,12 +147,16 @@ describe('catalog helpers', () => {
           },
         ],
       },
-      familyValue: {value: 'Black'},
+      colorPattern: {references: {nodes: [{label: {value: 'Black'}}]}},
       productFamily: {
         reference: {
           __typename: 'Metaobject',
           products: {
-            references: {nodes: [{familyValue: {value: 'Blue'}}]},
+            references: {
+              nodes: [
+                {colorPattern: {references: {nodes: [{label: {value: 'Blue'}}]}}},
+              ],
+            },
           },
         },
       },

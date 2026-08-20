@@ -6,11 +6,14 @@ import {ProductCard} from '~/components/ds/index.js';
 import {CatalogFilters} from '~/components/product/CatalogFilters';
 import {CollectionThemeHero} from '~/components/collection/CollectionThemeHero.jsx';
 import {
+  applyClientFilters,
+  CLIENT_FILTER_BATCH_SIZE,
   getCatalogFilterOptions,
   getCatalogSort,
   getCollectionFilters,
   getProductSearchQuery,
   groupCatalogFamilies,
+  hasClientOnlyFilters,
   matchesDepartment,
 } from '~/lib/catalog';
 
@@ -31,10 +34,20 @@ export async function loader({context, params, request}) {
     color: url.searchParams.get('color'),
     size: url.searchParams.get('size'),
     collection: url.searchParams.get('collection'),
+    q: url.searchParams.get('q'),
   };
+  // Theme/language/color/size (and free-text q) aren't reliably filterable
+  // Whatever isn't in STOREFRONT_NATIVE_FILTER_SUPPORT is fetched as a
+  // larger, unfiltered batch and narrowed client-side below instead of
+  // relying on `filters:` to do it — `collection.products(filters:)` does
+  // support typed ProductFilters (unlike the department-fallback query
+  // below), so this one respects the native-support flags.
+  const clientFiltering = hasClientOnlyFilters(selected);
   const variables = {
     handle,
-    ...getPaginationVariables(request, {pageBy: 12}),
+    ...(clientFiltering
+      ? {first: CLIENT_FILTER_BATCH_SIZE}
+      : getPaginationVariables(request, {pageBy: 12})),
     ...getCatalogSort(url.searchParams.get('sort') || 'featured', true),
     filters: getCollectionFilters(selected),
   };
@@ -43,22 +56,30 @@ export async function loader({context, params, request}) {
     cache: CacheShort(),
   });
   const isDepartment = ['men', 'women', 'accessories'].includes(handle);
+  let usedDepartmentFallback = false;
 
   if (!collection && isDepartment) {
+    usedDepartmentFallback = true;
     const query = getProductSearchQuery({
-      ...selected,
+      type: selected.type,
       collection: selected.collection || handle,
-      q: url.searchParams.get('q'),
     });
     const fallback = await context.storefront.query(CATALOG_PRODUCTS_QUERY, {
       variables: {
-        ...getPaginationVariables(request, {pageBy: 12}),
+        first: CLIENT_FILTER_BATCH_SIZE,
         ...getCatalogSort(url.searchParams.get('sort') || 'featured'),
         query,
       },
       cache: CacheShort(),
     });
-    const nodes = (fallback.products?.nodes ?? []).filter((product) =>
+    // Department ("men"/"women"/"accessories") isn't a real Shopify
+    // collection, so there's no server connection to narrow further — scope
+    // to department membership only here (matching how the real-collection
+    // branch below only has its plain, un-attribute-filtered batch at this
+    // point). Theme/language/color/size/q are applied afterwards, uniformly
+    // with the real-collection path, so facet options stay computed from the
+    // same "department, not yet attribute-filtered" set either way.
+    const nodes = fallback.products.nodes.filter((product) =>
       matchesDepartment(product, handle),
     );
     collection = {
@@ -66,7 +87,16 @@ export async function loader({context, params, request}) {
       handle,
       title: handle[0].toUpperCase() + handle.slice(1),
       description: '',
-      products: {...fallback.products, nodes},
+      products: {
+        ...fallback.products,
+        nodes,
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      },
     };
   }
 
@@ -74,20 +104,17 @@ export async function loader({context, params, request}) {
     throw new Response(`Collection ${handle} not found`, {status: 404});
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
-  // Shopify collection connections cannot text-search. Keep the URL contract while
-  // limiting the fallback to the already cursor-paginated page.
-  const search = url.searchParams.get('q')?.toLowerCase();
-  const rawProducts = search
-    ? {
-        ...collection.products,
-        nodes: collection.products.nodes.filter(
-          (product) =>
-            product.title.toLowerCase().includes(search) ||
-            product.tags.some((tag) => tag.toLowerCase().includes(search)),
-        ),
-      }
+  // The department-fallback branch above only ever used the top-level
+  // `products(query:)` field, which has no typed-filter argument — so
+  // unlike the real-collection path above, it must always client-match any
+  // selected attribute here, regardless of STOREFRONT_NATIVE_FILTER_SUPPORT.
+  const finalClientFiltering = usedDepartmentFallback
+    ? hasClientOnlyFilters(selected, {typedFiltersAvailable: false})
+    : clientFiltering;
+  const scopedProducts = finalClientFiltering
+    ? applyClientFilters(collection.products, selected)
     : collection.products;
-  const products = groupCatalogFamilies(rawProducts);
+  const products = groupCatalogFamilies(scopedProducts);
 
   return {
     collection,
@@ -164,6 +191,9 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     id handle title availableForSale
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     featuredImage { id altText url width height }
   }
   fragment ProductItem on Product {
@@ -172,6 +202,9 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     language: metafield(namespace: "custom", key: "language") { value }
     familyValue: metafield(namespace: "custom", key: "family_value") { value }
     color: metafield(namespace: "custom", key: "color") { value }
+    colorPattern: metafield(namespace: "shopify", key: "color-pattern") {
+      references(first: 1) { nodes { ... on Metaobject { label: field(key: "label") { value } } } }
+    }
     productFamily: metafield(namespace: "custom", key: "product_family") { reference { __typename ... on Metaobject {
       id handle type name: field(key: "name") { value } slug: field(key: "slug") { value }
       products: field(key: "products") { references(first: 20) { nodes { ...FamilyMemberProductItem } } }
